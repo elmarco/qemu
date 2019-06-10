@@ -185,3 +185,9 @@ libqemuutil = static_library('qemuutil',
                              dependencies: [util_ss.dependencies(), m, glib, socket])
 qemuutil = declare_dependency(link_with: libqemuutil,
                               sources: version_res)
+
+# Other build targets
+
+if 'CONFIG_VHOST_USER' in config_host
+  subdir('contrib/libvhost-user')
+endif
