@@ -211,7 +211,7 @@ cryptodev_backend_can_be_deleted(UserCreatable *uc)
 static void cryptodev_backend_instance_init(Object *obj)
 {
     /* Initialize devices' queues property to 1 */
-    object_property_set_int(obj, 1, "queues", NULL);
+    object_property_set_uint(obj, 1, "queues", NULL);
 }
 
 static void cryptodev_backend_finalize(Object *obj)
