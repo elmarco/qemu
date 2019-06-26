@@ -1688,6 +1688,11 @@ ObjectProperty *object_class_property_add_uint8_ptr(ObjectClass *klass,
                                          const uint8_t *v,
                                          ObjectPropertyFlags flags);
 
+ObjectProperty *object_class_property_add_uint8(ObjectClass *klass,
+                                                const char *name,
+                                                ptrdiff_t offset,
+                                                ObjectPropertyFlags flags);
+
 /**
  * object_property_add_uint16_ptr:
  * @obj: the object to add a property to
@@ -1708,6 +1713,11 @@ ObjectProperty *object_class_property_add_uint16_ptr(ObjectClass *klass,
                                           const char *name,
                                           const uint16_t *v,
                                           ObjectPropertyFlags flags);
+
+ObjectProperty *object_class_property_add_uint16(ObjectClass *klass,
+                                                 const char *name,
+                                                 ptrdiff_t offset,
+                                                 ObjectPropertyFlags flags);
 
 /**
  * object_property_add_uint32_ptr:
@@ -1730,6 +1740,11 @@ ObjectProperty *object_class_property_add_uint32_ptr(ObjectClass *klass,
                                           const uint32_t *v,
                                           ObjectPropertyFlags flags);
 
+ObjectProperty *object_class_property_add_uint32(ObjectClass *klass,
+                                                 const char *name,
+                                                 ptrdiff_t offset,
+                                                 ObjectPropertyFlags flags);
+
 /**
  * object_property_add_uint64_ptr:
  * @obj: the object to add a property to
@@ -1750,6 +1765,11 @@ ObjectProperty *object_class_property_add_uint64_ptr(ObjectClass *klass,
                                           const char *name,
                                           const uint64_t *v,
                                           ObjectPropertyFlags flags);
+
+ObjectProperty *object_class_property_add_uint64(ObjectClass *klass,
+                                                 const char *name,
+                                                 ptrdiff_t offset,
+                                                 ObjectPropertyFlags flags);
 
 /**
  * object_property_add_alias:
