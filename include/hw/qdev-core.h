@@ -93,7 +93,7 @@ typedef void (*BusUnrealize)(BusState *bus, Error **errp);
  * until it was marked don't hide and qdev_device_add called again.
  *
  */
-typedef struct DeviceClass {
+struct DeviceClass {
     /*< private >*/
     ObjectClass parent_class;
     /*< public >*/
@@ -137,7 +137,7 @@ typedef struct DeviceClass {
 
     /* Private to qdev / bus.  */
     const char *bus_type;
-} DeviceClass;
+};
 
 typedef struct NamedGPIOList NamedGPIOList;
 
