@@ -1374,16 +1374,6 @@ static void usb_net_realize(USBDevice *dev, Error **errp)
     usb_desc_set_string(dev, STRING_ETHADDR, s->usbstring_mac);
 }
 
-static void usb_net_instance_init(Object *obj)
-{
-    USBDevice *dev = USB_DEVICE(obj);
-    USBNetState *s = USB_NET(dev);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  &dev->qdev, NULL);
-}
-
 static const VMStateDescription vmstate_usb_net = {
     .name = "usb-net",
     .unmigratable = 1,
@@ -1410,6 +1400,10 @@ static void usb_net_class_initfn(ObjectClass *klass, void *data)
     dc->fw_name = "network";
     dc->vmsd = &vmstate_usb_net;
     device_class_set_props(dc, net_properties);
+
+    device_class_add_bootindex_property(dc, offsetof(USBNetState,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo net_info = {
@@ -1417,7 +1411,6 @@ static const TypeInfo net_info = {
     .parent        = TYPE_USB_DEVICE,
     .instance_size = sizeof(USBNetState),
     .class_init    = usb_net_class_initfn,
-    .instance_init = usb_net_instance_init,
 };
 
 static void usb_net_register_types(void)

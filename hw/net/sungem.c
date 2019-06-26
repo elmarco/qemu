@@ -1372,15 +1372,6 @@ static void sungem_reset(DeviceState *dev)
     sungem_reset_all(s, true);
 }
 
-static void sungem_instance_init(Object *obj)
-{
-    SunGEMState *s = SUNGEM(obj);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static Property sungem_properties[] = {
     DEFINE_NIC_PROPERTIES(SunGEMState, conf),
     /* Phy address should be 0 for most Apple machines except
@@ -1431,6 +1422,10 @@ static void sungem_class_init(ObjectClass *klass, void *data)
     dc->reset = sungem_reset;
     device_class_set_props(dc, sungem_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(SunGEMState,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo sungem_info = {
@@ -1438,7 +1433,6 @@ static const TypeInfo sungem_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(SunGEMState),
     .class_init    = sungem_class_init,
-    .instance_init = sungem_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { }

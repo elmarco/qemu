@@ -698,14 +698,10 @@ static void e1000e_class_init(ObjectClass *class, void *data)
 
     device_class_set_props(dc, e1000e_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
-}
 
-static void e1000e_instance_init(Object *obj)
-{
-    E1000EState *s = E1000E(obj);
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
+    device_class_add_bootindex_property(dc, offsetof(E1000EState,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo e1000e_info = {
@@ -713,7 +709,6 @@ static const TypeInfo e1000e_info = {
     .parent = TYPE_PCI_DEVICE,
     .instance_size = sizeof(E1000EState),
     .class_init = e1000e_class_init,
-    .instance_init = e1000e_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { }

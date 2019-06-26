@@ -976,16 +976,6 @@ static void pci_tulip_exit(PCIDevice *pci_dev)
     eeprom93xx_free(&pci_dev->qdev, s->eeprom);
 }
 
-static void tulip_instance_init(Object *obj)
-{
-    PCIDevice *pci_dev = PCI_DEVICE(obj);
-    TULIPState *d = DO_UPCAST(TULIPState, dev, pci_dev);
-
-    device_add_bootindex_property(obj, &d->c.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  &pci_dev->qdev, NULL);
-}
-
 static Property tulip_properties[] = {
     DEFINE_NIC_PROPERTIES(TULIPState, c),
     DEFINE_PROP_END_OF_LIST(),
@@ -1007,6 +997,9 @@ static void tulip_class_init(ObjectClass *klass, void *data)
     device_class_set_props(dc, tulip_properties);
     dc->reset = tulip_qdev_reset;
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(TULIPState, c.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo tulip_info = {
@@ -1014,7 +1007,6 @@ static const TypeInfo tulip_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(TULIPState),
     .class_init    = tulip_class_init,
-    .instance_init = tulip_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { },

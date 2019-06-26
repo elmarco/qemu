@@ -1878,14 +1878,6 @@ static void e100_nic_realize(PCIDevice *pci_dev, Error **errp)
                      s->vmstate, s);
 }
 
-static void eepro100_instance_init(Object *obj)
-{
-    EEPRO100State *s = DO_UPCAST(EEPRO100State, dev, PCI_DEVICE(obj));
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(s), NULL);
-}
-
 static E100PCIDeviceInfo e100_devices[] = {
     {
         .name = "i82550",
@@ -2071,6 +2063,10 @@ static void eepro100_class_init(ObjectClass *klass, void *data)
     k->revision = info->revision;
     k->subsystem_vendor_id = info->subsystem_vendor_id;
     k->subsystem_id = info->subsystem_id;
+
+    device_class_add_bootindex_property(dc, offsetof(EEPRO100State,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static void eepro100_register_types(void)
@@ -2084,7 +2080,6 @@ static void eepro100_register_types(void)
         type_info.parent = TYPE_PCI_DEVICE;
         type_info.class_init = eepro100_class_init;
         type_info.instance_size = sizeof(EEPRO100State);
-        type_info.instance_init = eepro100_instance_init;
         type_info.interfaces = (InterfaceInfo[]) {
             { INTERFACE_CONVENTIONAL_PCI_DEVICE },
             { },

@@ -3407,15 +3407,6 @@ static void pci_rtl8139_realize(PCIDevice *dev, Error **errp)
     s->timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, rtl8139_timer, s);
 }
 
-static void rtl8139_instance_init(Object *obj)
-{
-    RTL8139State *s = RTL8139(obj);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static Property rtl8139_properties[] = {
     DEFINE_NIC_PROPERTIES(RTL8139State, conf),
     DEFINE_PROP_END_OF_LIST(),
@@ -3437,6 +3428,10 @@ static void rtl8139_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_rtl8139;
     device_class_set_props(dc, rtl8139_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(RTL8139State,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo rtl8139_info = {
@@ -3444,7 +3439,6 @@ static const TypeInfo rtl8139_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(RTL8139State),
     .class_init    = rtl8139_class_init,
-    .instance_init = rtl8139_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { },

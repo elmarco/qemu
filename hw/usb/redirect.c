@@ -2586,16 +2586,10 @@ static void usbredir_class_initfn(ObjectClass *klass, void *data)
     dc->vmsd           = &usbredir_vmstate;
     device_class_set_props(dc, usbredir_properties);
     set_bit(DEVICE_CATEGORY_MISC, dc->categories);
-}
 
-static void usbredir_instance_init(Object *obj)
-{
-    USBDevice *udev = USB_DEVICE(obj);
-    USBRedirDevice *dev = USB_REDIRECT(udev);
-
-    device_add_bootindex_property(obj, &dev->bootindex,
-                                  "bootindex", NULL,
-                                  &udev->qdev, NULL);
+    device_class_add_bootindex_property(dc, offsetof(USBRedirDevice,
+                                                     bootindex),
+                                        "bootindex", NULL);
 }
 
 static const TypeInfo usbredir_dev_info = {
@@ -2603,7 +2597,6 @@ static const TypeInfo usbredir_dev_info = {
     .parent        = TYPE_USB_DEVICE,
     .instance_size = sizeof(USBRedirDevice),
     .class_init    = usbredir_class_initfn,
-    .instance_init = usbredir_instance_init,
 };
 
 static void usbredir_register_types(void)

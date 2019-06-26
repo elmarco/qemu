@@ -2829,18 +2829,11 @@ static void isabus_fdc_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_isa_fdc;
     device_class_set_props(dc, isa_fdc_properties);
     set_bit(DEVICE_CATEGORY_STORAGE, dc->categories);
-}
 
-static void isabus_fdc_instance_init(Object *obj)
-{
-    FDCtrlISABus *isa = ISA_FDC(obj);
-
-    device_add_bootindex_property(obj, &isa->bootindexA,
-                                  "bootindexA", "/floppy@0",
-                                  DEVICE(obj), NULL);
-    device_add_bootindex_property(obj, &isa->bootindexB,
-                                  "bootindexB", "/floppy@1",
-                                  DEVICE(obj), NULL);
+    device_class_add_bootindex_property(dc, offsetof(FDCtrlISABus, bootindexA),
+                                        "bootindexA", "/floppy@0");
+    device_class_add_bootindex_property(dc, offsetof(FDCtrlISABus, bootindexB),
+                                        "bootindexB", "/floppy@1");
 }
 
 static const TypeInfo isa_fdc_info = {
@@ -2848,7 +2841,6 @@ static const TypeInfo isa_fdc_info = {
     .parent        = TYPE_ISA_DEVICE,
     .instance_size = sizeof(FDCtrlISABus),
     .class_init    = isabus_fdc_class_init,
-    .instance_init = isabus_fdc_instance_init,
 };
 
 static const VMStateDescription vmstate_sysbus_fdc ={

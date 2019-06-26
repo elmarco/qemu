@@ -3120,9 +3120,6 @@ static void virtio_net_instance_init(Object *obj)
      * Can be overriden with virtio_net_set_config_size.
      */
     n->config_size = sizeof(struct virtio_net_config);
-    device_add_bootindex_property(obj, &n->nic_conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(n), NULL);
 }
 
 static int virtio_net_pre_save(void *opaque)
@@ -3254,6 +3251,10 @@ static void virtio_net_class_init(ObjectClass *klass, void *data)
     vdc->post_load = virtio_net_post_load_virtio;
     vdc->vmsd = &vmstate_virtio_net_device;
     vdc->primary_unplug_pending = primary_unplug_pending;
+
+    device_class_add_bootindex_property(dc, offsetof(VirtIONet,
+                                                     nic_conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo virtio_net_info = {

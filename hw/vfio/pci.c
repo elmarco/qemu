@@ -3131,9 +3131,6 @@ static void vfio_instance_init(Object *obj)
     PCIDevice *pci_dev = PCI_DEVICE(obj);
     VFIOPCIDevice *vdev = PCI_VFIO(obj);
 
-    device_add_bootindex_property(obj, &vdev->bootindex,
-                                  "bootindex", NULL,
-                                  &pci_dev->qdev, NULL);
     vdev->host.domain = ~0U;
     vdev->host.bus = ~0U;
     vdev->host.slot = ~0U;
@@ -3206,6 +3203,9 @@ static void vfio_pci_dev_class_init(ObjectClass *klass, void *data)
     pdc->exit = vfio_exitfn;
     pdc->config_read = vfio_pci_read_config;
     pdc->config_write = vfio_pci_write_config;
+
+    device_class_add_bootindex_property(dc, offsetof(VFIOPCIDevice, bootindex),
+                                        "bootindex", NULL);
 }
 
 static const TypeInfo vfio_pci_dev_info = {

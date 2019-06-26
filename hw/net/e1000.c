@@ -1765,21 +1765,16 @@ static void e1000_class_init(ObjectClass *klass, void *data)
     dc->reset = qdev_e1000_reset;
     dc->vmsd = &vmstate_e1000;
     device_class_set_props(dc, e1000_properties);
-}
 
-static void e1000_instance_init(Object *obj)
-{
-    E1000State *n = E1000(obj);
-    device_add_bootindex_property(obj, &n->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(n), NULL);
+    device_class_add_bootindex_property(dc, offsetof(E1000State,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo e1000_base_info = {
     .name          = TYPE_E1000_BASE,
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(E1000State),
-    .instance_init = e1000_instance_init,
     .class_size    = sizeof(E1000BaseClass),
     .abstract      = true,
     .interfaces = (InterfaceInfo[]) {
@@ -1822,7 +1817,6 @@ static void e1000_register_types(void)
         type_info.parent = TYPE_E1000_BASE;
         type_info.class_data = (void *)info;
         type_info.class_init = e1000_class_init;
-        type_info.instance_init = e1000_instance_init;
 
         type_register(&type_info);
     }

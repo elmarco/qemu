@@ -2232,14 +2232,6 @@ static void vmxnet3_pci_realize(PCIDevice *pci_dev, Error **errp)
     }
 }
 
-static void vmxnet3_instance_init(Object *obj)
-{
-    VMXNET3State *s = VMXNET3(obj);
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static void vmxnet3_pci_uninit(PCIDevice *pci_dev)
 {
     VMXNET3State *s = VMXNET3(pci_dev);
@@ -2508,6 +2500,10 @@ static void vmxnet3_class_init(ObjectClass *class, void *data)
     dc->vmsd = &vmstate_vmxnet3;
     device_class_set_props(dc, vmxnet3_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(VMXNET3State,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo vmxnet3_info = {
@@ -2516,7 +2512,6 @@ static const TypeInfo vmxnet3_info = {
     .class_size    = sizeof(VMXNET3Class),
     .instance_size = sizeof(VMXNET3State),
     .class_init    = vmxnet3_class_init,
-    .instance_init = vmxnet3_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },

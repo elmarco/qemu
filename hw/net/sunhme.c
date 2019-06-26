@@ -895,15 +895,6 @@ static void sunhme_realize(PCIDevice *pci_dev, Error **errp)
     qemu_format_nic_info_str(qemu_get_queue(s->nic), s->conf.macaddr.a);
 }
 
-static void sunhme_instance_init(Object *obj)
-{
-    SunHMEState *s = SUNHME(obj);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static void sunhme_reset(DeviceState *ds)
 {
     SunHMEState *s = SUNHME(ds);
@@ -960,6 +951,10 @@ static void sunhme_class_init(ObjectClass *klass, void *data)
     dc->reset = sunhme_reset;
     device_class_set_props(dc, sunhme_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(SunHMEState,
+                                                     conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo sunhme_info = {
@@ -967,7 +962,6 @@ static const TypeInfo sunhme_info = {
     .parent        = TYPE_PCI_DEVICE,
     .class_init    = sunhme_class_init,
     .instance_size = sizeof(SunHMEState),
-    .instance_init = sunhme_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { }

@@ -338,10 +338,6 @@ static void spapr_vlan_instance_init(Object *obj)
     SpaprVioVlan *dev = VIO_SPAPR_VLAN_DEVICE(obj);
     int i;
 
-    device_add_bootindex_property(obj, &dev->nicconf.bootindex,
-                                  "bootindex", "",
-                                  DEVICE(dev), NULL);
-
     if (dev->compat_flags & SPAPRVLAN_FLAG_RX_BUF_POOLS) {
         for (i = 0; i < RX_MAX_POOLS; i++) {
             dev->rx_pool[i] = g_new(RxBufPool, 1);
@@ -859,6 +855,10 @@ static void spapr_vlan_class_init(ObjectClass *klass, void *data)
     device_class_set_props(dc, spapr_vlan_properties);
     k->rtce_window_size = 0x10000000;
     dc->vmsd = &vmstate_spapr_llan;
+
+    device_class_add_bootindex_property(dc, offsetof(SpaprVioVlan,
+                                                     nicconf.bootindex),
+                                        "bootindex", "");
 }
 
 static const TypeInfo spapr_vlan_info = {

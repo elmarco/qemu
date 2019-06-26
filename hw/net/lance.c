@@ -127,16 +127,6 @@ static void lance_reset(DeviceState *dev)
     pcnet_h_reset(&d->state);
 }
 
-static void lance_instance_init(Object *obj)
-{
-    SysBusPCNetState *d = SYSBUS_PCNET(obj);
-    PCNetState *s = &d->state;
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static Property lance_properties[] = {
     DEFINE_PROP_LINK("dma", SysBusPCNetState, state.dma_opaque,
                      TYPE_DEVICE, DeviceState *),
@@ -154,6 +144,10 @@ static void lance_class_init(ObjectClass *klass, void *data)
     dc->reset = lance_reset;
     dc->vmsd = &vmstate_lance;
     device_class_set_props(dc, lance_properties);
+
+    device_class_add_bootindex_property(dc, offsetof(SysBusPCNetState,
+                                                     state.conf.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo lance_info = {
@@ -161,7 +155,6 @@ static const TypeInfo lance_info = {
     .parent        = TYPE_SYS_BUS_DEVICE,
     .instance_size = sizeof(SysBusPCNetState),
     .class_init    = lance_class_init,
-    .instance_init = lance_instance_init,
 };
 
 static void lance_register_types(void)

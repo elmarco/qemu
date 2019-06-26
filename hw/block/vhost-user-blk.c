@@ -480,14 +480,6 @@ static void vhost_user_blk_device_unrealize(DeviceState *dev, Error **errp)
     vhost_user_cleanup(&s->vhost_user);
 }
 
-static void vhost_user_blk_instance_init(Object *obj)
-{
-    VHostUserBlk *s = VHOST_USER_BLK(obj);
-
-    device_add_bootindex_property(obj, &s->bootindex, "bootindex",
-                                  "/disk@0,0", DEVICE(obj), NULL);
-}
-
 static const VMStateDescription vmstate_vhost_user_blk = {
     .name = "vhost-user-blk",
     .minimum_version_id = 1,
@@ -521,13 +513,15 @@ static void vhost_user_blk_class_init(ObjectClass *klass, void *data)
     vdc->get_features = vhost_user_blk_get_features;
     vdc->set_status = vhost_user_blk_set_status;
     vdc->reset = vhost_user_blk_reset;
+
+    device_class_add_bootindex_property(dc, offsetof(VHostUserBlk, bootindex),
+                                        "bootindex", "/disk@0,0");
 }
 
 static const TypeInfo vhost_user_blk_info = {
     .name = TYPE_VHOST_USER_BLK,
     .parent = TYPE_VIRTIO_DEVICE,
     .instance_size = sizeof(VHostUserBlk),
-    .instance_init = vhost_user_blk_instance_init,
     .class_init = vhost_user_blk_class_init,
 };
 

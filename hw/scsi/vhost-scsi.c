@@ -302,6 +302,10 @@ static void vhost_scsi_class_init(ObjectClass *klass, void *data)
     vdc->set_config = vhost_scsi_common_set_config;
     vdc->set_status = vhost_scsi_set_status;
     fwc->get_dev_path = vhost_scsi_common_get_fw_dev_path;
+
+    device_class_add_bootindex_property(dc, offsetof(VHostSCSI,
+                                                     parent_obj.bootindex),
+                                        "bootindex", NULL);
 }
 
 static void vhost_scsi_instance_init(Object *obj)
@@ -309,9 +313,6 @@ static void vhost_scsi_instance_init(Object *obj)
     VHostSCSICommon *vsc = VHOST_SCSI_COMMON(obj);
 
     vsc->feature_bits = kernel_feature_bits;
-
-    device_add_bootindex_property(obj, &vsc->bootindex, "bootindex", NULL,
-                                  DEVICE(vsc), NULL);
 }
 
 static const TypeInfo vhost_scsi_info = {

@@ -1239,15 +1239,6 @@ static void virtio_blk_device_unrealize(DeviceState *dev, Error **errp)
     virtio_cleanup(vdev);
 }
 
-static void virtio_blk_instance_init(Object *obj)
-{
-    VirtIOBlock *s = VIRTIO_BLK(obj);
-
-    device_add_bootindex_property(obj, &s->conf.conf.bootindex,
-                                  "bootindex", "/disk@0,0",
-                                  DEVICE(obj), NULL);
-}
-
 static const VMStateDescription vmstate_virtio_blk = {
     .name = "virtio-blk",
     .minimum_version_id = 2,
@@ -1308,13 +1299,16 @@ static void virtio_blk_class_init(ObjectClass *klass, void *data)
     vdc->load = virtio_blk_load_device;
     vdc->start_ioeventfd = virtio_blk_data_plane_start;
     vdc->stop_ioeventfd = virtio_blk_data_plane_stop;
+
+    device_class_add_bootindex_property(dc, offsetof(VirtIOBlock,
+                                                     conf.conf.bootindex),
+                                        "bootindex", "/disk@0,0");
 }
 
 static const TypeInfo virtio_blk_info = {
     .name = TYPE_VIRTIO_BLK,
     .parent = TYPE_VIRTIO_DEVICE,
     .instance_size = sizeof(VirtIOBlock),
-    .instance_init = virtio_blk_instance_init,
     .class_init = virtio_blk_class_init,
 };
 

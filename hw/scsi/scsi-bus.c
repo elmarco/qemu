@@ -1729,16 +1729,9 @@ static void scsi_device_class_init(ObjectClass *klass, void *data)
     k->realize   = scsi_qdev_realize;
     k->unrealize = scsi_qdev_unrealize;
     device_class_set_props(k, scsi_props);
-}
 
-static void scsi_dev_instance_init(Object *obj)
-{
-    DeviceState *dev = DEVICE(obj);
-    SCSIDevice *s = SCSI_DEVICE(dev);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", NULL,
-                                  &s->qdev, NULL);
+    device_class_add_bootindex_property(k, offsetof(SCSIDevice, conf.bootindex),
+                                        "bootindex", NULL);
 }
 
 static const TypeInfo scsi_device_type_info = {
@@ -1748,7 +1741,6 @@ static const TypeInfo scsi_device_type_info = {
     .abstract = true,
     .class_size = sizeof(SCSIDeviceClass),
     .class_init = scsi_device_class_init,
-    .instance_init = scsi_dev_instance_init,
 };
 
 static void scsi_register_types(void)

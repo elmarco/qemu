@@ -1094,16 +1094,6 @@ static void usb_host_realize(USBDevice *udev, Error **errp)
     qemu_add_exit_notifier(&s->exit);
 }
 
-static void usb_host_instance_init(Object *obj)
-{
-    USBDevice *udev = USB_DEVICE(obj);
-    USBHostDevice *s = USB_HOST_DEVICE(udev);
-
-    device_add_bootindex_property(obj, &s->bootindex,
-                                  "bootindex", NULL,
-                                  &udev->qdev, NULL);
-}
-
 static void usb_host_unrealize(USBDevice *udev, Error **errp)
 {
     USBHostDevice *s = USB_HOST_DEVICE(udev);
@@ -1638,6 +1628,10 @@ static void usb_host_class_initfn(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_usb_host;
     device_class_set_props(dc, usb_host_dev_properties);
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(USBHostDevice,
+                                                     bootindex),
+                                        "bootindex", NULL);
 }
 
 static TypeInfo usb_host_dev_info = {
@@ -1645,7 +1639,6 @@ static TypeInfo usb_host_dev_info = {
     .parent        = TYPE_USB_DEVICE,
     .instance_size = sizeof(USBHostDevice),
     .class_init    = usb_host_class_initfn,
-    .instance_init = usb_host_instance_init,
 };
 
 static void usb_host_register_types(void)

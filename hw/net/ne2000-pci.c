@@ -84,17 +84,6 @@ static void pci_ne2000_exit(PCIDevice *pci_dev)
     qemu_free_irq(s->irq);
 }
 
-static void ne2000_instance_init(Object *obj)
-{
-    PCIDevice *pci_dev = PCI_DEVICE(obj);
-    PCINE2000State *d = DO_UPCAST(PCINE2000State, dev, pci_dev);
-    NE2000State *s = &d->ne2000;
-
-    device_add_bootindex_property(obj, &s->c.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  &pci_dev->qdev, NULL);
-}
-
 static Property ne2000_properties[] = {
     DEFINE_NIC_PROPERTIES(PCINE2000State, ne2000.c),
     DEFINE_PROP_END_OF_LIST(),
@@ -114,6 +103,10 @@ static void ne2000_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_pci_ne2000;
     device_class_set_props(dc, ne2000_properties);
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
+
+    device_class_add_bootindex_property(dc, offsetof(PCINE2000State,
+                                                     ne2000.c.bootindex),
+                                        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo ne2000_info = {
@@ -121,7 +114,6 @@ static const TypeInfo ne2000_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(PCINE2000State),
     .class_init    = ne2000_class_init,
-    .instance_init = ne2000_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { },

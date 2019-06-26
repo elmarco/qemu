@@ -144,16 +144,6 @@ static void lasi_82596_reset(DeviceState *dev)
     i82596_h_reset(&d->state);
 }
 
-static void lasi_82596_instance_init(Object *obj)
-{
-    SysBusI82596State *d = SYSBUS_I82596(obj);
-    I82596State *s = &d->state;
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/ethernet-phy@0",
-                                  DEVICE(obj), NULL);
-}
-
 static Property lasi_82596_properties[] = {
     DEFINE_NIC_PROPERTIES(SysBusI82596State, state.conf),
     DEFINE_PROP_END_OF_LIST(),
@@ -170,6 +160,10 @@ static void lasi_82596_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_lasi_82596;
     dc->user_creatable = false;
     device_class_set_props(dc, lasi_82596_properties);
+
+    device_class_add_bootindex_property(dc,
+        offsetof(SysBusI82596State, state.conf.bootindex),
+        "bootindex", "/ethernet-phy@0");
 }
 
 static const TypeInfo lasi_82596_info = {
@@ -177,7 +171,6 @@ static const TypeInfo lasi_82596_info = {
     .parent        = TYPE_SYS_BUS_DEVICE,
     .instance_size = sizeof(SysBusI82596State),
     .class_init    = lasi_82596_class_init,
-    .instance_init = lasi_82596_instance_init,
 };
 
 static void lasi_82596_register_types(void)

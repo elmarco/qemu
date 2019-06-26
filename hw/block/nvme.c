@@ -1477,15 +1477,9 @@ static void nvme_class_init(ObjectClass *oc, void *data)
     dc->desc = "Non-Volatile Memory Express";
     device_class_set_props(dc, nvme_props);
     dc->vmsd = &nvme_vmstate;
-}
 
-static void nvme_instance_init(Object *obj)
-{
-    NvmeCtrl *s = NVME(obj);
-
-    device_add_bootindex_property(obj, &s->conf.bootindex,
-                                  "bootindex", "/namespace@1,0",
-                                  DEVICE(obj), &error_abort);
+    device_class_add_bootindex_property(dc, offsetof(NvmeCtrl, conf.bootindex),
+                                        "bootindex", "/namespace@1,0");
 }
 
 static const TypeInfo nvme_info = {
@@ -1493,7 +1487,6 @@ static const TypeInfo nvme_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(NvmeCtrl),
     .class_init    = nvme_class_init,
-    .instance_init = nvme_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { }
