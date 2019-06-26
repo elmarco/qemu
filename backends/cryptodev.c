@@ -208,12 +208,6 @@ cryptodev_backend_can_be_deleted(UserCreatable *uc)
     return !cryptodev_backend_is_used(CRYPTODEV_BACKEND(uc));
 }
 
-static void cryptodev_backend_instance_init(Object *obj)
-{
-    /* Initialize devices' queues property to 1 */
-    object_property_set_uint(obj, 1, "queues", NULL);
-}
-
 static void cryptodev_backend_finalize(Object *obj)
 {
     CryptoDevBackend *backend = CRYPTODEV_BACKEND(obj);
@@ -225,23 +219,24 @@ static void
 cryptodev_backend_class_init(ObjectClass *oc, void *data)
 {
     UserCreatableClass *ucc = USER_CREATABLE_CLASS(oc);
+    ObjectProperty *prop;
 
     ucc->complete = cryptodev_backend_complete;
     ucc->can_be_deleted = cryptodev_backend_can_be_deleted;
 
     QTAILQ_INIT(&crypto_clients);
 
-    object_class_property_add(oc, "queues", "uint32",
-                              cryptodev_backend_get_queues,
-                              cryptodev_backend_set_queues,
-                              NULL, NULL);
+    prop = object_class_property_add(oc, "queues", "uint32",
+                                     cryptodev_backend_get_queues,
+                                     cryptodev_backend_set_queues,
+                                     NULL, NULL);
+    object_property_set_default_uint(prop, 1);
 }
 
 static const TypeInfo cryptodev_backend_info = {
     .name = TYPE_CRYPTODEV_BACKEND,
     .parent = TYPE_OBJECT,
     .instance_size = sizeof(CryptoDevBackend),
-    .instance_init = cryptodev_backend_instance_init,
     .instance_finalize = cryptodev_backend_finalize,
     .class_size = sizeof(CryptoDevBackendClass),
     .class_init = cryptodev_backend_class_init,
