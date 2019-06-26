@@ -98,6 +98,9 @@ void del_boot_device_path(DeviceState *dev, const char *suffix);
 void device_add_bootindex_property(Object *obj, int32_t *bootindex,
                                    const char *name, const char *suffix,
                                    DeviceState *dev, Error **errp);
+void device_class_add_bootindex_property(DeviceClass *dc,
+                                         ptrdiff_t bootindex_off,
+                                         const char *name, const char *suffix);
 void restore_boot_order(void *opaque);
 void validate_bootdevices(const char *devices, Error **errp);
 void add_boot_device_lchs(DeviceState *dev, const char *suffix,

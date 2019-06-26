@@ -436,3 +436,71 @@ char *get_boot_devices_lchs_list(size_t *size)
 
     return list;
 }
+
+typedef struct {
+    ptrdiff_t bootindex_off;
+    const char *suffix;
+} BootIndexOffProperty;
+
+static void device_get_bootindex_off(Object *obj, Visitor *v, const char *name,
+                                     void *opaque, Error **errp)
+{
+    BootIndexOffProperty *prop = opaque;
+    int32_t *boot_indexp = (int32_t *)((void *)obj + prop->bootindex_off);
+
+    visit_type_int32(v, name, boot_indexp, errp);
+}
+
+static void device_set_bootindex_off(Object *obj, Visitor *v, const char *name,
+                                     void *opaque, Error **errp)
+{
+    BootIndexOffProperty *prop = opaque;
+    int32_t boot_index;
+    int32_t *boot_indexp = (int32_t *)((void *)obj + prop->bootindex_off);
+    Error *local_err = NULL;
+
+    visit_type_int32(v, name, &boot_index, &local_err);
+    if (local_err) {
+        goto out;
+    }
+    /* check whether bootindex is present in fw_boot_order list  */
+    check_boot_index(boot_index, &local_err);
+    if (local_err) {
+        goto out;
+    }
+    /* change bootindex to a new one */
+    *boot_indexp = boot_index;
+
+    add_boot_device_path(boot_index, DEVICE(obj), prop->suffix);
+
+out:
+    error_propagate(errp, local_err);
+}
+
+static void property_release_bootindex_off(Object *obj, const char *name,
+                                           void *opaque)
+
+{
+    BootIndexOffProperty *prop = opaque;
+
+    del_boot_device_path(DEVICE(obj), prop->suffix);
+}
+
+void device_class_add_bootindex_property(DeviceClass *dc,
+                                         ptrdiff_t bootindex_off,
+                                         const char *name, const char *suffix)
+{
+    ObjectClass *oc = OBJECT_CLASS(dc);
+    BootIndexOffProperty *prop = g_new0(BootIndexOffProperty, 1);
+    ObjectProperty *op;
+
+    prop->bootindex_off = bootindex_off;
+    prop->suffix = suffix;
+
+    op = object_class_property_add(oc, name, "int32",
+                                   device_get_bootindex_off,
+                                   device_set_bootindex_off,
+                                   property_release_bootindex_off,
+                                   prop);
+    object_property_set_default_int(op, -1);
+}
