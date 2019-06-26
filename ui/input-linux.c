@@ -470,28 +470,25 @@ static void input_linux_set_grab_toggle(Object *obj, int value,
     il->grab_toggle = value;
 }
 
-static void input_linux_instance_init(Object *obj)
-{
-    object_property_add_str(obj, "evdev",
-                            input_linux_get_evdev,
-                            input_linux_set_evdev, NULL);
-    object_property_add_bool(obj, "grab_all",
-                             input_linux_get_grab_all,
-                             input_linux_set_grab_all, NULL);
-    object_property_add_bool(obj, "repeat",
-                             input_linux_get_repeat,
-                             input_linux_set_repeat, NULL);
-    object_property_add_enum(obj, "grab-toggle", "GrabToggleKeys",
-                             &GrabToggleKeys_lookup,
-                             input_linux_get_grab_toggle,
-                             input_linux_set_grab_toggle, NULL);
-}
-
 static void input_linux_class_init(ObjectClass *oc, void *data)
 {
     UserCreatableClass *ucc = USER_CREATABLE_CLASS(oc);
 
     ucc->complete = input_linux_complete;
+
+    object_class_property_add_str(oc, "evdev",
+                                  input_linux_get_evdev,
+                                  input_linux_set_evdev);
+    object_class_property_add_bool(oc, "grab_all",
+                                   input_linux_get_grab_all,
+                                   input_linux_set_grab_all);
+    object_class_property_add_bool(oc, "repeat",
+                                   input_linux_get_repeat,
+                                   input_linux_set_repeat);
+    object_class_property_add_enum(oc, "grab-toggle", "GrabToggleKeys",
+                                   &GrabToggleKeys_lookup,
+                                   input_linux_get_grab_toggle,
+                                   input_linux_set_grab_toggle);
 }
 
 static const TypeInfo input_linux_info = {
@@ -500,7 +497,6 @@ static const TypeInfo input_linux_info = {
     .class_size = sizeof(InputLinuxClass),
     .class_init = input_linux_class_init,
     .instance_size = sizeof(InputLinux),
-    .instance_init = input_linux_instance_init,
     .instance_finalize = input_linux_instance_finalize,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_USER_CREATABLE },
