@@ -96,7 +96,6 @@ typedef struct IOAPICCommonClass {
     SysBusDeviceClass parent_class;
 
     DeviceRealize realize;
-    DeviceUnrealize unrealize;
     void (*pre_save)(IOAPICCommonState *s);
     void (*post_load)(IOAPICCommonState *s);
 } IOAPICCommonClass;
@@ -112,8 +111,6 @@ struct IOAPICCommonState {
     uint8_t version;
     uint64_t irq_count[IOAPIC_NUM_PINS];
     int irq_level[IOAPIC_NUM_PINS];
-    int irq_eoi[IOAPIC_NUM_PINS];
-    QEMUTimer *delayed_ioapic_service_timer;
 };
 
 void ioapic_reset_common(DeviceState *dev);
