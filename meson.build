@@ -195,6 +195,7 @@ if have_tools
   if 'CONFIG_VHOST_USER' in config_host and 'CONFIG_LINUX' in config_host
     subdir('contrib/libvhost-user')
     subdir('contrib/vhost-user-blk')
+    subdir('contrib/vhost-user-input')
     subdir('contrib/vhost-user-scsi')
   endif
 endif
