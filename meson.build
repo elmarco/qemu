@@ -52,6 +52,11 @@ if 'CONFIG_GNUTLS' in config_host
 endif
 pixman = declare_dependency(compile_args: config_host['PIXMAN_CFLAGS'].split(),
                             link_args: config_host['PIXMAN_LIBS'].split())
+libattr = declare_dependency()
+if config_host.has_key('CONFIG_ATTR')
+  libattr = declare_dependency(link_args: config_host['LIBATTR_LIBS'].split())
+endif
+libcap = dependency('libcap', required: false)
 libcap_ng = declare_dependency()
 if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
@@ -215,6 +220,8 @@ libqemuutil = static_library('qemuutil',
                              dependencies: [util_ss.dependencies(), m, glib, socket])
 qemuutil = declare_dependency(link_with: libqemuutil,
                               sources: version_res)
+
+subdir('fsdev')
 
 # Other build targets
 if 'CONFIG_GUEST_AGENT' in config_host
