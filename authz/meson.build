@@ -1,0 +1,16 @@
+authz_ss = ss.source_set()
+authz_ss.add(files(
+  'base.c',
+  'list.c',
+  'listfile.c',
+  'simple.c',
+))
+
+authz_ss.add(when: pam, if_true: files('pamacct.c'))
+
+authz_ss = authz_ss.apply(config_host, strict: false)
+libauthz = static_library('authz', authz_ss.sources(),
+                          dependencies: [qom, authz_ss.dependencies()],
+                          name_suffix: 'fa')
+
+authz = declare_dependency(link_whole: libauthz)
