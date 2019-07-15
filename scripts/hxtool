@@ -64,6 +64,6 @@ case "$1" in
 "-h") hxtoh ;;
 "-t") hxtotexi ;;
 *) exit 1 ;;
-esac
+esac < "$2"
 
 exit 0
