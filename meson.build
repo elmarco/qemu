@@ -7,10 +7,12 @@ config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
 
 add_project_arguments(config_host['QEMU_CFLAGS'].split(),
                       language: 'c')
+add_project_arguments(config_host['QEMU_CXXFLAGS'].split(),
+                      language: 'cpp')
 add_project_link_arguments(config_host['QEMU_CFLAGS'].split(),
                       language: 'c')
 add_project_arguments(config_host['QEMU_INCLUDES'].split(),
-                      language: 'c')
+                      language: ['c', 'cpp'])
 
 configure_file(input: files('scripts/ninjatool.py'),
                output: 'ninjatool',

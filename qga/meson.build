@@ -41,3 +41,7 @@ qga_ss = qga_ss.apply(config_host, strict: false)
 executable('qemu-ga', qga_ss.sources(),
            link_args: config_host['LIBS_QGA'].split(),
            dependencies: [qemuutil, libudev])
+
+if host_machine.system() == 'windows'
+  subdir('vss-win32')
+endif
