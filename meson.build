@@ -56,6 +56,7 @@ libcap_ng = declare_dependency()
 if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
 endif
+xkbcommon = dependency('xkbcommon', required: false)
 rt = cc.find_library('rt', required: false)
 libiscsi = declare_dependency()
 if 'CONFIG_LIBISCSI' in config_host
@@ -223,6 +224,11 @@ endif
 if have_tools
   subdir('contrib/rdmacm-mux')
   subdir('contrib/elf2dmp')
+
+  if xkbcommon.found()
+    executable('qemu-keymap', files('qemu-keymap.c', 'ui/input-keymap.c'),
+               dependencies: [qemuutil, xkbcommon])
+  endif
 
   if 'CONFIG_VHOST_USER' in config_host and 'CONFIG_LINUX' in config_host
     subdir('contrib/libvhost-user')
