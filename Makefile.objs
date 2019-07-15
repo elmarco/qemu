@@ -3,11 +3,6 @@
 chardev-obj-y = chardev/
 
 #######################################################################
-# authz-obj-y is code used by both qemu system emulation and qemu-img
-
-authz-obj-y = authz/
-
-#######################################################################
 # block-obj-y is code used by both qemu system emulation and qemu-img
 
 block-obj-y = nbd/
@@ -25,6 +20,9 @@ crypto-obj-y = crypto/
 
 #######################################################################
 # libraries built entirely from meson
+
+authz-obj-y = authz/libauthz.fa
+authz/libauthz.fa-libs = $(if $(CONFIG_AUTH_PAM),-lpam)
 
 qom-obj-y = qom/libqom.fa
 

@@ -180,9 +180,9 @@ all-obj-y := $(obj-y)
 
 include $(SRC_PATH)/Makefile.objs
 dumy := $(call fix-paths,../,, \
+              authz-obj-y \
               qom-obj-y)
 dummy := $(call unnest-vars,.., \
-               authz-obj-y \
                block-obj-y \
                block-obj-m \
                chardev-obj-y \
