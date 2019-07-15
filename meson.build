@@ -52,6 +52,10 @@ if 'CONFIG_GNUTLS' in config_host
 endif
 pixman = declare_dependency(compile_args: config_host['PIXMAN_CFLAGS'].split(),
                             link_args: config_host['PIXMAN_LIBS'].split())
+libcap_ng = declare_dependency()
+if config_host.has_key('CONFIG_LIBCAP')
+  libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
+endif
 rt = cc.find_library('rt', required: false)
 libiscsi = declare_dependency()
 if 'CONFIG_LIBISCSI' in config_host
@@ -212,6 +216,10 @@ qemuutil = declare_dependency(link_with: libqemuutil,
                               sources: version_res)
 
 # Other build targets
+if host_machine.system() == 'linux'
+  executable('qemu-bridge-helper', files('qemu-bridge-helper.c'),
+             dependencies: [qemuutil, libcap_ng])
+endif
 
 if 'CONFIG_GUEST_AGENT' in config_host
   subdir('qga')
