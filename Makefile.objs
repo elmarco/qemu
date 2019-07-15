@@ -1,8 +1,4 @@
 #######################################################################
-# chardev-obj-y is code used by both qemu system emulation and some tests
-chardev-obj-y = chardev/
-
-#######################################################################
 # block-obj-y is code used by both qemu system emulation and qemu-img
 
 block-obj-y = nbd/
@@ -18,6 +14,8 @@ block-obj-m = block/
 
 authz-obj-y = authz/libauthz.fa
 authz/libauthz.fa-libs = $(if $(CONFIG_AUTH_PAM),-lpam)
+
+chardev-obj-y = chardev/libchardev.fa
 
 crypto-obj-y = crypto/libcrypto.fa
 

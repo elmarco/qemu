@@ -401,6 +401,7 @@ qemuutil = declare_dependency(link_with: libqemuutil,
 subdir('qom')
 subdir('authz')
 subdir('io')
+subdir('chardev')
 subdir('fsdev')
 
 mods = []
