@@ -305,3 +305,5 @@ if have_tools
     subdir('contrib/ivshmem-server')
   endif
 endif
+
+subdir('pc-bios')
