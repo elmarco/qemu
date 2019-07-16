@@ -14,15 +14,12 @@ block-obj-$(CONFIG_REPLICATION) += replication.o
 block-obj-m = block/
 
 #######################################################################
-# crypto-obj-y is code used by both qemu system emulation and qemu-img
-
-crypto-obj-y = crypto/
-
-#######################################################################
 # libraries built entirely from meson
 
 authz-obj-y = authz/libauthz.fa
 authz/libauthz.fa-libs = $(if $(CONFIG_AUTH_PAM),-lpam)
+
+crypto-obj-y = crypto/libcrypto.fa
 
 qom-obj-y = qom/libqom.fa
 
