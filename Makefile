@@ -135,9 +135,7 @@ ifneq ($(wildcard config-host.mak),)
 include $(SRC_PATH)/Makefile.objs
 endif
 
-dummy := $(call unnest-vars,, \
-                common-obj-y \
-                common-obj-m)
+dummy := $(call unnest-vars,, common-obj-y)
 
 include $(SRC_PATH)/tests/Makefile.include
 
