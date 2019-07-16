@@ -200,7 +200,6 @@ dummy := $(call unnest-vars,, \
                 chardev-obj-y \
                 block-obj-y \
                 block-obj-m \
-                io-obj-y \
                 common-obj-y \
                 common-obj-m)
 

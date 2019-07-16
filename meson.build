@@ -274,6 +274,7 @@ qemuutil = declare_dependency(link_with: libqemuutil,
 
 subdir('qom')
 subdir('authz')
+subdir('io')
 subdir('fsdev')
 
 # Other build targets
