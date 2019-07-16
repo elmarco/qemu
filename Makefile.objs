@@ -24,9 +24,9 @@ block-obj-m = block/
 crypto-obj-y = crypto/
 
 #######################################################################
-# qom-obj-y is code used by both qemu system emulation and qemu-img
+# libraries built entirely from meson
 
-qom-obj-y = qom/
+qom-obj-y = qom/libqom.fa
 
 #######################################################################
 # io-obj-y is code used by both qemu system emulation and qemu-img
