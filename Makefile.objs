@@ -21,12 +21,9 @@ authz/libauthz.fa-libs = $(if $(CONFIG_AUTH_PAM),-lpam)
 
 crypto-obj-y = crypto/libcrypto.fa
 
+io-obj-y = io/libio.fa
+
 qom-obj-y = qom/libqom.fa
-
-#######################################################################
-# io-obj-y is code used by both qemu system emulation and qemu-img
-
-io-obj-y = io/
 
 ######################################################################
 # Target independent part of system emulation. The long term path is to
