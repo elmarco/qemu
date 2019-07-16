@@ -287,7 +287,7 @@ if have_system
   ]
 endif
 foreach d : hx_headers
-  custom_target(d[1],
+  hxdep += custom_target(d[1],
                 input: files(d[0]),
                 output: d[1],
                 capture: true,
@@ -561,6 +561,12 @@ if 'CONFIG_GUEST_AGENT' in config_host
 endif
 
 if have_tools
+  executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil])
+  if host_machine.system() == 'linux' or host_machine.system() == 'sunos' or host_machine.system().endswith('bsd')
+    executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil])
+  endif
+  executable('qemu-io', files('qemu-io.c'), dependencies: [block, qemuutil])
+
   subdir('contrib/rdmacm-mux')
   subdir('contrib/elf2dmp')
 
