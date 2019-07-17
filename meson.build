@@ -19,8 +19,14 @@ configure_file(input: files('scripts/ninjatool.py'),
 m = cc.find_library('m', required: false)
 util = cc.find_library('util', required: false)
 socket = []
+version_res = []
 if host_machine.system() == 'windows'
   socket = cc.find_library('ws2_32')
+
+  win = import('windows')
+  version_res = win.compile_resources('version.rc',
+                                      depend_files: files('pc-bios/qemu-nsis.ico'),
+                                      include_directories: include_directories('.'))
 endif
 glib = declare_dependency(compile_args: config_host['GLIB_CFLAGS'].split(),
                           link_args: config_host['GLIB_LIBS'].split())
@@ -173,4 +179,5 @@ util_ss = util_ss.apply(config_host, strict: false)
 libqemuutil = static_library('qemuutil',
                              sources: util_ss.sources() + stub_ss.sources(),
                              dependencies: [util_ss.dependencies(), m, glib, socket])
-libqemuutil = declare_dependency(link_with: libqemuutil)
+qemuutil = declare_dependency(link_with: libqemuutil,
+                              sources: version_res)
