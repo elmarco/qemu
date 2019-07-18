@@ -6088,7 +6088,6 @@ if [ "$eventfd" = "yes" ]; then
   ivshmem=yes
 fi
 
-tools=""
 if test "$softmmu" = yes ; then
   if test "$linux" = yes; then
     if test "$virtfs" != no && test "$cap" = yes && test "$attr" = yes ; then
@@ -7321,7 +7320,6 @@ else
 fi
 QEMU_INCLUDES="-iquote ${source_path}/tcg $QEMU_INCLUDES"
 
-echo "TOOLS=$tools" >> $config_host_mak
 echo "ROMS=$roms" >> $config_host_mak
 echo "MAKE=$make" >> $config_host_mak
 echo "INSTALL=$install" >> $config_host_mak
