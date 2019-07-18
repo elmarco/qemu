@@ -71,6 +71,10 @@ if 'CONFIG_CURL' in config_host
   curl = declare_dependency(compile_args: config_host['CURL_CFLAGS'].split(),
                             link_args: config_host['CURL_LIBS'].split())
 endif
+libudev = declare_dependency()
+if config_host.has_key('CONFIG_LIBUDEV')
+  libudev = declare_dependency(link_args: config_host['LIBUDEV_LIBS'].split())
+endif
 
 target_dirs = config_host['TARGET_DIRS'].split()
 have_user = false
@@ -206,6 +210,10 @@ qemuutil = declare_dependency(link_with: libqemuutil,
                               sources: version_res)
 
 # Other build targets
+
+if config_host.has_key('CONFIG_GUEST_AGENT')
+  subdir('qga')
+endif
 
 if have_tools
   subdir('contrib/rdmacm-mux')
