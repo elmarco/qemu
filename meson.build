@@ -106,6 +106,15 @@ if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
 endif
 xkbcommon = dependency('xkbcommon', required: false)
+slirp = declare_dependency()
+if config_host.has_key('CONFIG_SLIRP')
+  slirp = declare_dependency(compile_args: config_host['SLIRP_CFLAGS'].split(),
+                             link_args: config_host['SLIRP_LIBS'].split())
+endif
+vde = declare_dependency()
+if config_host.has_key('CONFIG_VDE')
+  vde = declare_dependency(link_args: config_host['VDE_LIBS'].split())
+endif
 pulse = declare_dependency()
 if 'CONFIG_LIBPULSE' in config_host
   pulse = declare_dependency(compile_args: config_host['PULSE_CFLAGS'].split(),
@@ -603,6 +612,7 @@ common_ss.add(files('cpus-common.c'))
 
 subdir('migration')
 subdir('monitor')
+subdir('net')
 subdir('replay')
 
 mods = []
