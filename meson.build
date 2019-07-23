@@ -106,15 +106,74 @@ if 'CONFIG_LIBUDEV' in config_host
   libudev = declare_dependency(link_args: config_host['LIBUDEV_LIBS'].split())
 endif
 
+minikconf = find_program('scripts/minikconf.py')
 target_dirs = config_host['TARGET_DIRS'].split()
 have_user = false
 have_system = false
+target_devices_kconfs = []
 foreach target : target_dirs
   have_user = have_user or target.endswith('-user')
-  have_system = have_system or target.endswith('-softmmu')
+  config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
+
+  if target.endswith('-softmmu')
+    have_system = true
+
+    base_kconfig = []
+    if 'CONFIG_KVM' in config_target
+      base_kconfig += 'CONFIG_KVM=y'
+    endif
+    if 'CONFIG_XEN' in config_target
+      base_kconfig += 'CONFIG_XEN=y'
+    endif
+    if 'CONFIG_TPM' in config_host
+      base_kconfig += 'CONFIG_TPM=y'
+    endif
+    if 'CONFIG_SPICE' in config_host
+      base_kconfig += 'CONFIG_SPICE=y'
+    endif
+    if 'CONFIG_IVSHMEM' in config_host
+      base_kconfig += 'CONFIG_IVSHMEM=y'
+    endif
+    if 'CONFIG_OPENGL' in config_host
+      base_kconfig += 'CONFIG_OPENGL=y'
+    endif
+    if 'CONFIG_X11' in config_host
+      base_kconfig += 'CONFIG_X11=y'
+    endif
+    if 'CONFIG_VHOST_USER' in config_host
+      base_kconfig += 'CONFIG_VHOST_USER=y'
+    endif
+    if 'CONFIG_VIRTFS' in config_host
+      base_kconfig += 'CONFIG_VIRTFS=y'
+    endif
+    if 'CONFIG_LINUX' in config_host
+      base_kconfig += 'CONFIG_LINUX=y'
+    endif
+    if 'CONFIG_PVRDMA' in config_host
+      base_kconfig += 'CONFIG_PVRDMA=y'
+    endif
+
+    config_devices_mak = target + '-config-devices.mak'
+    target_devices_kconfs += configure_file(
+      input: ['default-configs' / target + '.mak', 'Kconfig.host', 'hw/Kconfig'],
+      output: config_devices_mak,
+      depfile: config_devices_mak + '.d',
+      capture: true,
+      command: [minikconf, config_host['CONFIG_MINIKCONF_MODE'],
+                config_devices_mak, '@DEPFILE@', '@INPUT@',
+                base_kconfig])
+  endif
 endforeach
 have_tools = 'CONFIG_TOOLS' in config_host
 have_block = have_system or have_tools
+
+grepy = find_program('scripts/grepy.sh')
+config_all_devices = configure_file(
+  output: 'config-all-devices.mak',
+  input: target_devices_kconfs,
+  capture: true,
+  command: [grepy, '@INPUT@'],
+)
 
 # Generators
 
