@@ -35,8 +35,6 @@ qom-obj-y = qom/libqom.fa
 # single QEMU executable should support all CPUs and machines.
 
 ifeq ($(CONFIG_SOFTMMU),y)
-common-obj-$(CONFIG_LINUX) = fsdev/
-
 common-obj-$(CONFIG_AUDIO_ALSA) += audio-alsa$(DSOSUF)
 common-obj-$(CONFIG_AUDIO_OSS) += audio-oss$(DSOSUF)
 common-obj-$(CONFIG_AUDIO_PA) += audio-pa$(DSOSUF)
@@ -56,14 +54,12 @@ common-obj-$(if $(CONFIG_RBD),m) += block-rbd$(DSOSUF)
 
 common-obj-$(if $(CONFIG_LZFSE),m) += block-dmg-lzfse$(DSOSUF)
 common-obj-$(if $(and $(CONFIG_BZIP2),$(CONFIG_DMG)),m) += block-dmg-bz2$(DSOSUF)
-
-common-obj-y += hw/
 endif
 
 #######################################################################
 # Target-independent parts used in system and user emulation
 
-common-obj-y += hw/
+common-obj-y = hw/
 common-obj-y += disas/
 
 ######################################################################
