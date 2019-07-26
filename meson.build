@@ -1,4 +1,5 @@
-project('qemu', 'c', meson_version: '>=0.51.999')
+project('qemu', ['c', 'cpp'], meson_version: '>=0.51.999')
+
 cc = meson.get_compiler('c')
 
 kconfig = import('unstable-kconfig')
@@ -615,6 +616,7 @@ softmmu_ss.add(when: ['CONFIG_FDT', fdt],  if_true: [files('device_tree.c')])
 common_ss.add(files('cpus-common.c'))
 
 subdir('backends')
+subdir('disas')
 subdir('migration')
 subdir('monitor')
 subdir('net')
