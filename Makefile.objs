@@ -60,7 +60,6 @@ endif
 # Target-independent parts used in system and user emulation
 
 common-obj-y = hw/
-common-obj-y += disas/
 
 ######################################################################
 # Resource file for Windows executables
