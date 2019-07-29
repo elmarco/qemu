@@ -245,6 +245,15 @@ if 'CONFIG_VNC_SASL' in config_host
   sasl = declare_dependency(compile_args: config_host['SASL_CFLAGS'].split(),
                             link_args: config_host['SASL_LIBS'].split())
 endif
+bluez = declare_dependency()
+if config_host.has_key('CONFIG_BLUEZ')
+  bluez = declare_dependency(compile_args: config_host['BLUEZ_CFLAGS'].split())
+endif
+seccomp = declare_dependency()
+if config_host.has_key('CONFIG_SECCOMP')
+  seccomp = declare_dependency(compile_args: config_host['SECCOMP_CFLAGS'].split(),
+                               link_args: config_host['SECCOMP_LIBS'].split())
+endif
 
 create_config = find_program('scripts/create_config')
 minikconf = find_program('scripts/minikconf.py')
@@ -543,6 +552,28 @@ block_ss.add(when: 'CONFIG_REPLICATION', if_true: files('replication.c'))
 subdir('nbd')
 subdir('scsi')
 subdir('block')
+
+softmmu_ss.add(files(
+  'blockdev-nbd.c',
+  'blockdev.c',
+  'bootdevice.c',
+  'device-hotplug.c',
+  'dma-helpers.c',
+  'iothread.c',
+  'job-qmp.c',
+  'qdev-monitor.c',
+  'vl.c',
+), sdl)
+
+softmmu_ss.add(files('bt-host.c', 'bt-vhci.c'), bluez)
+
+softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('os-win32.c'))
+softmmu_ss.add(when: 'CONFIG_POSIX', if_true: files('os-posix.c'))
+softmmu_ss.add(when: 'CONFIG_TPM', if_true: files('tpm.c'))
+softmmu_ss.add(when: 'CONFIG_SECCOMP', if_true: [files('qemu-seccomp.c'), seccomp])
+softmmu_ss.add(when: 'CONFIG_FDT',  if_true: files('device_tree.c'))
+
+common_ss.add(files('cpus-common.c'))
 
 mods = []
 block_mods = []
