@@ -36,6 +36,7 @@ QEMU_PROG_BUILD = $(QEMU_PROG)
 endif
 endif
 
+LIBQEMU = ../libqemu-$(TARGET_NAME)-$(if $(CONFIG_SOFTMMU),softmmu,linux-user).fa
 PROGS=$(QEMU_PROG) $(QEMU_PROGW)
 STPFILES=
 
@@ -106,6 +107,7 @@ all: $(PROGS) stap
 # Dummy command so that make thinks it has done something
 	@true
 
+obj-y += $(LIBQEMU)
 obj-y += trace/
 
 #########################################################

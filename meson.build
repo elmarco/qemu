@@ -4,6 +4,7 @@ cc = meson.get_compiler('c')
 kconfig = import('unstable-kconfig')
 ss = import('sourceset')
 config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
+config_all_disas = kconfig.load(meson.current_build_dir() / 'config-all-disas.mak')
 
 add_project_arguments(config_host['QEMU_CFLAGS'].split(),
                       language: 'c')
@@ -171,6 +172,25 @@ config_all_devices = configure_file(
   command: [grepy, '@INPUT@'],
 )
 
+# This configuration is used to build files that are shared by
+# multiple binaries, and then extracted out of the "common"
+# static_library target.
+#
+# We do not use all_sources()/all_dependencies(), because it would
+# build literally all source files, including devices only used by
+# targets that are not built for this compilation.  The CONFIG_ALL
+# pseudo symbol replaces it.
+
+config_all = kconfig.load(config_all_devices)
+config_all += config_host
+config_all += config_all_disas
+config_all += {
+  'CONFIG_XEN': config_host.has_key('CONFIG_XEN_BACKEND'),
+  'CONFIG_SOFTMMU': have_system,
+  'CONFIG_USER_ONLY': have_user,
+  'CONFIG_ALL': true,
+}
+
 # Generators
 
 hxtool = find_program('scripts/hxtool')
@@ -223,6 +243,10 @@ endforeach
 util_ss = ss.source_set()
 stub_ss = ss.source_set()
 trace_ss = ss.source_set()
+common_ss = ss.source_set()
+softmmu_ss = ss.source_set()
+user_ss = ss.source_set()
+specific_ss = ss.source_set()
 
 # TODO: add each directory to the subdirs from its own meson.build, once
 # we have those
@@ -335,6 +359,48 @@ subdir('qom')
 subdir('authz')
 subdir('io')
 subdir('fsdev')
+
+common_ss.add_all(when: 'CONFIG_SOFTMMU', if_true: softmmu_ss)
+common_ss.add_all(when: 'CONFIG_USER_ONLY', if_true: user_ss)
+
+common_all = common_ss.apply(config_all, strict: false)
+common_all = static_library('common',
+                            sources: common_all.sources(),
+                            dependencies: common_all.dependencies(),
+                            name_suffix: 'fa')
+
+i = 0
+foreach target : target_dirs
+  config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
+  config_target += config_host
+
+  target_inc = [include_directories('target' / config_target['TARGET_BASE_ARCH'])]
+  if host_machine.system() == 'linux'
+    target_inc += include_directories('linux-headers')
+  endif
+  if target.endswith('-softmmu')
+    config_target += kconfig.load(target_devices_kconfs[i])
+    i += 1
+  else
+    target_inc += include_directories(
+      'linux-user',
+      'linux-user' / config_target['TARGET_ABI_DIR'],
+      'linux-user' / 'host' / config_target['ARCH'],
+    )
+  endif
+  target_common = common_ss.apply(config_target, strict: false)
+  objects = common_all.extract_objects(target_common.sources())
+  deps = target_common.dependencies()
+
+  target_specific = specific_ss.apply(config_target, strict: false)
+  static_library('qemu-' + target,
+                 sources: target_specific.sources(),
+                 dependencies: target_specific.dependencies() + deps,
+                 objects: objects,
+                 include_directories: target_inc,
+                 c_args: '-DNEED_CPU_H',
+                 name_suffix: 'fa')
+endforeach
 
 # Other build targets
 if 'CONFIG_GUEST_AGENT' in config_host
