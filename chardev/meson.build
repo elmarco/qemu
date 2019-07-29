@@ -31,4 +31,9 @@ libchardev = static_library('chardev', chardev_ss.sources(),
                             name_suffix: 'fa',
                             build_by_default: false)
 
-chardev = declare_dependency(link_with: libchardev)
+chardev = declare_dependency(link_whole: libchardev)
+
+softmmu_ss.add(files('msmouse.c', 'wctablet.c', 'testdev.c'))
+softmmu_ss.add(when: ['CONFIG_SDL', 'CONFIG_BRLAPI', sdl, brlapi], if_true: files('baum.c'))
+softmmu_ss.add(when: ['CONFIG_SPICE', spice], if_true: files('spice.c'))
+softmmu_ss.add(chardev)
