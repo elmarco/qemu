@@ -86,7 +86,7 @@
 #include "hw/mem/memory-device.h"
 #include "sysemu/replay.h"
 #include "qapi/qmp/qerror.h"
-#include "config-devices.h"
+#include CONFIG_DEVICES
 
 /* debug PC/ISA interrupts */
 //#define DEBUG_IRQ
