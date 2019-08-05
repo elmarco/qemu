@@ -193,6 +193,7 @@ config_all += {
 
 # Generators
 
+create_config = find_program('scripts/create_config')
 hxtool = find_program('scripts/hxtool')
 shaderinclude = find_program('scripts/shaderinclude.pl')
 qapi_gen = find_program('scripts/qapi-gen.py')
@@ -203,6 +204,12 @@ qapi_gen_depends = [ meson.source_root() / 'scripts/qapi/events.py',
                      meson.source_root() / 'scripts/qapi/common.py',
                      meson.source_root() / 'scripts/qapi/doc.py',
                      meson.source_root() / 'scripts/qapi-gen.py' ]
+
+config_host_h = custom_target('config-host.h',
+                              input: meson.current_build_dir() / 'config-host.mak',
+                              output: 'config-host.h',
+                              capture: true,
+                              command: [create_config, '@INPUT@'])
 
 hxdep = []
 hx_headers = [
@@ -334,7 +341,7 @@ trace_events_subdirs += [
   'util',
 ]
 
-genh = []
+genh = [config_host_h]
 subdir('qapi')
 subdir('qobject')
 subdir('stubs')
@@ -392,13 +399,21 @@ foreach target : target_dirs
   objects = common_all.extract_objects(target_common.sources())
   deps = target_common.dependencies()
 
+  # TODO: Change to generator once obj-y goes away
+  config_target_h = custom_target(target + '-config-target.h',
+                              input: meson.current_build_dir() / target / 'config-target.mak',
+                              output: target + '-config-target.h',
+                              capture: true,
+                              command: [create_config, '@INPUT@'])
+
   target_specific = specific_ss.apply(config_target, strict: false)
   static_library('qemu-' + target,
-                 sources: target_specific.sources(),
+                 sources: target_specific.sources() + [config_target_h],
                  dependencies: target_specific.dependencies() + deps,
                  objects: objects,
                  include_directories: target_inc,
-                 c_args: '-DNEED_CPU_H',
+                 c_args: ['-DNEED_CPU_H',
+                          '-DCONFIG_TARGET="@0@-config-target.h"'.format(target)],
                  name_suffix: 'fa')
 endforeach
 
