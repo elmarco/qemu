@@ -104,6 +104,16 @@ if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
 endif
 xkbcommon = dependency('xkbcommon', required: false)
+pulse = declare_dependency()
+if config_host.has_key('CONFIG_LIBPULSE')
+  pulse = declare_dependency(compile_args: config_host['PULSE_CFLAGS'].split(),
+                             link_args: config_host['PULSE_LIBS'].split())
+endif
+alsa = declare_dependency()
+if config_host.has_key('CONFIG_ALSA')
+  alsa = declare_dependency(compile_args: config_host['ALSA_CFLAGS'].split(),
+                            link_args: config_host['ALSA_LIBS'].split())
+endif
 spice = declare_dependency()
 if 'CONFIG_SPICE' in config_host
   spice = declare_dependency(compile_args: config_host['SPICE_CFLAGS'].split(),
@@ -172,6 +182,18 @@ endif
 liblzfse = declare_dependency()
 if 'CONFIG_LZFSE' in config_host
   liblzfse = declare_dependency(link_args: config_host['LZFSE_LIBS'].split())
+endif
+oss = declare_dependency()
+if config_host.has_key('CONFIG_AUDIO_OSS')
+  oss = declare_dependency(link_args: config_host['OSS_LIBS'].split())
+endif
+dsound = declare_dependency()
+if config_host.has_key('CONFIG_AUDIO_DSOUND')
+  dsound = declare_dependency(link_args: config_host['DSOUND_LIBS'].split())
+endif
+coreaudio = declare_dependency()
+if config_host.has_key('CONFIG_AUDIO_COREAUDIO')
+  coreaudio = declare_dependency(link_args: config_host['COREAUDIO_LIBS'].split())
 endif
 
 create_config = find_program('scripts/create_config')
@@ -454,6 +476,7 @@ qemuutil = declare_dependency(link_with: libqemuutil,
                               sources: version_res)
 
 subdir('qom')
+subdir('audio')
 subdir('authz')
 subdir('io')
 subdir('chardev')
