@@ -39,7 +39,7 @@ def generate_h_begin(events, group):
     if group == "root":
         header = "trace-dtrace-root.h"
     else:
-        header = "trace-dtrace.h"
+        header = "trace-dtrace-%s.h" % group
 
     out('#include "%s"' % header,
         '')

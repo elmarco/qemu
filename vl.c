@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
 #include "disas/disas.h"
 
-#include "trace-root.h"
+#include "trace/trace-root.h"
 #include "trace/control.h"
 #include "qemu/queue.h"
 #include "sysemu/arch_init.h"

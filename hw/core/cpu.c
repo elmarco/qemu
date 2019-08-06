@@ -31,7 +31,7 @@
 #include "sysemu/tcg.h"
 #include "hw/boards.h"
 #include "hw/qdev-properties.h"
-#include "trace-root.h"
+#include "trace/trace-root.h"
 
 CPUInterruptHandler cpu_interrupt_handler;
 

@@ -24,7 +24,7 @@
  */
 
 #if !defined(CODE_ACCESS)
-#include "trace-root.h"
+#include "trace/trace-root.h"
 #endif
 
 #include "trace/mem.h"
