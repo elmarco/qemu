@@ -179,7 +179,7 @@ dummy := $(call unnest-vars,,obj-y)
 all-obj-y := $(obj-y)
 
 include $(SRC_PATH)/Makefile.objs
-dumy := $(call fix-vars,../,, \
+dumy := $(call fix-paths,../,, \
               qom-obj-y)
 dummy := $(call unnest-vars,.., \
                authz-obj-y \
