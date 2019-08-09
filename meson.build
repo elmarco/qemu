@@ -1,4 +1,5 @@
 project('qemu', 'c', meson_version: '>=0.51.999')
+cc = meson.get_compiler('c')
 
 kconfig = import('unstable-kconfig')
 ss = import('sourceset')
