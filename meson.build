@@ -22,6 +22,15 @@ if host_machine.system() == 'windows'
 endif
 glib = declare_dependency(compile_args: config_host['GLIB_CFLAGS'].split(),
                           link_args: config_host['GLIB_LIBS'].split())
+if config_host.has_key('CONFIG_NETTLE')
+  nettle = declare_dependency(compile_args: config_host['NETTLE_CFLAGS'].split(),
+                              link_args: config_host['NETTLE_LIBS'].split())
+endif
+gnutls = declare_dependency()
+if config_host.has_key('CONFIG_GNUTLS')
+  gnutls = declare_dependency(compile_args: config_host['GNUTLS_CFLAGS'].split(),
+                              link_args: config_host['GNUTLS_LIBS'].split())
+endif
 
 target_dirs = config_host['TARGET_DIRS'].split()
 have_user = false
