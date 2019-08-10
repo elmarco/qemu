@@ -103,11 +103,13 @@ if 'CONFIG_LIBUDEV' in config_host
   libudev = declare_dependency(link_args: config_host['LIBUDEV_LIBS'].split())
 endif
 
+create_config = find_program('scripts/create_config')
 minikconf = find_program('scripts/minikconf.py')
 target_dirs = config_host['TARGET_DIRS'].split()
 have_user = false
 have_system = false
 target_devices_kconfs = []
+target_devices_h = []
 foreach target : target_dirs
   have_user = have_user or target.endswith('-user')
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
@@ -151,7 +153,7 @@ foreach target : target_dirs
     endif
 
     config_devices_mak = target + '-config-devices.mak'
-    target_devices_kconfs += configure_file(
+    config_devices_mak = configure_file(
       input: ['default-configs' / target + '.mak', 'Kconfig.host', 'hw/Kconfig'],
       output: config_devices_mak,
       depfile: config_devices_mak + '.d',
@@ -159,19 +161,20 @@ foreach target : target_dirs
       command: [minikconf, config_host['CONFIG_MINIKCONF_MODE'],
                 config_devices_mak, '@DEPFILE@', '@INPUT@',
                 base_kconfig])
+    target_devices_kconfs += config_devices_mak
+    config_devices_h = target + '-config-devices.h'
+    target_devices_h += custom_target(
+      config_devices_h,
+      input: config_devices_mak,
+      output: config_devices_h,
+      capture: true,
+      command: [create_config, '@INPUT@'])
   endif
 endforeach
 have_tools = 'CONFIG_TOOLS' in config_host
 have_block = have_system or have_tools
 
 grepy = find_program('scripts/grepy.sh')
-config_all_devices = configure_file(
-  output: 'config-all-devices.mak',
-  input: target_devices_kconfs,
-  capture: true,
-  command: [grepy, '@INPUT@'],
-)
-
 # This configuration is used to build files that are shared by
 # multiple binaries, and then extracted out of the "common"
 # static_library target.
@@ -181,7 +184,16 @@ config_all_devices = configure_file(
 # targets that are not built for this compilation.  The CONFIG_ALL
 # pseudo symbol replaces it.
 
-config_all = kconfig.load(config_all_devices)
+config_all = {}
+if target_devices_kconfs.length() > 0
+  config_all_devices = configure_file(
+    output: 'config-all-devices.mak',
+    input: target_devices_kconfs,
+    capture: true,
+    command: [grepy, '@INPUT@'],
+  )
+  config_all += kconfig.load(config_all_devices)
+endif
 config_all += config_host
 config_all += config_all_disas
 config_all += {
@@ -193,7 +205,6 @@ config_all += {
 
 # Generators
 
-create_config = find_program('scripts/create_config')
 hxtool = find_program('scripts/hxtool')
 shaderinclude = find_program('scripts/shaderinclude.pl')
 qapi_gen = find_program('scripts/qapi-gen.py')
