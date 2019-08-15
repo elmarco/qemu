@@ -338,6 +338,9 @@ foreach target : target_dirs
     if 'CONFIG_VHOST_USER' in config_host
       base_kconfig += 'CONFIG_VHOST_USER=y'
     endif
+    if 'CONFIG_VHOST_KERNEL' in config_host
+      base_kconfig += 'CONFIG_VHOST_KERNEL=y'
+    endif
     if 'CONFIG_VIRTFS' in config_host
       base_kconfig += 'CONFIG_VIRTFS=y'
     endif
