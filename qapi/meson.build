@@ -67,10 +67,16 @@ foreach module : qapi_common_modules + qapi_target_modules
   endif
 endforeach
 
-qapi_all_outputs += [
+qapi_specific_outputs = [
   'qapi-introspect.c', 'qapi-introspect.h',
-  'qapi-doc.texi'
+  'qapi-types.c', 'qapi-types.h',
+  'qapi-visit.c', 'qapi-visit.h',
+  'qapi-events.c', 'qapi-events.h',
+  'qapi-commands.c', 'qapi-commands.h',
 ]
+
+qapi_all_outputs += qapi_specific_outputs
+qapi_all_outputs += 'qapi-doc.texi'
 
 qapi_files = custom_target('QAPI files',
   output: qapi_all_outputs,
@@ -84,6 +90,17 @@ foreach output : qapi_util_outputs
   util_ss.add(qapi_files[i])
   if qapi_util_outputs[i].endswith('.h')
     genh += qapi_files[i]
+  endif
+  i = i + 1
+endforeach
+
+i = 0
+foreach output : qapi_all_outputs
+  if output in qapi_specific_outputs
+    specific_ss.add(when: 'CONFIG_SOFTMMU', if_true: qapi_files[i])
+  endif
+  if output.endswith('-target.c')
+    specific_ss.add(when: 'CONFIG_SOFTMMU', if_true: qapi_files[i])
   endif
   i = i + 1
 endforeach
