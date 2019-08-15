@@ -9,3 +9,4 @@ config NVDIMM
     bool
     default y
     depends on PC
+    select MEM_DEVICE
