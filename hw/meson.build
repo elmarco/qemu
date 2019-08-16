@@ -1,5 +1,6 @@
 subdir('core')
 subdir('mem')
+subdir('scsi')
 subdir('sd')
 subdir('semihosting')
 subdir('smbios')
