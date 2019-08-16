@@ -8,7 +8,6 @@ devices-dirs-y += bt/
 devices-dirs-y += char/
 devices-dirs-y += cpu/
 devices-dirs-y += display/
-devices-dirs-y += dma/
 endif
 
 common-obj-y += $(devices-dirs-y)
