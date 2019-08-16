@@ -1,5 +1,6 @@
 subdir('core')
 subdir('mem')
+subdir('pci')
 subdir('pci-bridge')
 subdir('pci-host')
 subdir('pcmcia')
