@@ -145,6 +145,7 @@ trace_events_subdirs += [
   'util',
 ]
 
+genh = []
 subdir('qapi')
 subdir('qobject')
 subdir('stubs')

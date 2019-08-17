@@ -28,6 +28,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
                                 input: trace_events_file,
                                 command: [ tracetool, group, '--format=ust-events-h', '@INPUT@' ],
                                 capture: true)
+    genh += trace_ust_h
   endif
   trace_ss.add(trace_h, trace_c)
   if config_host.has_key('CONFIG_TRACE_DTRACE')
@@ -46,6 +47,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
                                    command: [ 'dtrace', '-o', '@OUTPUT@', '-G', '-s', '@INPUT@' ])
 
     trace_ss.add(trace_dtrace_h, trace_dtrace_o)
+    genh += trace_dtrace_h
   endif
 endforeach
 
@@ -69,6 +71,7 @@ if config_host.has_key('CONFIG_TRACE_UST')
                                   command: [ tracetool, '--group=all', '--format=ust-events-c', '@INPUT@' ],
                                   capture: true)
   trace_ss.add(trace_ust_all_h, trace_ust_all_c)
+  genh += trace_ust_all_h
 endif
 
 trace_ss.add(when: 'CONFIG_TRACE_SIMPLE', if_true: files('simple.c'))
