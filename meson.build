@@ -482,6 +482,7 @@ user_ss = ss.source_set()
 specific_ss = ss.source_set()
 
 modules = {}
+hw_arch = {}
 
 # TODO: add each directory to the subdirs from its own meson.build, once
 # we have those
@@ -711,6 +712,8 @@ i = 0
 foreach target : target_dirs
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
   config_target += config_host
+  hw_arch_srcs = []
+  hw_arch_deps = []
 
   target_inc = [include_directories('target' / config_target['TARGET_BASE_ARCH'])]
   if host_machine.system() == 'linux'
@@ -718,6 +721,13 @@ foreach target : target_dirs
   endif
   if target.endswith('-softmmu')
     config_target += kconfig.load(target_devices_kconfs[i])
+    arch = config_target['TARGET_BASE_ARCH']
+    if config_target['TARGET_NAME'] == 'sparc64'
+      arch = 'sparc64'
+    endif
+    hw = hw_arch[arch].apply(config_target, strict: false)
+    hw_arch_srcs = hw.sources()
+    hw_arch_deps = hw.dependencies()
     i += 1
   else
     target_inc += include_directories(
@@ -739,8 +749,8 @@ foreach target : target_dirs
 
   target_specific = specific_ss.apply(config_target, strict: false)
   static_library('qemu-' + target,
-                 sources: target_specific.sources() + [config_target_h],
-                 dependencies: target_specific.dependencies() + deps,
+                 sources: target_specific.sources() + hw_arch_srcs + [config_target_h],
+                 dependencies: target_specific.dependencies() + hw_arch_deps + deps,
                  objects: objects,
                  include_directories: target_inc,
                  c_args: ['-DNEED_CPU_H',
