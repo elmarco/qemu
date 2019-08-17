@@ -8,7 +8,7 @@ ppc_ss.add(files(
 
 # IBM pSeries (sPAPR)
 ppc_ss.add(when: 'CONFIG_PSERIES', if_true: files('spapr.c', 'spapr_caps.c', 'spapr_vio.c', 'spapr_events.c'))
-ppc_ss.add(when: 'CONFIG_PSERIES', if_true: files('spapr_hcall.c', 'spapr_iommu.c', 'spapr_rtas.c'))
+ppc_ss.add(when: 'CONFIG_PSERIES', if_true: [files('spapr_hcall.c', 'spapr_iommu.c', 'spapr_rtas.c'), fdt])
 ppc_ss.add(when: 'CONFIG_PSERIES', if_true: files('spapr_pci.c', 'spapr_rtc.c', 'spapr_drc.c'))
 ppc_ss.add(when: 'CONFIG_PSERIES', if_true: files('spapr_cpu_core.c', 'spapr_ovec.c', 'spapr_irq.c', 'spapr_tpm_proxy.c'))
 ppc_ss.add(when: 'CONFIG_SPAPR_RNG', if_true: files('spapr_rng.c'))
