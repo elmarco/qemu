@@ -645,6 +645,7 @@ subdir('monitor')
 subdir('net')
 subdir('replay')
 subdir('hw')
+subdir('target')
 
 mods = []
 block_mods = []
