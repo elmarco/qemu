@@ -63,7 +63,7 @@ endif
 pixman = declare_dependency(compile_args: config_host['PIXMAN_CFLAGS'].split(),
                             link_args: config_host['PIXMAN_LIBS'].split())
 pam = declare_dependency()
-if config_host.has_key('CONFIG_AUTH_PAM')
+if 'CONFIG_AUTH_PAM' in config_host
   pam = cc.find_library('pam')
 endif
 libattr = declare_dependency()

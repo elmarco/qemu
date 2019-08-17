@@ -1,4 +1,5 @@
 authz_ss = ss.source_set()
+authz_ss.add(genh)
 authz_ss.add(files(
   'base.c',
   'list.c',
@@ -6,7 +7,7 @@ authz_ss.add(files(
   'simple.c',
 ))
 
-authz_ss.add(when: pam, if_true: files('pamacct.c'))
+authz_ss.add(when: ['CONFIG_AUTH_PAM', pam], if_true: files('pamacct.c'))
 
 authz_ss = authz_ss.apply(config_host, strict: false)
 libauthz = static_library('authz', authz_ss.sources(),
