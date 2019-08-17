@@ -1,3 +1,4 @@
+subdir('block')
 subdir('bt')
 subdir('char')
 subdir('core')
