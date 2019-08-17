@@ -34,6 +34,7 @@ config VHOST_KERNEL
 config XEN
     bool
     select FSDEV_9P if VIRTFS
+    select 9PFS if VIRTFS
 
 config VIRTFS
     bool
