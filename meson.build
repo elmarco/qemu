@@ -483,6 +483,7 @@ block_ss = ss.source_set()
 common_ss = ss.source_set()
 softmmu_ss = ss.source_set()
 user_ss = ss.source_set()
+linux_user_ss = ss.source_set()
 specific_ss = ss.source_set()
 
 modules = {}
@@ -654,6 +655,10 @@ subdir('hw')
 subdir('libdecnumber')
 subdir('target')
 subdir('accel')
+subdir('linux-user')
+
+linux_user_ss.add(files('gdbstub.c', 'thunk.c'))
+specific_ss.add_all(when: 'CONFIG_LINUX_USER', if_true: linux_user_ss)
 
 mods = []
 block_mods = []
@@ -748,6 +753,10 @@ foreach target : target_dirs
       'linux-user' / config_target['TARGET_ABI_DIR'],
       'linux-user' / 'host' / config_target['ARCH'],
     )
+    if 'CONFIG_LINUX_USER' in config_target
+      dir = 'linux-user' / config_target['TARGET_ABI_DIR']
+      arch_srcs += files(dir / 'signal.c', dir / 'cpu_loop.c')
+    endif
   endif
 
   t = target_arch[arch][0].apply(config_target, strict: false)
