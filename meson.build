@@ -246,11 +246,12 @@ if 'CONFIG_VNC_SASL' in config_host
                             link_args: config_host['SASL_LIBS'].split())
 endif
 bluez = declare_dependency()
-if config_host.has_key('CONFIG_BLUEZ')
-  bluez = declare_dependency(compile_args: config_host['BLUEZ_CFLAGS'].split())
+if 'CONFIG_BLUEZ' in config_host
+  bluez = declare_dependency(compile_args: config_host['BLUEZ_CFLAGS'].split(),
+                             link_args: config_host['BLUEZ_LIBS'].split())
 endif
 seccomp = declare_dependency()
-if config_host.has_key('CONFIG_SECCOMP')
+if 'CONFIG_SECCOMP' in config_host
   seccomp = declare_dependency(compile_args: config_host['SECCOMP_CFLAGS'].split(),
                                link_args: config_host['SECCOMP_LIBS'].split())
 endif
