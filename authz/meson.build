@@ -16,3 +16,5 @@ libauthz = static_library('authz', authz_ss.sources(),
                           build_by_default: false)
 
 authz = declare_dependency(link_whole: libauthz)
+
+softmmu_ss.add(authz)
