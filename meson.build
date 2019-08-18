@@ -653,6 +653,7 @@ subdir('replay')
 subdir('hw')
 subdir('libdecnumber')
 subdir('target')
+subdir('accel')
 
 mods = []
 block_mods = []
