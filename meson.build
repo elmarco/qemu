@@ -17,6 +17,7 @@ configure_file(input: files('scripts/ninjatool.py'),
                configuration: config_host)
 
 m = cc.find_library('m', required: false)
+util = cc.find_library('util', required: false)
 socket = []
 if host_machine.system() == 'windows'
   socket = cc.find_library('ws2_32')

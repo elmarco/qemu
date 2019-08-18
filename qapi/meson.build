@@ -82,5 +82,8 @@ qapi_files = custom_target('QAPI files',
 i = 0
 foreach output : qapi_util_outputs
   util_ss.add(qapi_files[i])
+  if qapi_util_outputs[i].endswith('.h')
+    genh += qapi_files[i]
+  endif
   i = i + 1
 endforeach
