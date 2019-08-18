@@ -254,6 +254,11 @@ if config_host.has_key('CONFIG_SECCOMP')
   seccomp = declare_dependency(compile_args: config_host['SECCOMP_CFLAGS'].split(),
                                link_args: config_host['SECCOMP_LIBS'].split())
 endif
+fdt = declare_dependency()
+if 'CONFIG_FDT' in config_host
+  fdt = declare_dependency(compile_args: config_host['FDT_CFLAGS'].split(),
+                           link_args: config_host['FDT_LIBS'].split())
+endif
 
 create_config = find_program('scripts/create_config')
 minikconf = find_program('scripts/minikconf.py')
@@ -571,7 +576,7 @@ softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('os-win32.c'))
 softmmu_ss.add(when: 'CONFIG_POSIX', if_true: files('os-posix.c'))
 softmmu_ss.add(when: 'CONFIG_TPM', if_true: files('tpm.c'))
 softmmu_ss.add(when: 'CONFIG_SECCOMP', if_true: [files('qemu-seccomp.c'), seccomp])
-softmmu_ss.add(when: 'CONFIG_FDT',  if_true: files('device_tree.c'))
+softmmu_ss.add(when: ['CONFIG_FDT', fdt],  if_true: [files('device_tree.c')])
 
 common_ss.add(files('cpus-common.c'))
 
