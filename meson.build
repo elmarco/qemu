@@ -168,10 +168,12 @@ brlapi = declare_dependency()
 if 'CONFIG_BRLAPI' in config_host
   brlapi = declare_dependency(link_args: config_host['BRLAPI_LIBS'].split())
 endif
+sdlwindows = false
 sdl = declare_dependency()
 if 'CONFIG_SDL' in config_host
   sdl = declare_dependency(compile_args: config_host['SDL_CFLAGS'].split(),
                            link_args: config_host['SDL_LIBS'].split())
+  sdlwindows = config_host['SDL_LIBS'].contains('-mwindows')
 endif
 rbd = declare_dependency()
 if 'CONFIG_RBD' in config_host
@@ -760,21 +762,25 @@ i = 0
 foreach target : target_dirs
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
   config_target += config_host
+  target_name = config_target['TARGET_NAME']
   arch = config_target['TARGET_BASE_ARCH']
   arch_srcs = []
   arch_deps = []
+  link_args = []
 
   target_inc = [include_directories('target' / config_target['TARGET_BASE_ARCH'])]
   if host_machine.system() == 'linux'
     target_inc += include_directories('linux-headers')
   endif
   if target.endswith('-softmmu')
+    target_type = 'system'
+    qemu_target_name = 'qemu-system-' + target_name
     t = target_arch[arch][1].apply(config_target, strict: false)
     arch_srcs += t.sources()
     arch_deps += t.dependencies()
 
     config_target += kconfig.load(target_devices_kconfs[i])
-    if config_target['TARGET_NAME'] == 'sparc64'
+    if target_name == 'sparc64'
       hw = hw_arch['sparc64'].apply(config_target, strict: false)
     else
       hw = hw_arch[arch].apply(config_target, strict: false)
@@ -782,8 +788,11 @@ foreach target : target_dirs
     arch_srcs += hw.sources()
     arch_srcs += target_devices_h[i]
     arch_deps += hw.dependencies()
+    link_args = ['@block.syms', '@qemu.syms']
     i += 1
   else
+    target_type = 'user'
+    qemu_target_name = 'qemu-' + target_name
     target_inc += include_directories(
       'linux-user',
       'linux-user' / config_target['TARGET_ABI_DIR'],
@@ -828,6 +837,26 @@ foreach target : target_dirs
                           '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
                           '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)],
                  name_suffix: 'fa')
+
+  execs = [{'postfix': '', 'gui': false}]
+  if sdlwindows
+    execs += [{'postfix': 'w', 'gui': true}]
+  endif
+  foreach exe: execs
+    exe_name = qemu_target_name + exe['postfix']
+    executable(exe_name,
+               install: true,
+               sources: target_specific.sources() + arch_srcs + [config_target_h],
+               dependencies: [qom, qemuutil] + target_specific.dependencies() + arch_deps + deps,
+               link_depends: [block_syms, qemu_syms],
+               link_args: link_args,
+               objects: objects,
+               gui_app: exe['gui'],
+               include_directories: target_inc,
+               c_args: ['-DNEED_CPU_H',
+                        '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
+                        '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)])
+  endforeach
 endforeach
 
 # Other build targets
