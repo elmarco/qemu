@@ -491,6 +491,18 @@ modules = {}
 hw_arch = {}
 target_arch = {}
 
+specific_ss.add(files('disas.c', 'exec.c'))
+specific_ss.add(when: 'CONFIG_TCG', if_true: files(
+  'fpu/softfloat.c',
+  'tcg/optimize.c',
+  'tcg/tcg-common.c',
+  'tcg/tcg-op-gvec.c',
+  'tcg/tcg-op-vec.c',
+  'tcg/tcg-op.c',
+  'tcg/tcg.c',
+))
+specific_ss.add(when: 'CONFIG_TCG_INTERPRETER', if_true: files('disas/tci.c', 'tcg/tci.c'))
+
 # TODO: add each directory to the subdirs from its own meson.build, once
 # we have those
 trace_events_subdirs = [
@@ -725,6 +737,8 @@ common_all = static_library('common',
                             dependencies: common_all.dependencies(),
                             name_suffix: 'fa')
 
+feature_to_c = find_program('scripts/feature_to_c.sh')
+
 i = 0
 foreach target : target_dirs
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
@@ -762,6 +776,14 @@ foreach target : target_dirs
       dir = 'linux-user' / config_target['TARGET_ABI_DIR']
       arch_srcs += files(dir / 'signal.c', dir / 'cpu_loop.c')
     endif
+  endif
+
+  if 'TARGET_XML_FILES' in config_target
+    gdbstub_xml = custom_target(target + '-gdbstub-xml.c',
+                                output: target + '-gdbstub-xml.c',
+                                input: files(config_target['TARGET_XML_FILES'].split()),
+                                command: [feature_to_c, '@OUTPUT@', '@INPUT@'])
+    arch_srcs += gdbstub_xml
   endif
 
   t = target_arch[arch][0].apply(config_target, strict: false)
