@@ -32,6 +32,10 @@ configure_file(input: files('scripts/ninjatool.py'),
                output: 'ninjatool',
                configuration: config_host)
 
+decodetree = generator(find_program('scripts/decodetree.py'),
+                       output: 'decode-@BASENAME@.inc',
+                       arguments: ['@INPUT@', '@EXTRA_ARGS@', '-o', '@OUTPUT@'])
+
 m = cc.find_library('m', required: false)
 util = cc.find_library('util', required: false)
 winmm = []
@@ -483,6 +487,7 @@ specific_ss = ss.source_set()
 
 modules = {}
 hw_arch = {}
+target_arch = {}
 
 # TODO: add each directory to the subdirs from its own meson.build, once
 # we have those
@@ -646,6 +651,7 @@ subdir('monitor')
 subdir('net')
 subdir('replay')
 subdir('hw')
+subdir('libdecnumber')
 subdir('target')
 
 mods = []
@@ -712,22 +718,28 @@ i = 0
 foreach target : target_dirs
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
   config_target += config_host
-  hw_arch_srcs = []
-  hw_arch_deps = []
+  arch = config_target['TARGET_BASE_ARCH']
+  arch_srcs = []
+  arch_deps = []
 
   target_inc = [include_directories('target' / config_target['TARGET_BASE_ARCH'])]
   if host_machine.system() == 'linux'
     target_inc += include_directories('linux-headers')
   endif
   if target.endswith('-softmmu')
+    t = target_arch[arch][1].apply(config_target, strict: false)
+    arch_srcs += t.sources()
+    arch_deps += t.dependencies()
+
     config_target += kconfig.load(target_devices_kconfs[i])
-    arch = config_target['TARGET_BASE_ARCH']
     if config_target['TARGET_NAME'] == 'sparc64'
-      arch = 'sparc64'
+      hw = hw_arch['sparc64'].apply(config_target, strict: false)
+    else
+      hw = hw_arch[arch].apply(config_target, strict: false)
     endif
-    hw = hw_arch[arch].apply(config_target, strict: false)
-    hw_arch_srcs = hw.sources()
-    hw_arch_deps = hw.dependencies()
+    arch_srcs += hw.sources()
+    arch_srcs += target_devices_h[i]
+    arch_deps += hw.dependencies()
     i += 1
   else
     target_inc += include_directories(
@@ -736,6 +748,11 @@ foreach target : target_dirs
       'linux-user' / 'host' / config_target['ARCH'],
     )
   endif
+
+  t = target_arch[arch][0].apply(config_target, strict: false)
+  arch_srcs += t.sources()
+  arch_deps += t.dependencies()
+
   target_common = common_ss.apply(config_target, strict: false)
   objects = common_all.extract_objects(target_common.sources())
   deps = target_common.dependencies()
@@ -749,8 +766,8 @@ foreach target : target_dirs
 
   target_specific = specific_ss.apply(config_target, strict: false)
   static_library('qemu-' + target,
-                 sources: target_specific.sources() + hw_arch_srcs + [config_target_h],
-                 dependencies: target_specific.dependencies() + hw_arch_deps + deps,
+                 sources: target_specific.sources() + arch_srcs + [config_target_h],
+                 dependencies: target_specific.dependencies() + arch_deps + deps,
                  objects: objects,
                  include_directories: target_inc,
                  c_args: ['-DNEED_CPU_H',
