@@ -1,4 +1,4 @@
-softmmu_ss.add(when: 'CONFIG_XEN', if_true: files(
+softmmu_ss.add(when: ['CONFIG_XEN', xen], if_true: files(
   'xen-backend.c',
   'xen-bus-helper.c',
   'xen-bus.c',
