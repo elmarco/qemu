@@ -5984,6 +5984,9 @@ case "$slirp" in
     mkdir -p slirp
     slirp_cflags="-I${source_path}/slirp/src -I$PWD/slirp/src"
     slirp_libs="-L$PWD/slirp -lslirp"
+    if test "$mingw32" = "yes" ; then
+      slirp_libs="$slirp_libs -lws2_32 -liphlpapi"
+    fi
     ;;
 
   system)
