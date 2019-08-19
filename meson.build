@@ -33,6 +33,7 @@ configure_file(input: files('scripts/ninjatool.py'),
 
 m = cc.find_library('m', required: false)
 util = cc.find_library('util', required: false)
+winmm = []
 socket = []
 version_res = []
 coref = []
@@ -41,6 +42,7 @@ cocoa = []
 hvf = []
 if host_machine.system() == 'windows'
   socket = cc.find_library('ws2_32')
+  winmm = cc.find_library('winmm')
 
   win = import('windows')
   version_res = win.compile_resources('version.rc',
@@ -573,7 +575,7 @@ softmmu_ss.add(files(
 
 softmmu_ss.add(files('bt-host.c', 'bt-vhci.c'), bluez)
 
-softmmu_ss.add(when: 'CONFIG_WIN32', if_true: files('os-win32.c'))
+softmmu_ss.add(when: 'CONFIG_WIN32', if_true: [files('os-win32.c'), winmm])
 softmmu_ss.add(when: 'CONFIG_POSIX', if_true: files('os-posix.c'))
 softmmu_ss.add(when: 'CONFIG_TPM', if_true: files('tpm.c'))
 softmmu_ss.add(when: 'CONFIG_SECCOMP', if_true: [files('qemu-seccomp.c'), seccomp])
