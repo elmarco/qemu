@@ -9,7 +9,7 @@ config_all_disas = kconfig.load(meson.current_build_dir() / 'config-all-disas.ma
 add_project_arguments(config_host['CFLAGS'].split(),
                       language: ['c', 'objc'])
 add_project_arguments(config_host['QEMU_CFLAGS'].split(),
-                      language: 'c')
+                      language: ['c', 'objc'])
 add_project_arguments(config_host['QEMU_CXXFLAGS'].split(),
                       language: 'cpp')
 add_project_link_arguments(config_host['LDFLAGS'].split(),
@@ -17,7 +17,7 @@ add_project_link_arguments(config_host['LDFLAGS'].split(),
 add_project_link_arguments(config_host['QEMU_LDFLAGS'].split(),
                            language: ['c', 'cpp', 'objc'])
 add_project_arguments(config_host['QEMU_INCLUDES'].split(),
-                      language: ['c', 'cpp'])
+                      language: ['c', 'cpp', 'objc'])
 
 qemu_version_cmd = [find_program('scripts/qemu-version.sh'),
                     meson.current_source_dir(),
@@ -37,6 +37,10 @@ m = cc.find_library('m', required: false)
 util = cc.find_library('util', required: false)
 socket = []
 version_res = []
+coref = []
+iokit = []
+cocoa = []
+hvf = []
 if host_machine.system() == 'windows'
   socket = cc.find_library('ws2_32')
 
@@ -44,6 +48,12 @@ if host_machine.system() == 'windows'
   version_res = win.compile_resources('version.rc',
                                       depend_files: files('pc-bios/qemu-nsis.ico'),
                                       include_directories: include_directories('.'))
+elif host_machine.system() == 'darwin'
+  add_languages('objc', required: false)
+  coref = dependency('appleframeworks', modules: 'CoreFoundation')
+  iokit = dependency('appleframeworks', modules: 'IOKit')
+  cocoa = dependency('appleframeworks', modules: 'Cocoa')
+  hvf = dependency('appleframeworks', modules: 'Hypervisor')
 endif
 glib = declare_dependency(compile_args: config_host['GLIB_CFLAGS'].split(),
                           link_args: config_host['GLIB_LIBS'].split())
