@@ -490,7 +490,6 @@ docker="no"
 debug_mutex="no"
 libpmem=""
 default_devices="yes"
-meson=meson
 
 # cross compilers defaults, can be overridden with --cross-cc-ARCH
 cross_cc_aarch64="aarch64-linux-gnu-gcc"
@@ -1865,9 +1864,28 @@ then
     error_exit "Python not found. Use --python=/path/to/python"
 fi
 
-if ! has "$meson"
-then
-    error_exit "Meson not found. Use --meson=/path/to/meson"
+if test -z "$meson" ; then
+    if has meson ; then
+        meson=meson
+    elif test -e "${source_path}/.git" && test $git_update = 'yes' ; then
+        meson=git
+    elif test -e "${source_path}/meson/meson.py" ; then
+        meson=internal
+    fi
+fi
+
+case "$meson" in
+    git | internal)
+        if test "$meson" = git; then
+            git_submodules="${git_submodules} meson"
+            (cd "${source_path}" && GIT="$git" "./scripts/git-submodule.sh" update meson)
+        fi
+        meson="${source_path}/meson/meson.py"
+        ;;
+esac
+
+if ! has "$meson" ; then
+    error_exit "Meson not found. Use --meson=/path/to/meson|git|internal"
 fi
 meson=$(command -v $meson)
 
