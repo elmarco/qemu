@@ -49,7 +49,7 @@ if 'CONFIG_GNUTLS' in config_host
                               link_args: config_host['GNUTLS_LIBS'].split())
 endif
 libiscsi = declare_dependency()
-if config_host.has_key('CONFIG_LIBISCSI')
+if 'CONFIG_LIBISCSI' in config_host
   libiscsi = declare_dependency(compile_args: config_host['LIBISCSI_CFLAGS'].split(),
                                 link_args: config_host['LIBISCSI_LIBS'].split())
 endif
