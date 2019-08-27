@@ -128,6 +128,7 @@ tracetool-y += $(shell find $(SRC_PATH)/scripts/tracetool -name "*.py")
 trace/generated-helpers-wrappers.h: trace/generated-helpers-wrappers.h-timestamp
 	@cmp $< $@ >/dev/null 2>&1 || cp $< $@
 trace/generated-helpers-wrappers.h-timestamp: $(SRC_PATH)/trace-events $(BUILD_DIR)/config-host.mak $(tracetool-y)
+	@mkdir -p $(dir $@)
 	$(call quiet-command,$(TRACETOOL) \
 		--group=root \
 		--format=tcg-helper-wrapper-h \
@@ -137,6 +138,7 @@ trace/generated-helpers-wrappers.h-timestamp: $(SRC_PATH)/trace-events $(BUILD_D
 trace/generated-helpers.h: trace/generated-helpers.h-timestamp
 	@cmp $< $@ >/dev/null 2>&1 || cp $< $@
 trace/generated-helpers.h-timestamp: $(SRC_PATH)/trace-events $(BUILD_DIR)/config-host.mak $(tracetool-y)
+	@mkdir -p $(dir $@)
 	$(call quiet-command,$(TRACETOOL) \
 		--group=root \
 		--format=tcg-helper-h \
@@ -146,6 +148,7 @@ trace/generated-helpers.h-timestamp: $(SRC_PATH)/trace-events $(BUILD_DIR)/confi
 trace/generated-helpers.c: trace/generated-helpers.c-timestamp
 	@cmp $< $@ >/dev/null 2>&1 || cp $< $@
 trace/generated-helpers.c-timestamp: $(SRC_PATH)/trace-events $(BUILD_DIR)/config-host.mak $(tracetool-y)
+	@mkdir -p $(dir $@)
 	$(call quiet-command,$(TRACETOOL) \
 		--group=root \
 		--format=tcg-helper-c \
@@ -157,6 +160,7 @@ trace/generated-helpers.o: trace/generated-helpers.c
 trace/generated-tcg-tracers.h: trace/generated-tcg-tracers.h-timestamp
 	@cmp $< $@ >/dev/null 2>&1 || cp $< $@
 trace/generated-tcg-tracers.h-timestamp: $(SRC_PATH)/trace-events $(BUILD_DIR)/config-host.mak $(tracetool-y)
+	@mkdir -p $(dir $@)
 	$(call quiet-command,$(TRACETOOL) \
 		--group=root \
 		--format=tcg-h \
