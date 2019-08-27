@@ -28,6 +28,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
                                 input: trace_events_file,
                                 command: [ tracetool, group, '--format=ust-events-h', '@INPUT@' ],
                                 capture: true)
+    trace_ss.add(trace_ust_h, lttng, urcubp)
     genh += trace_ust_h
   endif
   trace_ss.add(trace_h, trace_c)
@@ -59,14 +60,14 @@ custom_target('trace-events-all',
               install: true,
               install_dir: config_host['qemu_datadir'])
 
-if config_host.has_key('CONFIG_TRACE_UST')
-  trace_ust_all_h = custom_target(fmt.format('trace-ust', 'h'),
-                                  output: fmt.format('trace-ust', 'h'),
+if 'CONFIG_TRACE_UST' in config_host
+  trace_ust_all_h = custom_target('trace-ust-all.h',
+                                  output: 'trace-ust-all.h',
                                   input: trace_events_files,
                                   command: [ tracetool, '--group=all', '--format=ust-events-h', '@INPUT@' ],
                                   capture: true)
-  trace_ust_all_c = custom_target(fmt.format('trace-ust', 'c'),
-                                  output: fmt.format('trace-ust', 'c'),
+  trace_ust_all_c = custom_target('trace-ust-all.c',
+                                  output: 'trace-ust-all.c',
                                   input: trace_events_files,
                                   command: [ tracetool, '--group=all', '--format=ust-events-c', '@INPUT@' ],
                                   capture: true)

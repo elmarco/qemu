@@ -23,6 +23,15 @@ if host_machine.system() == 'windows'
 endif
 glib = declare_dependency(compile_args: config_host['GLIB_CFLAGS'].split(),
                           link_args: config_host['GLIB_LIBS'].split())
+lttng = declare_dependency()
+if 'CONFIG_TRACE_UST' in config_host
+  lttng = declare_dependency(link_args: config_host['LTTNG_UST_LIBS'].split())
+endif
+urcubp = declare_dependency()
+if 'CONFIG_TRACE_UST' in config_host
+  urcubp = declare_dependency(link_args: config_host['URCU_BP_LIBS'].split())
+endif
+nettle = declare_dependency()
 if config_host.has_key('CONFIG_NETTLE')
   nettle = declare_dependency(compile_args: config_host['NETTLE_CFLAGS'].split(),
                               link_args: config_host['NETTLE_LIBS'].split())

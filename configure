@@ -7213,6 +7213,8 @@ if have_backend "log"; then
 fi
 if have_backend "ust"; then
   echo "CONFIG_TRACE_UST=y" >> $config_host_mak
+  echo "LTTNG_UST_LIBS=$lttng_ust_libs" >> $config_host_mak
+  echo "URCU_BP_LIBS=$urcu_bp_libs" >> $config_host_mak
 fi
 if have_backend "dtrace"; then
   echo "CONFIG_TRACE_DTRACE=y" >> $config_host_mak
