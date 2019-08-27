@@ -23,7 +23,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
                           input: trace_events_file,
                           command: [ tracetool, group, '--format=c', '@INPUT@' ],
                           capture: true)
-  if config_host.has_key('CONFIG_TRACE_UST')
+  if 'CONFIG_TRACE_UST' in config_host
     trace_ust_h = custom_target(fmt.format('trace-ust', 'h'),
                                 output: fmt.format('trace-ust', 'h'),
                                 input: trace_events_file,
@@ -33,7 +33,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
     genh += trace_ust_h
   endif
   trace_ss.add(trace_h, trace_c)
-  if config_host.has_key('CONFIG_TRACE_DTRACE')
+  if 'CONFIG_TRACE_DTRACE' in config_host
     trace_dtrace = custom_target(fmt.format('trace-dtrace', 'dtrace'),
                                  output: fmt.format('trace-dtrace', 'dtrace'),
                                  input: trace_events_file,

@@ -33,12 +33,12 @@ if 'CONFIG_TRACE_UST' in config_host
   urcubp = declare_dependency(link_args: config_host['URCU_BP_LIBS'].split())
 endif
 nettle = declare_dependency()
-if config_host.has_key('CONFIG_NETTLE')
+if 'CONFIG_NETTLE' in config_host
   nettle = declare_dependency(compile_args: config_host['NETTLE_CFLAGS'].split(),
                               link_args: config_host['NETTLE_LIBS'].split())
 endif
 gnutls = declare_dependency()
-if config_host.has_key('CONFIG_GNUTLS')
+if 'CONFIG_GNUTLS' in config_host
   gnutls = declare_dependency(compile_args: config_host['GNUTLS_CFLAGS'].split(),
                               link_args: config_host['GNUTLS_LIBS'].split())
 endif
