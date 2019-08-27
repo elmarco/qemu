@@ -55,11 +55,13 @@ if 'CONFIG_LIBISCSI' in config_host
   libiscsi = declare_dependency(compile_args: config_host['LIBISCSI_CFLAGS'].split(),
                                 link_args: config_host['LIBISCSI_LIBS'].split())
 endif
-if config_host.has_key('CONFIG_GBM')
+gbm = declare_dependency()
+if 'CONFIG_GBM' in config_host
   gbm = declare_dependency(compile_args: config_host['GBM_CFLAGS'].split(),
                            link_args: config_host['GBM_LIBS'].split())
 endif
-if config_host.has_key('CONFIG_VIRGL')
+virgl = declare_dependency()
+if 'CONFIG_VIRGL' in config_host
   virgl = declare_dependency(compile_args: config_host['VIRGL_CFLAGS'].split(),
                              link_args: config_host['VIRGL_LIBS'].split())
 endif
