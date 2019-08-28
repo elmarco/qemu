@@ -214,7 +214,7 @@ if have_tools
   endif
 endif
 
-if config_host.has_key('CONFIG_IVSHMEM')
+if 'CONFIG_IVSHMEM' in config_host
   subdir('contrib/ivshmem-client')
   subdir('contrib/ivshmem-server')
 endif
