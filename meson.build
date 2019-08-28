@@ -53,7 +53,7 @@ endif
 pixman = declare_dependency(compile_args: config_host['PIXMAN_CFLAGS'].split(),
                             link_args: config_host['PIXMAN_LIBS'].split())
 libcap_ng = declare_dependency()
-if config_host.has_key('CONFIG_LIBCAP')
+if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
 endif
 rt = cc.find_library('rt', required: false)
