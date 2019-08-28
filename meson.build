@@ -53,7 +53,7 @@ endif
 pixman = declare_dependency(compile_args: config_host['PIXMAN_CFLAGS'].split(),
                             link_args: config_host['PIXMAN_LIBS'].split())
 libattr = declare_dependency()
-if config_host.has_key('CONFIG_ATTR')
+if 'CONFIG_ATTR' in config_host
   libattr = declare_dependency(link_args: config_host['LIBATTR_LIBS'].split())
 endif
 libcap = dependency('libcap', required: false)
