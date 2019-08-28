@@ -498,7 +498,7 @@ QEMU_CFLAGS += -I$(SRC_PATH)/tests
 
 # Deps that are common to various different sets of tests below
 test-util-obj-y = libqemuutil.a
-test-qom-obj-y = libqom.fa $(test-util-obj-y)
+test-qom-obj-y = qom/libqom.fa $(test-util-obj-y)
 test-qapi-obj-y = tests/test-qapi-types.o \
 	tests/include/test-qapi-types-sub-module.o \
 	tests/test-qapi-types-sub-sub-module.o \
