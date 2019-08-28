@@ -184,6 +184,6 @@ qemuutil = declare_dependency(link_with: libqemuutil,
 
 # Other build targets
 
-if 'CONFIG_VHOST_USER' in config_host
+if 'CONFIG_VHOST_USER' in config_host and 'CONFIG_LINUX' in config_host
   subdir('contrib/libvhost-user')
 endif
