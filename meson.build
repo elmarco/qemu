@@ -72,7 +72,7 @@ if 'CONFIG_CURL' in config_host
                             link_args: config_host['CURL_LIBS'].split())
 endif
 libudev = declare_dependency()
-if config_host.has_key('CONFIG_LIBUDEV')
+if 'CONFIG_LIBUDEV' in config_host
   libudev = declare_dependency(link_args: config_host['LIBUDEV_LIBS'].split())
 endif
 
@@ -211,7 +211,7 @@ qemuutil = declare_dependency(link_with: libqemuutil,
 
 # Other build targets
 
-if config_host.has_key('CONFIG_GUEST_AGENT')
+if 'CONFIG_GUEST_AGENT' in config_host
   subdir('qga')
 endif
 
