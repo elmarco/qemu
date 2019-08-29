@@ -6,6 +6,8 @@ ss = import('sourceset')
 config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
 config_all_disas = kconfig.load(meson.current_build_dir() / 'config-all-disas.mak')
 
+enable_modules = 'CONFIG_MODULES' in config_host
+
 add_project_arguments(config_host['QEMU_CFLAGS'].split(),
                       language: ['c', 'objc'])
 add_project_arguments(config_host['QEMU_CXXFLAGS'].split(),
@@ -271,10 +273,13 @@ endforeach
 util_ss = ss.source_set()
 stub_ss = ss.source_set()
 trace_ss = ss.source_set()
+block_ss = ss.source_set()
 common_ss = ss.source_set()
 softmmu_ss = ss.source_set()
 user_ss = ss.source_set()
 specific_ss = ss.source_set()
+
+modules = {}
 
 # TODO: add each directory to the subdirs from its own meson.build, once
 # we have those
@@ -371,6 +376,12 @@ subdir('util')
 subdir('crypto')
 subdir('ui')
 
+
+if enable_modules
+  libmodulecommon = static_library('module-common', files('module-common.c') + genh, pic: true, c_args: '-DBUILD_DSO')
+  modulecommon = declare_dependency(link_whole: libmodulecommon, compile_args: '-DBUILD_DSO')
+endif
+
 # Build targets from sourcesets
 
 stub_ss = stub_ss.apply(config_host, strict: false)
@@ -387,6 +398,47 @@ subdir('qom')
 subdir('authz')
 subdir('io')
 subdir('fsdev')
+
+mods = []
+block_mods = []
+softmmu_mods = []
+foreach d, list : modules
+  foreach m : list
+    if enable_modules and host_machine.system() != 'windows'
+      sl = static_library(d + '-' + m[0], m[1], dependencies: [m[2], modulecommon], pic: true)
+      if d == 'block'
+        block_mods += sl
+      else
+        softmmu_mods += sl
+      endif
+      mods += {'dir': d, 'name': m[0], 'lib': sl, 'deps': m[2]}
+    else
+      if d == 'block'
+        block_ss.add(when: m[2], if_true: m[1])
+      else
+        softmmu_ss.add(when: m[2], if_true: m[1])
+      endif
+    endif
+  endforeach
+endforeach
+
+nm = find_program('nm')
+undefsym = find_program('scripts/undefsym.sh')
+block_syms = custom_target('block.syms', output: 'block.syms',
+                             input: [libqemuutil, block_mods],
+                             capture: true,
+                             command: [undefsym, nm, '@INPUT@'])
+qemu_syms = custom_target('qemu.syms', output: 'qemu.syms',
+                             input: [libqemuutil, softmmu_mods],
+                             capture: true,
+                             command: [undefsym, nm, '@INPUT@'])
+
+
+foreach m : mods
+  shared_module(m['dir'] + '-' + m['name'],
+                name_prefix: '',
+                link_whole: [m['lib']])
+endforeach
 
 common_ss.add_all(when: 'CONFIG_SOFTMMU', if_true: softmmu_ss)
 common_ss.add_all(when: 'CONFIG_USER_ONLY', if_true: user_ss)
