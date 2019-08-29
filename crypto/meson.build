@@ -23,12 +23,12 @@ crypto_ss.add(files(
   'xts.c',
 ))
 
-if config_host.has_key('CONFIG_GCRYPT')
+if 'CONFIG_GCRYPT' in config_host
   wo_nettle = files('hash-gcrypt.c', 'pbkdf-gcrypt.c')
 else
   wo_nettle = files('hash-glib.c', 'pbkdf-stub.c')
 endif
-if not config_host.has_key('CONFIG_GCRYPT_HMAC')
+if 'CONFIG_GCRYPT_HMAC' not in config_host
   wo_nettle += files('hmac-glib.c')
 endif
 crypto_ss.add(when: [nettle, 'CONFIG_NETTLE'],
