@@ -41,7 +41,8 @@ crypto_ss.add(when: 'CONFIG_AF_ALG', if_true: files('afalg.c', 'cipher-afalg.c',
 crypto_ss = crypto_ss.apply(config_host, strict: false)
 libcrypto = static_library('crypto', crypto_ss.sources(),
                            dependencies: [crypto_ss.dependencies()],
-                           name_suffix: 'fa')
+                           name_suffix: 'fa',
+                           build_by_default: false)
 
 crypto = declare_dependency(link_whole: libcrypto)
 
