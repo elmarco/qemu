@@ -18,6 +18,7 @@ io_ss = io_ss.apply(config_host, strict: false)
 libio = static_library('io', io_ss.sources(),
                        dependencies: [crypto, qom, io_ss.dependencies()],
                        link_with: libqemuutil,
-                       name_suffix: 'fa')
+                       name_suffix: 'fa',
+                       build_by_default: false)
 
 io = declare_dependency(link_whole: libio)
