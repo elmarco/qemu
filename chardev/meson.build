@@ -28,6 +28,7 @@ chardev_ss = chardev_ss.apply(config_host, strict: false)
 libchardev = static_library('chardev', chardev_ss.sources(),
                             dependencies: [crypto, io, qom],
                             link_with: libqemuutil,
-                            name_suffix: 'fa')
+                            name_suffix: 'fa',
+                            build_by_default: false)
 
 chardev = declare_dependency(link_with: libchardev)
