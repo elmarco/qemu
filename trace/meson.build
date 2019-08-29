@@ -17,6 +17,7 @@ foreach dir : [ '.' ] + trace_events_subdirs
                           input: trace_events_file,
                           command: [ tracetool, group, '--format=h', '@INPUT@' ],
                           capture: true)
+  genh += trace_h
   trace_c = custom_target(fmt.format('trace', 'c'),
                           output: fmt.format('trace', 'c'),
                           input: trace_events_file,
