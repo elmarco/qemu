@@ -1,4 +1,5 @@
 io_ss = ss.source_set()
+io_ss.add(genh)
 io_ss.add(files(
   'channel-buffer.c',
   'channel-command.c',
