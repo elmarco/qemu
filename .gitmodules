@@ -60,4 +60,4 @@
 	url = 	https://git.qemu.org/git/opensbi.git
 [submodule "meson"]
 	path = meson
-	url = https://github.com/mesonbuild/meson/
+	url = https://github.com/elmarco/meson/
