@@ -105,12 +105,12 @@ if 'CONFIG_LIBCAP' in config_host
 endif
 xkbcommon = dependency('xkbcommon', required: false)
 pulse = declare_dependency()
-if config_host.has_key('CONFIG_LIBPULSE')
+if 'CONFIG_LIBPULSE' in config_host
   pulse = declare_dependency(compile_args: config_host['PULSE_CFLAGS'].split(),
                              link_args: config_host['PULSE_LIBS'].split())
 endif
 alsa = declare_dependency()
-if config_host.has_key('CONFIG_ALSA')
+if 'CONFIG_ALSA' in config_host
   alsa = declare_dependency(compile_args: config_host['ALSA_CFLAGS'].split(),
                             link_args: config_host['ALSA_LIBS'].split())
 endif
@@ -184,15 +184,15 @@ if 'CONFIG_LZFSE' in config_host
   liblzfse = declare_dependency(link_args: config_host['LZFSE_LIBS'].split())
 endif
 oss = declare_dependency()
-if config_host.has_key('CONFIG_AUDIO_OSS')
+if 'CONFIG_AUDIO_OSS' in config_host
   oss = declare_dependency(link_args: config_host['OSS_LIBS'].split())
 endif
 dsound = declare_dependency()
-if config_host.has_key('CONFIG_AUDIO_DSOUND')
+if 'CONFIG_AUDIO_DSOUND' in config_host
   dsound = declare_dependency(link_args: config_host['DSOUND_LIBS'].split())
 endif
 coreaudio = declare_dependency()
-if config_host.has_key('CONFIG_AUDIO_COREAUDIO')
+if 'CONFIG_AUDIO_COREAUDIO' in config_host
   coreaudio = declare_dependency(link_args: config_host['COREAUDIO_LIBS'].split())
 endif
 

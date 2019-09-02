@@ -14,16 +14,16 @@ softmmu_ss.add(when: ['CONFIG_AUDIO_PT_INT'], if_true: files('audio_pt_int.c'))
 softmmu_ss.add(when: ['CONFIG_AUDIO_WIN_INT'], if_true: files('audio_win_int.c'))
 
 audio_modules = []
-if config_host.has_key('CONFIG_AUDIO_ALSA')
+if 'CONFIG_AUDIO_ALSA' in config_host
   audio_modules += [['alsa', files('alsaaudio.c'), alsa]]
 endif
-if config_host.has_key('CONFIG_AUDIO_OSS')
+if 'CONFIG_AUDIO_OSS' in config_host
   audio_modules += [['oss', files('ossaudio.c'), oss]]
 endif
-if config_host.has_key('CONFIG_AUDIO_PA')
+if 'CONFIG_AUDIO_PA' in config_host
   audio_modules += [['pa', files('paaudio.c'), pulse]]
 endif
-if config_host.has_key('CONFIG_AUDIO_SDL')
+if 'CONFIG_AUDIO_SDL' in config_host
   audio_modules += [['sdl', files('sdlaudio.c'), sdl]]
 endif
 
