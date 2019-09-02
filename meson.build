@@ -506,7 +506,7 @@ foreach d, list : modules
       else
         softmmu_mods += sl
       endif
-      mods += {'dir': d, 'name': m[0], 'lib': sl, 'deps': m[2]}
+      mods += {'dir': d, 'name': m[0], 'lib': [sl, libmodulecommon], 'deps': m[2]}
     else
       if d == 'block'
         block_ss.add(when: m[2], if_true: m[1])
