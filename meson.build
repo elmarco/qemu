@@ -548,6 +548,7 @@ subdir('authz')
 subdir('io')
 subdir('chardev')
 subdir('fsdev')
+subdir('dump')
 
 block_ss.add(files(
   'block.c',
