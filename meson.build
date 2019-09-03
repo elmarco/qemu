@@ -105,7 +105,7 @@ if 'CONFIG_LIBCAP' in config_host
 endif
 xkbcommon = dependency('xkbcommon', required: false)
 spice = declare_dependency()
-if config_host.has_key('CONFIG_SPICE')
+if 'CONFIG_SPICE' in config_host
   spice = declare_dependency(compile_args: config_host['SPICE_CFLAGS'].split(),
                              link_args: config_host['SPICE_LIBS'].split())
 endif
@@ -139,11 +139,11 @@ if 'CONFIG_LIBUDEV' in config_host
   libudev = declare_dependency(link_args: config_host['LIBUDEV_LIBS'].split())
 endif
 brlapi = declare_dependency()
-if config_host.has_key('CONFIG_BRLAPI')
+if 'CONFIG_BRLAPI' in config_host
   brlapi = declare_dependency(link_args: config_host['BRLAPI_LIBS'].split())
 endif
 sdl = declare_dependency()
-if config_host.has_key('CONFIG_SDL')
+if 'CONFIG_SDL' in config_host
   sdl = declare_dependency(compile_args: config_host['SDL_CFLAGS'].split(),
                            link_args: config_host['SDL_LIBS'].split())
 endif
