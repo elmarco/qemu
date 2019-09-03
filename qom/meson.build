@@ -13,3 +13,8 @@ libqom = static_library('qom', qom_ss.sources(),
                         name_suffix: 'fa')
 
 qom = declare_dependency(link_whole: libqom)
+
+softmmu_ss.add(files(
+  'qom-hmp-cmds.c',
+  'qom-qmp-cmds.c',
+))
