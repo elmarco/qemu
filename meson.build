@@ -212,9 +212,9 @@ if have_tools
     subdir('contrib/vhost-user-input')
     subdir('contrib/vhost-user-scsi')
   endif
-endif
 
-if 'CONFIG_IVSHMEM' in config_host
-  subdir('contrib/ivshmem-client')
-  subdir('contrib/ivshmem-server')
+  if 'CONFIG_IVSHMEM' in config_host
+    subdir('contrib/ivshmem-client')
+    subdir('contrib/ivshmem-server')
+  endif
 endif
