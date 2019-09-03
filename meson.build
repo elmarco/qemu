@@ -231,17 +231,17 @@ if config_host.has_key('CONFIG_GIO')
                            link_args: config_host['GIO_LIBS'].split())
 endif
 png = declare_dependency()
-if config_host.has_key('CONFIG_VNC_PNG')
+if 'CONFIG_VNC_PNG' in config_host
   png = declare_dependency(compile_args: config_host['PNG_CFLAGS'].split(),
                            link_args: config_host['PNG_LIBS'].split())
 endif
 jpeg = declare_dependency()
-if config_host.has_key('CONFIG_VNC_JPEG')
+if 'CONFIG_VNC_JPEG' in config_host
   jpeg = declare_dependency(compile_args: config_host['JPEG_CFLAGS'].split(),
                             link_args: config_host['JPEG_LIBS'].split())
 endif
 sasl = declare_dependency()
-if config_host.has_key('CONFIG_VNC_SASL')
+if 'CONFIG_VNC_SASL' in config_host
   sasl = declare_dependency(compile_args: config_host['SASL_CFLAGS'].split(),
                             link_args: config_host['SASL_LIBS'].split())
 endif
