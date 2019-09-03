@@ -50,7 +50,8 @@ foreach target : target_dirs
   have_user = have_user or target.endswith('-user')
   have_system = have_system or target.endswith('-softmmu')
 endforeach
-have_block = have_system or 'CONFIG_TOOLS' in config_host
+have_tools = 'CONFIG_TOOLS' in config_host
+have_block = have_system or have_tools
 
 # Generators
 
