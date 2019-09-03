@@ -413,7 +413,8 @@ foreach target : target_dirs
                  objects: objects,
                  include_directories: target_inc,
                  c_args: ['-DNEED_CPU_H',
-                          '-DCONFIG_TARGET="@0@-config-target.h"'.format(target)],
+                          '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
+                          '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)],
                  name_suffix: 'fa')
 endforeach
 
