@@ -115,37 +115,37 @@ foreach target : target_dirs
     have_system = true
 
     base_kconfig = []
-    if config_target.has_key('CONFIG_KVM')
+    if 'CONFIG_KVM' in config_target
       base_kconfig += 'CONFIG_KVM=y'
     endif
-    if config_target.has_key('CONFIG_XEN')
+    if 'CONFIG_XEN' in config_target
       base_kconfig += 'CONFIG_XEN=y'
     endif
-    if config_host.has_key('CONFIG_TPM')
+    if 'CONFIG_TPM' in config_host
       base_kconfig += 'CONFIG_TPM=y'
     endif
-    if config_host.has_key('CONFIG_SPICE')
+    if 'CONFIG_SPICE' in config_host
       base_kconfig += 'CONFIG_SPICE=y'
     endif
-    if config_host.has_key('CONFIG_IVSHMEM')
+    if 'CONFIG_IVSHMEM' in config_host
       base_kconfig += 'CONFIG_IVSHMEM=y'
     endif
-    if config_host.has_key('CONFIG_OPENGL')
+    if 'CONFIG_OPENGL' in config_host
       base_kconfig += 'CONFIG_OPENGL=y'
     endif
-    if config_host.has_key('CONFIG_X11')
+    if 'CONFIG_X11' in config_host
       base_kconfig += 'CONFIG_X11=y'
     endif
-    if config_host.has_key('CONFIG_VHOST_USER')
+    if 'CONFIG_VHOST_USER' in config_host
       base_kconfig += 'CONFIG_VHOST_USER=y'
     endif
-    if config_host.has_key('CONFIG_VIRTFS')
+    if 'CONFIG_VIRTFS' in config_host
       base_kconfig += 'CONFIG_VIRTFS=y'
     endif
-    if config_host.has_key('CONFIG_LINUX')
+    if 'CONFIG_LINUX' in config_host
       base_kconfig += 'CONFIG_LINUX=y'
     endif
-    if config_host.has_key('CONFIG_PVRDMA')
+    if 'CONFIG_PVRDMA' in config_host
       base_kconfig += 'CONFIG_PVRDMA=y'
     endif
 
