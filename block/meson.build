@@ -98,4 +98,6 @@ module_block_h = custom_target('module_block.h',
                                command: [module_block_py, '@OUTPUT0@', modsrc])
 block_ss.add(module_block_h)
 
+softmmu_ss.add(files('stream.c'))
+
 modules += {'block': block_modules}
