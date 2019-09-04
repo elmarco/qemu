@@ -160,7 +160,6 @@ obj-y += hw/
 obj-y += qapi/
 obj-y += memory.o
 obj-y += memory_mapping.o
-obj-y += migration/ram.o
 LIBS := $(libs_softmmu) $(LIBS)
 
 # Temporary until emulators are linked by Meson

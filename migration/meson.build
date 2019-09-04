@@ -22,3 +22,5 @@ softmmu_ss.add(files(
 
 softmmu_ss.add(when: ['CONFIG_RDMA', rdma], if_true: files('rdma.c'))
 softmmu_ss.add(when: 'CONFIG_LIVE_BLOCK_MIGRATION', if_true: files('block.c'))
+
+specific_ss.add(when: 'CONFIG_SOFTMMU', if_true: [files('ram.c'), libpmem])
