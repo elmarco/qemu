@@ -191,8 +191,6 @@ recurse-install:
 $(BUILD_DIR)/version.o: $(SRC_PATH)/version.rc config-host.h
 	$(call quiet-command,$(WINDRES) -I$(BUILD_DIR) -o $@ $<,"RC","version.o")
 
-Makefile: $(version-obj-y)
-
 ######################################################################
 
 COMMON_LDADDS = libqemuutil.a
