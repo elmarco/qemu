@@ -5,8 +5,8 @@ config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
 
 add_project_arguments(config_host['QEMU_CFLAGS'].split(),
                       language: 'c')
-add_project_link_arguments(config_host['QEMU_CFLAGS'].split(),
-                      language: 'c')
+add_project_link_arguments(config_host['LDFLAGS'].split(),
+                           language: ['c', 'cpp', 'objc'])
 add_project_arguments(config_host['QEMU_INCLUDES'].split(),
                       language: 'c')
 
