@@ -829,15 +829,6 @@ foreach target : target_dirs
                               command: [create_config, '@INPUT@'])
 
   target_specific = specific_ss.apply(config_target, strict: false)
-  static_library('qemu-' + target,
-                 sources: target_specific.sources() + arch_srcs + [config_target_h],
-                 dependencies: target_specific.dependencies() + arch_deps + deps,
-                 objects: objects,
-                 include_directories: target_inc,
-                 c_args: ['-DNEED_CPU_H',
-                          '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
-                          '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)],
-                 name_suffix: 'fa')
 
   execs = [{'postfix': '', 'gui': false}]
   if sdlwindows

@@ -898,9 +898,9 @@ define do_test_tap
 endef
 
 .PHONY: $(patsubst %, check-qtest-%, $(QTEST_TARGETS))
-$(patsubst %, check-qtest-%, $(QTEST_TARGETS)): check-qtest-%: %-softmmu/all $(check-qtest-y)
+$(patsubst %, check-qtest-%, $(QTEST_TARGETS)): check-qtest-%: $(check-qtest-y)
 	$(call do_test_human,$(check-qtest-$*-y) $(check-qtest-generic-y), \
-	  QTEST_QEMU_BINARY=$*-softmmu/qemu-system-$* \
+	  QTEST_QEMU_BINARY=qemu-system-$* \
 	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
 
 check-unit: $(check-unit-y)
@@ -911,9 +911,9 @@ check-speed: $(check-speed-y)
 
 # gtester tests with TAP output
 
-$(patsubst %, check-report-qtest-%.tap, $(QTEST_TARGETS)): check-report-qtest-%.tap: %-softmmu/all $(check-qtest-y)
+$(patsubst %, check-report-qtest-%.tap, $(QTEST_TARGETS)): check-report-qtest-%.tap: $(check-qtest-y)
 	$(call do_test_tap, $(check-qtest-$*-y) $(check-qtest-generic-y), \
-	  QTEST_QEMU_BINARY=$*-softmmu/qemu-system-$* \
+	  QTEST_QEMU_BINARY=qemu-system-$* \
 	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
 
 check-report-unit.tap: $(check-unit-y)
@@ -1097,8 +1097,7 @@ QEMU_IOTESTS_HELPERS-$(call land,$(CONFIG_SOFTMMU),$(CONFIG_LINUX)) = tests/qemu
 
 .PHONY: check-tests/check-block.sh
 check-tests/check-block.sh: tests/check-block.sh qemu-img$(EXESUF) \
-		qemu-io$(EXESUF) qemu-nbd$(EXESUF) $(QEMU_IOTESTS_HELPERS-y) \
-		$(patsubst %,%/all,$(filter %-softmmu,$(TARGET_DIRS)))
+		qemu-io$(EXESUF) qemu-nbd$(EXESUF) $(QEMU_IOTESTS_HELPERS-y)
 	$<
 
 .PHONY: $(patsubst %, check-%, $(check-qapi-schema-y))

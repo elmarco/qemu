@@ -798,9 +798,8 @@ char *qtest_hmp(QTestState *s, const char *fmt, ...)
 const char *qtest_get_arch(void)
 {
     const char *qemu = qtest_qemu_binary();
-    const char *end = strrchr(qemu, '/');
 
-    return end + strlen("/qemu-system-");
+    return qemu + strlen("qemu-system-");
 }
 
 bool qtest_get_irq(QTestState *s, int num)
