@@ -75,9 +75,9 @@ build-tci:
  - make -j2
  - make tests/boot-serial-test tests/cdrom-test tests/pxe-test
  - for tg in $TARGETS ; do
-     export QTEST_QEMU_BINARY="${tg}-softmmu/qemu-system-${tg}" ;
+     export QTEST_QEMU_BINARY="./qemu-system-${tg}" ;
      ./tests/boot-serial-test || exit 1 ;
      ./tests/cdrom-test || exit 1 ;
    done
- - QTEST_QEMU_BINARY="x86_64-softmmu/qemu-system-x86_64" ./tests/pxe-test
- - QTEST_QEMU_BINARY="s390x-softmmu/qemu-system-s390x" ./tests/pxe-test -m slow
+ - QTEST_QEMU_BINARY="./qemu-system-x86_64" ./tests/pxe-test
+ - QTEST_QEMU_BINARY="./qemu-system-s390x" ./tests/pxe-test -m slow

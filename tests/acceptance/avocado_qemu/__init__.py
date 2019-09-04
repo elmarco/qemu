@@ -39,8 +39,7 @@ def pick_default_qemu_bin(arch=None):
     """
     if arch is None:
         arch = os.uname()[4]
-    qemu_bin_relative_path = os.path.join("%s-softmmu" % arch,
-                                          "qemu-system-%s" % arch)
+    qemu_bin_relative_path = "qemu-system-%s" % arch
     if is_readable_executable_file(qemu_bin_relative_path):
         return qemu_bin_relative_path
 
