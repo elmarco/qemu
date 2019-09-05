@@ -5993,6 +5993,7 @@ fi
 
 if test "$have_asan" = "yes"; then
   CFLAGS="-fsanitize=address $CFLAGS"
+  LDFLAGS="-fsanitize=address $LDFLAGS"
   if test "$have_asan_iface_h" = "no" ; then
       echo "ASAN build enabled, but ASAN header missing." \
            "Without code annotation, the report may be inferior."
@@ -6003,6 +6004,7 @@ if test "$have_asan" = "yes"; then
 fi
 if test "$have_ubsan" = "yes"; then
   CFLAGS="-fsanitize=undefined $CFLAGS"
+  LDFLAGS="-fsanitize=undefined $LDFLAGS"
 fi
 
 ##########################################
