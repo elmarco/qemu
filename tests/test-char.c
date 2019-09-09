@@ -1446,9 +1446,9 @@ int main(int argc, char **argv)
     g_test_add_data_func("/char/socket/client/wait-conn-fdpass/" # name, \
                          &client6 ##name, char_socket_client_test)
 
+    SOCKET_SERVER_TEST(tcp, &tcpaddr);
+    SOCKET_CLIENT_TEST(tcp, &tcpaddr);
     if (has_ipv4) {
-        SOCKET_SERVER_TEST(tcp, &tcpaddr);
-        SOCKET_CLIENT_TEST(tcp, &tcpaddr);
         g_test_add_data_func("/char/socket/server/two-clients/tcp", &tcpaddr,
                              char_socket_server_two_clients_test);
     }
