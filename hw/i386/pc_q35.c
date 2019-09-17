@@ -234,13 +234,7 @@ static void pc_q35_init(MachineState *machine)
                                           ICH9_LPC_FUNC), true,
                                           TYPE_ICH9_LPC_DEVICE);
 
-    object_property_add_link(OBJECT(machine), PC_MACHINE_ACPI_DEVICE_PROP,
-                             TYPE_HOTPLUG_HANDLER,
-                             (Object **)&pcms->acpi_dev,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG, &error_abort);
-    object_property_set_link(OBJECT(machine), OBJECT(lpc),
-                             PC_MACHINE_ACPI_DEVICE_PROP, &error_abort);
+    pcms->acpi_dev = HOTPLUG_HANDLER(object_ref(OBJECT(lpc)));
 
     /* irq lines */
     gsi_state = pc_gsi_create(&x86ms->gsi, pcmc->pci_enabled);

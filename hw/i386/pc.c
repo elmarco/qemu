@@ -1973,12 +1973,20 @@ static void pc_machine_class_init(ObjectClass *oc, void *data)
                                    pc_machine_set_pit);
 }
 
+static void pc_machine_finalize(Object *obj)
+{
+    PCMachineState *pcms = PC_MACHINE(obj);
+
+    object_unref(OBJECT(pcms->acpi_dev));
+}
+
 static const TypeInfo pc_machine_info = {
     .name = TYPE_PC_MACHINE,
     .parent = TYPE_X86_MACHINE,
     .abstract = true,
     .instance_size = sizeof(PCMachineState),
     .instance_init = pc_machine_initfn,
+    .instance_finalize = pc_machine_finalize,
     .class_size = sizeof(PCMachineClass),
     .class_init = pc_machine_class_init,
     .interfaces = (InterfaceInfo[]) {
