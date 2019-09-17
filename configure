@@ -2077,7 +2077,6 @@ int main(void) { return tls_var; }
 EOF
   if compile_prog "-fPIE -DPIE" "-pie"; then
     QEMU_CFLAGS="-fPIE -DPIE $QEMU_CFLAGS"
-    LDFLAGS="-pie $LDFLAGS"
     pie="yes"
     if compile_prog "" "-Wl,-z,relro -Wl,-z,now" ; then
       LDFLAGS="-Wl,-z,relro -Wl,-z,now $LDFLAGS"
@@ -8051,6 +8050,7 @@ NINJA=$PWD/ninjatool $python $meson setup \
 	--localstatedir "$local_statedir" \
 	$(test "$strip_opt" = yes && echo --strip) \
 	--buildtype $(if test "$debug" = yes; then echo debug; else echo debugoptimized; fi) \
+        -Db_pie=$(if test "$pie" = yes; then echo true; else echo false; fi) \
         $cross_arg \
 	"$PWD" "$source_path"
 
