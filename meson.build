@@ -472,13 +472,33 @@ foreach d : hx_headers
                 command: [hxtool, '-h', '@INPUT0@'])
 endforeach
 
+# meson makes it a bit difficult to refer to build targets
+# and texi tools don't generate depfiles
+# let's make doc generation depend on all texi
+texi_deps = [
+  'docs/interop/qemu-ga-ref.texi',
+  'docs/interop/qemu-qmp-ref.texi',
+  'docs/qemu-block-drivers.texi',
+  'docs/qemu-cpu-models.texi',
+  'docs/security.texi',
+  'fsdev/virtfs-proxy-helper.texi',
+  'qemu-deprecated.texi',
+  'qemu-doc.texi',
+  'qemu-ga.texi',
+  'qemu-img.texi',
+  'qemu-nbd.texi',
+  'qemu-option-trace.texi',
+  'qemu-tech.texi',
+  'scripts/qemu-trace-stap.texi',
+]
+
 foreach d : [
   ['qemu-options.hx', 'qemu-options.texi'],
   ['hmp-commands.hx', 'qemu-monitor.texi'],
   ['hmp-commands-info.hx', 'qemu-monitor-info.texi'],
   ['qemu-img-cmds.hx', 'qemu-img-cmds.texi'],
 ]
-  custom_target(d[1],
+  texi_deps += custom_target(d[1],
                 input: files(d[0]),
                 output: d[1],
                 capture: true,
@@ -946,3 +966,98 @@ custom_target('cscope',
               command: [make_tags, 'ctags', meson.source_root()])
 
 subdir('docs')
+
+makeinfo = find_program('makeinfo', required: build_docs)
+
+docs_inc = [
+  '-I', meson.current_source_dir(),
+  '-I', meson.current_build_dir() / 'docs',
+  '-I', '@OUTDIR@',
+]
+
+texi = {
+  'qemu-doc': files('qemu-doc.texi'),
+  'qemu-qmp-ref': files('docs/interop/qemu-qmp-ref.texi'),
+}
+if 'CONFIG_GUEST_AGENT' in config_host
+  texi += {'qemu-ga-ref': files('docs/interop/qemu-ga-ref.texi')}
+endif
+
+if makeinfo.found() and build_docs
+  foreach doc, input: texi
+    cmd = [
+      'env', 'LC_ALL=C', makeinfo, '--no-split', '--number-sections', docs_inc,
+      '@INPUT0@', '-o', '@OUTPUT@',
+    ]
+    foreach ext, args: {
+        'info': [],
+        'html': ['--no-headers', '--html'],
+        'txt': ['--no-headers', '--plaintext'],
+    }
+      output = doc + '.' + ext
+      custom_target(output,
+                    input: input + texi_deps,
+                    output: output,
+                    install: true,
+                    install_dir: config_host['qemu_docdir'],
+                    command: cmd + args)
+    endforeach
+  endforeach
+endif
+
+texi2pdf = find_program('texi2pdf', required: false)
+
+if texi2pdf.found()
+  foreach doc, input: texi
+    output = doc + '.pdf'
+    custom_target(output,
+                  input: input + texi_deps,
+                  output: output,
+                  command: [texi2pdf, '-q', docs_inc, '@INPUT0@', '-o', '@OUTPUT@'])
+  endforeach
+endif
+
+texi2pod = find_program('scripts/texi2pod.pl')
+pod2man = find_program('pod2man', required: build_docs)
+
+mans = {
+  'qemu-block-drivers.7': files('docs/qemu-block-drivers.texi'),
+  'qemu-cpu-models.7': files('docs/qemu-cpu-models.texi'),
+  'qemu-qmp-ref.7': files('docs/interop/qemu-qmp-ref.texi'),
+  'qemu.1': files('qemu-doc.texi'),
+}
+if 'CONFIG_GUEST_AGENT' in config_host
+  mans += {'qemu-ga-ref.7': files('docs/interop/qemu-ga-ref.texi')}
+  mans += {'qemu-ga.8': files('qemu-ga.texi')}
+endif
+if 'CONFIG_TOOLS' in config_host
+  mans += {'qemu-img.7': files('qemu-img.texi')}
+  mans += {'qemu-nbd.8': files('qemu-nbd.texi')}
+endif
+if 'CONFIG_VIRTFS' in config_host
+  mans += {'virtfs-proxy-helper.1': files('fsdev/virtfs-proxy-helper.texi')}
+endif
+if 'CONFIG_TRACE_SYSTEMTAP' in config_host
+  mans += {'qemu-trace-stap.1': files('scripts/qemu-trace-stap.texi')}
+endif
+
+if pod2man.found() and build_docs
+  foreach man, input: mans
+    pod = custom_target(man + '.pod',
+                        input: input + texi_deps,
+                        output: man + '.pod',
+                        command: [texi2pod,
+                                  '-DVERSION="' + config_host['VERSION'] + '"',
+                                  '-DCONFDIR="' + config_host['qemu_confdir'] + '"',
+                                  '@INPUT0@', '@OUTPUT@'])
+    section = man[-1]
+    man = custom_target(man,
+                        input: pod,
+                        output: man,
+                        capture: true,
+                        install: true,
+                        install_dir: config_host['mandir'] / 'man' + section,
+                        command: [pod2man, '--utf8', '--section=' + section, '--center=" "',
+                                  '--release=" "', '@INPUT@'])
+  endforeach
+endif

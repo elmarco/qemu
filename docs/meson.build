@@ -60,6 +60,7 @@ if sphinx.found()
     'specs/ppc-xive.rst',
   ]
   specs = custom_target('sphinx-specs',
+                build_by_default: build_docs,
                 input: specs_rst,
                 depend_files: [files('conf.py', 'specs/conf.py')],
                 output: 'specs',
