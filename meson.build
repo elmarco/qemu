@@ -8,6 +8,7 @@ config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
 config_all_disas = kconfig.load(meson.current_build_dir() / 'config-all-disas.mak')
 
 enable_modules = 'CONFIG_MODULES' in config_host
+build_docs = 'BUILD_DOCS' in config_host
 
 add_project_arguments(config_host['CFLAGS'].split(),
                       language: ['c', 'objc'])
@@ -943,3 +944,5 @@ custom_target('cscope',
               output: ['cscope.out', 'cscope.files'],
               build_always_stale: true,
               command: [make_tags, 'ctags', meson.source_root()])
+
+subdir('docs')
