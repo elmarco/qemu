@@ -157,7 +157,7 @@ matrix:
         - CONFIG="--target-list=${MAIN_SOFTMMU_TARGETS} "
       compiler: clang
       before_script:
-        - ./configure ${CONFIG} --extra-cflags="-fsanitize=undefined -Werror" || { cat config.log && exit 1; }
+        - ./configure ${CONFIG} --extra-cflags="-fsanitize=undefined -Werror" --extra-ldflags="-fsanitize=undefined" || { cat config.log && exit 1; }
 
 
     - env:
@@ -284,7 +284,7 @@ matrix:
         - CONFIG="--cc=gcc-9 --cxx=g++-9 --disable-pie --disable-linux-user"
         - TEST_CMD=""
       before_script:
-        - ./configure ${CONFIG} --extra-cflags="-g3 -O0 -Wno-error=stringop-truncation -fsanitize=thread -fuse-ld=gold" || { cat config.log && exit 1; }
+        - ./configure ${CONFIG} --extra-cflags="-g3 -O0 -Wno-error=stringop-truncation -fsanitize=thread -fuse-ld=gold" --extra-ldflags="-fsanitize=thread" || { cat config.log && exit 1; }
 
 
     # Run check-tcg against linux-user
