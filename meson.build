@@ -928,3 +928,18 @@ if have_tools
 endif
 
 subdir('pc-bios')
+
+make_tags = find_program('scripts/make-tags.sh')
+
+custom_target('TAGS',
+              output: 'TAGS',
+              build_always_stale: true,
+              command: [make_tags, 'etags', meson.source_root()])
+custom_target('ctags',
+              output: 'tags',
+              build_always_stale: true,
+              command: [make_tags, 'ctags', meson.source_root()])
+custom_target('cscope',
+              output: ['cscope.out', 'cscope.files'],
+              build_always_stale: true,
+              command: [make_tags, 'ctags', meson.source_root()])

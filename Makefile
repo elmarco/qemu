@@ -10,7 +10,7 @@ BUILD_DIR=$(CURDIR)
 # Before including a proper config-host.mak, assume we are in the source tree
 SRC_PATH=.
 
-UNCHECKED_GOALS := %clean TAGS cscope ctags dist \
+UNCHECKED_GOALS := %clean dist \
     html info pdf txt \
     help check-help print-% \
     docker docker-% vm-help vm-test vm-build-%
@@ -106,7 +106,7 @@ edk2-decompressed = $(basename $(wildcard pc-bios/edk2-*.fd.bz2))
 Makefile: ;
 configure: ;
 
-.PHONY: all clean cscope distclean html info install install-doc \
+.PHONY: all clean distclean html info install install-doc \
 	pdf txt recurse-all dist msi FORCE
 
 $(call set-vpath, $(SRC_PATH))
@@ -217,7 +217,7 @@ clean: recurse-clean
 		! -path ./roms/edk2/BaseTools/Source/Python/UPT/Dll/sqlite3.dll \
 		-exec rm {} +
 	rm -f $(edk2-decompressed)
-	rm -f TAGS cscope.* *.pod *~ */*~
+	rm -f *.pod *~ */*~
 	rm -f fsdev/*.pod scsi/*.pod
 	rm -f qemu-img-cmds.h
 	rm -f ui/shader/*-vert.h ui/shader/*-frag.h
@@ -432,21 +432,6 @@ endif
 	set -e; for x in $(KEYMAPS); do \
 		$(INSTALL_DATA) $(SRC_PATH)/pc-bios/keymaps/$$x "$(DESTDIR)$(qemu_datadir)/keymaps"; \
 	done
-
-.PHONY: ctags
-ctags:
-	rm -f tags
-	find "$(SRC_PATH)" -name '*.[hc]' -exec ctags --append {} +
-
-.PHONY: TAGS
-TAGS:
-	rm -f TAGS
-	find "$(SRC_PATH)" -name '*.[hc]' -exec etags --append {} +
-
-cscope:
-	rm -f "$(SRC_PATH)"/cscope.*
-	find "$(SRC_PATH)/" -name "*.[chsS]" -print | sed 's,^\./,,' > "$(SRC_PATH)/cscope.files"
-	cscope -b -i"$(SRC_PATH)/cscope.files"
 
 # documentation
 MAKEINFO=makeinfo
