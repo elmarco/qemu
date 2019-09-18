@@ -1,3 +1,7 @@
+configure_file(output: 'version.texi',
+               input: 'version.texi.in',
+               configuration: config_host)
+
 sphinx = find_program('sphinx-build', required: build_docs)
 
 if sphinx.found()
