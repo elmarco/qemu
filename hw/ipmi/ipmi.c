@@ -101,12 +101,11 @@ static void isa_ipmi_bmc_check(const Object *obj, const char *name,
         error_setg(errp, "BMC object is already in use");
 }
 
-void ipmi_bmc_find_and_link(Object *obj, Object **bmc)
+void ipmi_add_bmc_link(ObjectClass *oc, size_t ptroff)
 {
-    object_property_add_link(obj, "bmc", TYPE_IPMI_BMC, bmc,
-                             isa_ipmi_bmc_check,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
+    object_class_property_add_link(oc, "bmc", TYPE_IPMI_BMC, ptroff,
+                                   isa_ipmi_bmc_check,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static Property ipmi_bmc_properties[] = {

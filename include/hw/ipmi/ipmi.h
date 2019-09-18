@@ -206,9 +206,9 @@ typedef struct IPMIBmcClass {
 } IPMIBmcClass;
 
 /*
- * Add a link property to obj that points to a BMC.
+ * Add a link property that points to a BMC.
  */
-void ipmi_bmc_find_and_link(Object *obj, Object **bmc);
+void ipmi_add_bmc_link(ObjectClass *oc, size_t offptr);
 
 #ifdef IPMI_DEBUG
 #define ipmi_debug(fs, ...) \

@@ -94,13 +94,6 @@ const VMStateDescription vmstate_PCIIPMIBTDevice = {
     }
 };
 
-static void pci_ipmi_bt_instance_init(Object *obj)
-{
-    PCIIPMIBTDevice *pik = PCI_IPMI_BT(obj);
-
-    ipmi_bmc_find_and_link(obj, (Object **) &pik->bt.bmc);
-}
-
 static void *pci_ipmi_bt_get_backend_data(IPMIInterface *ii)
 {
     PCIIPMIBTDevice *pik = PCI_IPMI_BT(ii);
@@ -125,13 +118,14 @@ static void pci_ipmi_bt_class_init(ObjectClass *oc, void *data)
 
     iic->get_backend_data = pci_ipmi_bt_get_backend_data;
     ipmi_bt_class_init(iic);
+
+    ipmi_add_bmc_link(oc, offsetof(PCIIPMIBTDevice, bt.bmc));
 }
 
 static const TypeInfo pci_ipmi_bt_info = {
     .name          = TYPE_PCI_IPMI_BT,
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(PCIIPMIBTDevice),
-    .instance_init = pci_ipmi_bt_instance_init,
     .class_init    = pci_ipmi_bt_class_init,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_IPMI_INTERFACE },

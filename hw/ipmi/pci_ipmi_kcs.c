@@ -94,13 +94,6 @@ const VMStateDescription vmstate_PCIIPMIKCSDevice = {
     }
 };
 
-static void pci_ipmi_kcs_instance_init(Object *obj)
-{
-    PCIIPMIKCSDevice *pik = PCI_IPMI_KCS(obj);
-
-    ipmi_bmc_find_and_link(obj, (Object **) &pik->kcs.bmc);
-}
-
 static void *pci_ipmi_kcs_get_backend_data(IPMIInterface *ii)
 {
     PCIIPMIKCSDevice *pik = PCI_IPMI_KCS(ii);
@@ -125,13 +118,14 @@ static void pci_ipmi_kcs_class_init(ObjectClass *oc, void *data)
 
     iic->get_backend_data = pci_ipmi_kcs_get_backend_data;
     ipmi_kcs_class_init(iic);
+
+    ipmi_add_bmc_link(oc, offsetof(PCIIPMIKCSDevice, kcs.bmc));
 }
 
 static const TypeInfo pci_ipmi_kcs_info = {
     .name          = TYPE_PCI_IPMI_KCS,
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(PCIIPMIKCSDevice),
-    .instance_init = pci_ipmi_kcs_instance_init,
     .class_init    = pci_ipmi_kcs_class_init,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_IPMI_INTERFACE },

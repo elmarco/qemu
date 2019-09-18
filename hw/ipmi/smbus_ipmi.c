@@ -325,13 +325,6 @@ static void smbus_ipmi_realize(DeviceState *dev, Error **errp)
     sid->bmc->intf = ii;
 }
 
-static void smbus_ipmi_init(Object *obj)
-{
-    SMBusIPMIDevice *sid = SMBUS_IPMI(obj);
-
-    ipmi_bmc_find_and_link(OBJECT(obj), (Object **) &sid->bmc);
-}
-
 static void smbus_ipmi_get_fwinfo(struct IPMIInterface *ii, IPMIFwInfo *info)
 {
     SMBusIPMIDevice *sid = SMBUS_IPMI(ii);
@@ -362,13 +355,14 @@ static void smbus_ipmi_class_init(ObjectClass *oc, void *data)
     iic->handle_if_event = smbus_ipmi_handle_event;
     iic->set_irq_enable = smbus_ipmi_set_irq_enable;
     iic->get_fwinfo = smbus_ipmi_get_fwinfo;
+
+    ipmi_add_bmc_link(oc, offsetof(SMBusIPMIDevice, bmc));
 }
 
 static const TypeInfo smbus_ipmi_info = {
     .name          = TYPE_SMBUS_IPMI,
     .parent        = TYPE_SMBUS_DEVICE,
     .instance_size = sizeof(SMBusIPMIDevice),
-    .instance_init = smbus_ipmi_init,
     .class_init    = smbus_ipmi_class_init,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_IPMI_INTERFACE },

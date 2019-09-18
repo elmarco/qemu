@@ -125,8 +125,6 @@ static void isa_ipmi_kcs_init(Object *obj)
 {
     ISAIPMIKCSDevice *iik = ISA_IPMI_KCS(obj);
 
-    ipmi_bmc_find_and_link(obj, (Object **) &iik->kcs.bmc);
-
     /*
      * Version 1 had an incorrect name, it clashed with the BT
      * IPMI device, so receive it, but transmit a different
@@ -159,6 +157,8 @@ static void isa_ipmi_kcs_class_init(ObjectClass *oc, void *data)
     iic->get_backend_data = isa_ipmi_kcs_get_backend_data;
     ipmi_kcs_class_init(iic);
     iic->get_fwinfo = isa_ipmi_kcs_get_fwinfo;
+
+    ipmi_add_bmc_link(oc, offsetof(ISAIPMIKCSDevice, kcs.bmc));
 }
 
 static const TypeInfo isa_ipmi_kcs_info = {

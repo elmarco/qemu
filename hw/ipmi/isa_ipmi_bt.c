@@ -123,8 +123,6 @@ static void isa_ipmi_bt_init(Object *obj)
 {
     ISAIPMIBTDevice *iib = ISA_IPMI_BT(obj);
 
-    ipmi_bmc_find_and_link(obj, (Object **) &iib->bt.bmc);
-
     vmstate_register(NULL, 0, &vmstate_ISAIPMIBTDevice, iib);
 }
 
@@ -152,6 +150,8 @@ static void isa_ipmi_bt_class_init(ObjectClass *oc, void *data)
     iic->get_backend_data = isa_ipmi_bt_get_backend_data;
     ipmi_bt_class_init(iic);
     iic->get_fwinfo = isa_ipmi_bt_get_fwinfo;
+
+    ipmi_add_bmc_link(oc, offsetof(ISAIPMIBTDevice, bt.bmc));
 }
 
 static const TypeInfo isa_ipmi_bt_info = {
