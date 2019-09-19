@@ -5,5 +5,6 @@ if 'CONFIG_VIRGL' in config_host and 'CONFIG_GBM' in config_host
 
   configure_file(input: '50-qemu-gpu.json.in',
                  output: '50-qemu-gpu.json',
-                 configuration: config_host)
+                 configuration: config_host,
+                 install_dir: config_host['qemu_datadir'] / 'vhost-user')
 endif
