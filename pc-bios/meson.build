@@ -24,6 +24,8 @@ foreach f: fds
                 install_dir: config_host['qemu_datadir'])
 endforeach
 
+subdir('descriptors')
+
 blobs = files(
   'QEMU,cgthree.bin',
   'QEMU,tcx.bin',
