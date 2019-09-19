@@ -25,6 +25,7 @@ foreach f: fds
 endforeach
 
 subdir('descriptors')
+subdir('keymaps')
 
 blobs = files(
   'QEMU,cgthree.bin',
