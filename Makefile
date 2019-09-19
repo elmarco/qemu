@@ -263,29 +263,11 @@ BLOBS=
 DESCS=
 endif
 
-install-datadir:
-	$(INSTALL_DIR) "$(DESTDIR)$(qemu_datadir)"
-
-install-localstatedir:
-ifdef CONFIG_POSIX
-ifeq ($(CONFIG_GUEST_AGENT),y)
-	$(INSTALL_DIR) "$(DESTDIR)$(qemu_localstatedir)"/run
-endif
-endif
-
 ICON_SIZES=16x16 24x24 32x32 48x48 64x64 128x128 256x256 512x512
 
-install: all install-datadir install-localstatedir \
+install: \
 	$(if $(INSTALL_BLOBS),$(edk2-decompressed)) \
 	recurse-install
-ifneq ($(CONFIG_MODULES),)
-	$(INSTALL_DIR) "$(DESTDIR)$(qemu_moddir)"
-	for s in $(modules-m:.mo=$(DSOSUF)); do \
-		t="$(DESTDIR)$(qemu_moddir)/$$(echo $$s | tr / -)"; \
-		$(INSTALL_LIB) $$s "$$t"; \
-		test -z "$(STRIP)" || $(STRIP) "$$t"; \
-	done
-endif
 ifneq ($(vhost-user-json-y),)
 	$(INSTALL_DIR) "$(DESTDIR)$(qemu_datadir)/vhost-user/"
 	for x in $(vhost-user-json-y); do \

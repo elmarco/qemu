@@ -768,7 +768,9 @@ block = declare_dependency(link_whole: libblock, link_args: '@block.syms')
 foreach m : mods
   shared_module(m['dir'] + '-' + m['name'],
                 name_prefix: '',
-                link_whole: [m['lib']])
+                link_whole: [m['lib']],
+                install: true,
+                install_dir: config_host['qemu_moddir'])
 endforeach
 
 softmmu_ss.add(block)
@@ -908,18 +910,18 @@ if 'CONFIG_GUEST_AGENT' in config_host
 endif
 
 if have_tools
-  executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil])
+  executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil], install: true)
   if host_machine.system() == 'linux' or host_machine.system() == 'sunos' or host_machine.system().endswith('bsd')
-    executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil])
+    executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil], install: true)
   endif
-  executable('qemu-io', files('qemu-io.c'), dependencies: [block, qemuutil])
+  executable('qemu-io', files('qemu-io.c'), dependencies: [block, qemuutil], install: true)
 
   subdir('contrib/rdmacm-mux')
   subdir('contrib/elf2dmp')
 
   if xkbcommon.found()
     executable('qemu-keymap', files('qemu-keymap.c', 'ui/input-keymap.c'),
-               dependencies: [qemuutil, xkbcommon])
+               dependencies: [qemuutil, xkbcommon], install: true)
   endif
 
   executable('qemu-edid', files('qemu-edid.c', 'hw/display/edid-generate.c'),
@@ -935,11 +937,14 @@ if have_tools
 
   if host_machine.system() == 'linux'
     executable('qemu-bridge-helper', files('qemu-bridge-helper.c'),
-               dependencies: [qemuutil, libcap_ng])
+               dependencies: [qemuutil, libcap_ng],
+               install: true,
+               install_dir: get_option('libexecdir'))
 
     executable('qemu-pr-helper', files('scsi/qemu-pr-helper.c', 'scsi/utils.c'),
                dependencies: [authz, crypto, io, qom, qemuutil,
-                              libcap_ng, libudev, libmpathpersist])
+                              libcap_ng, libudev, libmpathpersist],
+               install: true)
   endif
 
   if 'CONFIG_IVSHMEM' in config_host
