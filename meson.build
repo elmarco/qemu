@@ -1090,3 +1090,7 @@ if host_machine.system() == 'windows'
                 build_always_stale: true,
                 command: nsis_cmd + ['@INPUT@'])
 endif
+
+if 'CONFIG_GTK' in config_host
+  subdir('po')
+endif

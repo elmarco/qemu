@@ -227,10 +227,6 @@ distclean: clean
 	if test -f dtc/version_gen.h; then $(MAKE) $(DTC_MAKE_ARGS) clean; fi
 
 install: recurse-install
-ifdef CONFIG_GTK
-	$(MAKE) -C po $@
-endif
-
 # Add a dependency on the generated files, so that they are always
 # rebuilt before other object files
 ifneq ($(wildcard config-host.mak),)
