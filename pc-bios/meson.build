@@ -11,11 +11,15 @@ fds = [
   'edk2-x86_64-secure-code.fd',
 ]
 
-foreach f : fds
+install_blobs = 'INSTALL_BLOBS' in config_host
+
+foreach f: fds
   custom_target(f,
                 output: f,
                 input: '@0@.bz2'.format(f),
                 capture: true,
                 build_by_default: true,
-                command: [ bzip2, '-dc', '@INPUT0@' ])
+                command: [ bzip2, '-dc', '@INPUT0@' ],
+                install: install_blobs,
+                install_dir: config_host['qemu_datadir'])
 endforeach
