@@ -1988,6 +1988,7 @@ EOF
     if do_cc $QEMU_CFLAGS -Werror $flag -c -o $TMPO $TMPC &&
        compile_prog "-Werror $flag" ""; then
       QEMU_CFLAGS="$QEMU_CFLAGS $flag"
+      QEMU_LDFLAGS="$QEMU_LDFLAGS $flag"
       sp_on=1
       break
     fi
