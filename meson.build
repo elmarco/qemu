@@ -953,6 +953,7 @@ if have_tools
   endif
 endif
 
+subdir('scripts')
 subdir('pc-bios')
 
 make_tags = find_program('scripts/make-tags.sh')
