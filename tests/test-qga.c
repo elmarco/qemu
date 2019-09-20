@@ -728,10 +728,12 @@ static void test_qga_config(gconstpointer data)
     g_assert_false(g_key_file_get_boolean(kf, "general", "daemon", &error));
     g_assert_no_error(error);
 
+#ifdef CONFIG_VIRTIO_SERIAL
     str = g_key_file_get_string(kf, "general", "method", &error);
     g_assert_no_error(error);
     g_assert_cmpstr(str, ==, "virtio-serial");
     g_free(str);
+#endif
 
     str = g_key_file_get_string(kf, "general", "path", &error);
     g_assert_no_error(error);
