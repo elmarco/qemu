@@ -1,4 +1,4 @@
-common_ss.add(files(
+hwcore_files = files(
   # core qdev-related obj files, also used by *-user:
   'bus.c',
   'cpu.c',
@@ -9,7 +9,12 @@ common_ss.add(files(
   'reset.c',
   # irq.c needed for qdev GPIO handling:
   'irq.c',
-))
+)
+
+libhwcore = static_library('libhwcore', sources: hwcore_files)
+hwcore = declare_dependency(link_with: libhwcore)
+
+common_ss.add(hwcore)
 
 common_ss.add(when: 'CONFIG_EMPTY_SLOT', if_true: files('empty_slot.c'))
 common_ss.add(when: 'CONFIG_FITLOADER', if_true: files('loader-fit.c'))
