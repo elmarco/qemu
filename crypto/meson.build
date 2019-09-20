@@ -22,6 +22,7 @@ crypto_ss.add(files(
   'tlssession.c',
   'xts.c',
 ))
+crypto_ss.add(authz)
 
 if 'CONFIG_GCRYPT' in config_host
   wo_nettle = files('hash-gcrypt.c', 'pbkdf-gcrypt.c')
