@@ -329,6 +329,11 @@ if 'CONFIG_CAPSTONE' in config_host
   capstone = declare_dependency(compile_args: config_host['CAPSTONE_CFLAGS'].split(),
                                 link_args: config_host['CAPSTONE_LIBS'].split())
 endif
+tasn1 = declare_dependency()
+if 'CONFIG_TASN1' in config_host
+  tasn1 = declare_dependency(compile_args: config_host['TASN1_CFLAGS'].split(),
+                             link_args: config_host['TASN1_LIBS'].split())
+endif
 
 create_config = find_program('scripts/create_config')
 minikconf = find_program('scripts/minikconf.py')
