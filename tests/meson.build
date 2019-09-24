@@ -4,12 +4,13 @@ rand = run_command(py3, '-c', 'import os; print(ord(os.urandom(1)))').stdout().s
 
 slow_timeout = 300 # seconds
 
-test_env = environment()
-test_env.set('G_TEST_SRCDIR', meson.current_source_dir())
-test_env.set('G_TEST_BUILDDIR', meson.current_build_dir())
-test_env.set('G_DEBUG', 'gc-friendly')
-test_env.set('MALLOC_CHECK_', '2')
-test_env.set('MALLOC_PERTURB_', '@0@'.format(rand))
+test_env = {
+  'G_TEST_SRCDIR': meson.current_source_dir(),
+  'G_TEST_BUILDDIR': meson.current_build_dir(),
+  'G_DEBUG': 'gc-friendly',
+  'MALLOC_CHECK_': '2',
+  'MALLOC_PERTURB_': '@0@'.format(rand),
+}
 
 test_qapi_outputs = [
   'test-qapi-commands-sub-sub-module.c',
@@ -281,6 +282,12 @@ qos_tests_ss.add(when: 'CONFIG_VIRTFS', if_true: files('virtio-9p-test.c'))
 qos_tests_ss.add(when: 'CONFIG_VHOST_NET_USER', if_true: [files('vhost-user-test.c'), chardev, io])
 qos_tests = qos_tests_ss.apply(config_host, strict: false)
 
+bios_tables_test_targets = ['i386']
+# TODO: once aarch64 TCG is fixed on ARM 32 bit host, make test unconditional
+if config_host['ARCH'] != 'arm'
+  bios_tables_test_targets += ['aarch64']
+endif
+
 qtests = {
   'qmp-test': {},
   'qmp-cmd-test': {},
@@ -291,22 +298,77 @@ qtests = {
   'qom-test': {},
   'test-hmp': {},
   'qos-test': {'extra_src': qos_tests.sources(), 'deps': qos_tests.dependencies()},
+  'fdc-test': {'targets': ['i386']},
+  'endianness-test': {'targets': ['i386', 'mips', 'mips64', 'mips64el', 'ppc', 'sh4', 'sh4eb', 'sparc64'], 'if': ['CONFIG_ISA_TESTDEV']},
+  'rtl8139-test': {'targets': ['i386'], 'if': ['CONFIG_RTL8139_PCI'], 'deps': [qos]},
+  'display-vga-test': {'targets': ['i386', 'ppc64', 'alpha', 'hppa', 'mips', 'mips64', 'mips64el'], 'if': ['CONFIG_VGA']},
+  'intel-hda-test': {'targets': ['i386'], 'if': ['CONFIG_HDA']},
+  'ivshmem-test': {
+    'extra_src': files(meson.source_root() / 'contrib/ivshmem-server/ivshmem-server.c'),
+    'targets': ['i386', 'ppc64'],
+    'if': ['CONFIG_IVSHMEM_DEVICE'],
+    'deps': [qos, rt],
+  },
+  'ide-test': {'targets': ['i386'], 'deps': [qos]},
+  'hd-geo-test': {'targets': ['i386']},
+  'boot-order-test': {'targets': ['i386', 'ppc'], 'deps': [qos]},
+  'bios-tables-test': {'extra_src': ['boot-sector.c', 'acpi-utils.c'], 'targets': bios_tables_test_targets, 'deps': [qos]},
+  'boot-serial-test': {
+    'targets': ['alpha', 'hppa', 'm68k', 'microblaze', 'moxie', 'ppc', 'sparc', 'sparc64', 'arm', 'aarch64', 's390x', 'i386'],
+    'deps': [qos],
+    'if_i386': ['CONFIG_SGA'],
+    'if_x86_64': ['CONFIG_SGA'],
+  },
+  'pxe-test': {'extra_src': ['boot-sector.c'], 'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_SLIRP'], 'deps': [qos]},
+  'rtc-test': {'targets': ['i386']},
+  'ipmi-kcs-test': {'targets': ['i386'], 'if': ['CONFIG_ISA_IPMI_KCS']},
+  # Disabled temporarily as it fails intermittently especially under NetBSD VM
+  # 'ipmi-bt-test': {'targets': ['i386'], 'if': ['CONFIG_ISA_IPMI_BT']},
+  'i440fx-test': {'targets': ['i386'], 'deps': [qos]},
+  'fw_cfg-test': {'targets': ['i386'], 'deps': [qos]},
+  'device-plug-test': {'targets': ['i386', 's390x', 'ppc64'], 'if_ppc64': ['CONFIG_PSERIES']},
+  'drive_del-test': {'targets': ['i386', 'ppc', 's390x']},
+  'wdt_ib700-test': {'targets': ['i386'], 'if': ['CONFIG_WDT_IB700']},
+  'tco-test': {'targets': ['i386'], 'deps': [qos]},
+  'pvpanic-test': {'targets': ['i386'], 'if': ['CONFIG_PVPANIC']},
+  'i82801b11-test': {'targets': ['i386'], 'if': ['CONFIG_I82801B11']},
+  'ioh3420-test': {'targets': ['i386'], 'if': ['CONFIG_IOH3420']},
+  'usb-hcd-uhci-test': {'targets': ['i386', 'ppc64'], 'deps': [qos], 'if': ['CONFIG_USB_UHCI']},
+  'usb-hcd-ehci-test': {'targets': ['i386'], 'deps': [qos], 'if': ['CONFIG_USB_UHCI', 'CONFIG_USB_EHCI']},
+  'usb-hcd-xhci-test': {'targets': ['i386', 'ppc64'], 'if': ['CONFIG_USB_XHCI_NEC'], 'deps': [qos]},
+  'cpu-plug-test': {'targets': ['i386', 'ppc64', 's390x']},
+  'q35-test': {'targets': ['i386'], 'deps': [qos]},
+  'vmgenid-test': {'extra_src': ['boot-sector.c', 'acpi-utils.c'], 'targets': ['i386'], 'deps': [qos]},
+  'tpm-crb-swtpm-test': {'extra_src': ['tpm-emu.c', 'tpm-util.c', 'tpm-tests.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_CRB'], 'deps': [io]},
+  'tpm-crb-test': {'extra_src': ['tpm-emu.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_CRB'], 'deps': [io]},
+  'tpm-tis-swtpm-test': {'extra_src': ['tpm-emu.c', 'tpm-util.c', 'tpm-tests.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_TIS'], 'deps': [io]},
+  'tpm-tis-test': {'extra_src': ['tpm-emu.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_TIS'], 'deps': [io]},
+  'test-netfilter': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_SLIRP']},
+  'test-filter-mirror': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_POSIX']},
+  'test-filter-redirector': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_RTL8139_PCI']},
+  'migration-test': {'targets': ['i386', 'ppc64', 's390x', 'aarch64']},
+  'test-x86-cpuid-compat': {'targets': ['i386']},
+  'numa-test': {'targets': ['i386', 'ppc64', 'aarch64']},
+  'prom-env-test': {'targets': ['ppc', 'sparc', 'sparc64'], 'deps': [qos]},
+  'm48t59-test': {'targets': ['ppc', 'sparc'], 'if': ['CONFIG_M48T59']},
+  'pnv-xscom-test': {'targets': ['ppc64'], 'if': ['CONFIG_POWERNV']},
+  'rtas-test': {'targets': ['ppc64'], 'if': ['CONFIG_PSERIES'], 'deps': [qos]},
+  'microbit-test': {'targets': ['arm']},
+  'm25p80-test': {'targets': ['arm']},
+  'test-arm-mptimer': {'targets': ['arm']},
+  'hexloader-test': {'targets': ['arm']},
+  'pflash-cfi02-test': {'targets': ['arm'], 'if': ['CONFIG_PFLASH_CFI02']},
+  'virtio-ccw-test': {'targets': ['s390x']},
 }
+
+if have_tools
+  qtests += {'ahci-test': {'targets': ['i386'], 'if': ['CONFIG_TOOLS'], 'deps': [qos], 'test_deps': qemu_img}}
+  test_env += {'QTEST_QEMU_IMG': qemu_img.full_path()}
+endif
 
 test_deps += [qtest]
 
 foreach test_name, extra_args: qtests
-  check_if = true
-  foreach t: extra_args.get('if', [])
-    if t not in config_host
-      check_if = false
-      break
-    endif
-  endforeach
-  if not check_if
-    continue
-  endif
-
   src = extra_args.get('src', [test_name + '.c'])
   extra_src = extra_args.get('extra_src', [])
   test_exe = executable(test_name, src + extra_src,
@@ -314,18 +376,43 @@ foreach test_name, extra_args: qtests
                         build_by_default: false)
 
   foreach q: qemu
+    check_if = true
+    foreach t: extra_args.get('if', []) + extra_args.get('if_' + q['target-name'], [])
+      if t not in q['config']
+        check_if = false
+        break
+      endif
+    endforeach
+    if not check_if
+      continue
+    endif
+
     if q['target-type'] != 'system' or q['gui']
       continue
     endif
 
-    test_env.set('QTEST_QEMU_BINARY', q['exe'].full_path())
+    test_targets = extra_args.get('targets', [])
+    foreach t, alias: {'i386': 'x86_64',
+                       'ppc': 'ppc64',
+                       'microblaze': 'microblazeel',
+                       'xtensa': 'xtensaeb'}
+      if t in test_targets
+        test_targets += [alias]
+      endif
+    endforeach
+
+    if q['target-name'] not in test_targets
+      continue
+    endif
+
+    test_env += {'QTEST_QEMU_BINARY': q['exe'].full_path()}
 
     test(test_name,
          test_exe,
          depends: extra_args.get('test_deps', []),
          args: ['--tap'],
          env: test_env,
-         suite: ['qtest'] + extra_args.get('suite', []),
+         suite: ['qtest', q['target-name']] + extra_args.get('suite', []),
          protocol: 'tap',
          timeout: slow_timeout)
   endforeach

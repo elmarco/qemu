@@ -6,8 +6,6 @@ check-help:
 	@echo
 	@echo " $(MAKE) check                Run unit, qtest and decodetree"
 	@echo
-	@echo " $(MAKE) check-qtest-TARGET   Run qtest tests for given target"
-	@echo " $(MAKE) check-qtest          Run qtest tests"
 	@echo " $(MAKE) check-block          Run block tests"
 	@echo " $(MAKE) check-tcg            Run TCG tests"
 	@echo " $(MAKE) check-softfloat      Run FPU emulation tests"
@@ -27,218 +25,13 @@ check-help:
 ifneq ($(wildcard config-host.mak),)
 export SRC_PATH
 
-# Get the list of all supported sysemu targets
-SYSEMU_TARGET_LIST := $(subst -softmmu.mak,,$(notdir \
-   $(wildcard $(SRC_PATH)/default-configs/*-softmmu.mak)))
-
 check-block-$(call land,$(CONFIG_POSIX),$(CONFIG_SOFTMMU)) += tests/check-block.sh
 
-# All QTests for now are POSIX-only, but the dependencies are
-# really in libqtest, not in the testcases themselves.
-
-check-qtest-pci-$(CONFIG_RTL8139_PCI) += tests/rtl8139-test$(EXESUF)
-check-qtest-pci-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-check-qtest-pci-$(CONFIG_HDA) += tests/intel-hda-test$(EXESUF)
-check-qtest-pci-$(CONFIG_IVSHMEM_DEVICE) += tests/ivshmem-test$(EXESUF)
-
-check-qtest-i386-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-i386-y += tests/fdc-test$(EXESUF)
-check-qtest-i386-y += tests/ide-test$(EXESUF)
-ifeq ($(CONFIG_TOOLS),y)
-check-qtest-i386-y += tests/ahci-test$(EXESUF)
-endif
-check-qtest-i386-y += tests/hd-geo-test$(EXESUF)
-check-qtest-i386-y += tests/boot-order-test$(EXESUF)
-check-qtest-i386-y += tests/bios-tables-test$(EXESUF)
-check-qtest-i386-$(CONFIG_SGA) += tests/boot-serial-test$(EXESUF)
-check-qtest-i386-$(CONFIG_SLIRP) += tests/pxe-test$(EXESUF)
-check-qtest-i386-y += tests/rtc-test$(EXESUF)
-check-qtest-i386-$(CONFIG_ISA_IPMI_KCS) += tests/ipmi-kcs-test$(EXESUF)
-# Disabled temporarily as it fails intermittently especially under NetBSD VM
-# check-qtest-i386-$(CONFIG_ISA_IPMI_BT) += tests/ipmi-bt-test$(EXESUF)
-check-qtest-i386-y += tests/i440fx-test$(EXESUF)
-check-qtest-i386-y += tests/fw_cfg-test$(EXESUF)
-check-qtest-i386-y += tests/device-plug-test$(EXESUF)
-check-qtest-i386-y += tests/drive_del-test$(EXESUF)
-check-qtest-i386-$(CONFIG_WDT_IB700) += tests/wdt_ib700-test$(EXESUF)
-check-qtest-i386-y += tests/tco-test$(EXESUF)
-check-qtest-i386-y += $(check-qtest-pci-y)
-check-qtest-i386-$(CONFIG_PVPANIC) += tests/pvpanic-test$(EXESUF)
-check-qtest-i386-$(CONFIG_I82801B11) += tests/i82801b11-test$(EXESUF)
-check-qtest-i386-$(CONFIG_IOH3420) += tests/ioh3420-test$(EXESUF)
-check-qtest-i386-$(CONFIG_USB_UHCI) += tests/usb-hcd-uhci-test$(EXESUF)
-check-qtest-i386-$(call land,$(CONFIG_USB_EHCI),$(CONFIG_USB_UHCI)) += tests/usb-hcd-ehci-test$(EXESUF)
-check-qtest-i386-$(CONFIG_USB_XHCI_NEC) += tests/usb-hcd-xhci-test$(EXESUF)
-check-qtest-i386-y += tests/cpu-plug-test$(EXESUF)
-check-qtest-i386-y += tests/q35-test$(EXESUF)
-check-qtest-i386-y += tests/vmgenid-test$(EXESUF)
-check-qtest-i386-$(CONFIG_TPM_CRB) += tests/tpm-crb-swtpm-test$(EXESUF)
-check-qtest-i386-$(CONFIG_TPM_CRB) += tests/tpm-crb-test$(EXESUF)
-check-qtest-i386-$(CONFIG_TPM_TIS) += tests/tpm-tis-swtpm-test$(EXESUF)
-check-qtest-i386-$(CONFIG_TPM_TIS) += tests/tpm-tis-test$(EXESUF)
-check-qtest-i386-$(CONFIG_SLIRP) += tests/test-netfilter$(EXESUF)
-check-qtest-i386-$(CONFIG_POSIX) += tests/test-filter-mirror$(EXESUF)
-check-qtest-i386-$(CONFIG_RTL8139_PCI) += tests/test-filter-redirector$(EXESUF)
-check-qtest-i386-y += tests/migration-test$(EXESUF)
-check-qtest-i386-y += tests/test-x86-cpuid-compat$(EXESUF)
-check-qtest-i386-y += tests/numa-test$(EXESUF)
-check-qtest-x86_64-y += $(check-qtest-i386-y)
-
-check-qtest-alpha-y += tests/boot-serial-test$(EXESUF)
-check-qtest-alpha-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-
-check-qtest-hppa-y += tests/boot-serial-test$(EXESUF)
-check-qtest-hppa-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-
-check-qtest-m68k-y = tests/boot-serial-test$(EXESUF)
-
-check-qtest-microblaze-y += tests/boot-serial-test$(EXESUF)
-
-check-qtest-mips-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-mips-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-
-check-qtest-mips64-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-mips64-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-
-check-qtest-mips64el-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-mips64el-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-
-check-qtest-moxie-y += tests/boot-serial-test$(EXESUF)
-
-check-qtest-ppc-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-ppc-y += tests/boot-order-test$(EXESUF)
-check-qtest-ppc-y += tests/prom-env-test$(EXESUF)
-check-qtest-ppc-y += tests/drive_del-test$(EXESUF)
-check-qtest-ppc-y += tests/boot-serial-test$(EXESUF)
-check-qtest-ppc-$(CONFIG_M48T59) += tests/m48t59-test$(EXESUF)
-
-check-qtest-ppc64-y += $(check-qtest-ppc-y)
-check-qtest-ppc64-$(CONFIG_PSERIES) += tests/device-plug-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_POWERNV) += tests/pnv-xscom-test$(EXESUF)
-check-qtest-ppc64-y += tests/migration-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_PSERIES) += tests/rtas-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_SLIRP) += tests/pxe-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_USB_UHCI) += tests/usb-hcd-uhci-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_USB_XHCI_NEC) += tests/usb-hcd-xhci-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_SLIRP) += tests/test-netfilter$(EXESUF)
-check-qtest-ppc64-$(CONFIG_POSIX) += tests/test-filter-mirror$(EXESUF)
-check-qtest-ppc64-$(CONFIG_RTL8139_PCI) += tests/test-filter-redirector$(EXESUF)
-check-qtest-ppc64-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
-check-qtest-ppc64-y += tests/numa-test$(EXESUF)
-check-qtest-ppc64-$(CONFIG_IVSHMEM_DEVICE) += tests/ivshmem-test$(EXESUF)
-check-qtest-ppc64-y += tests/cpu-plug-test$(EXESUF)
-
-check-qtest-sh4-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-
-check-qtest-sh4eb-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-
-check-qtest-sparc-y += tests/prom-env-test$(EXESUF)
-check-qtest-sparc-y += tests/m48t59-test$(EXESUF)
-check-qtest-sparc-y += tests/boot-serial-test$(EXESUF)
-
-check-qtest-sparc64-$(CONFIG_ISA_TESTDEV) = tests/endianness-test$(EXESUF)
-check-qtest-sparc64-y += tests/prom-env-test$(EXESUF)
-check-qtest-sparc64-y += tests/boot-serial-test$(EXESUF)
-
-check-qtest-arm-y += tests/microbit-test$(EXESUF)
-check-qtest-arm-y += tests/m25p80-test$(EXESUF)
-check-qtest-arm-y += tests/test-arm-mptimer$(EXESUF)
-check-qtest-arm-y += tests/boot-serial-test$(EXESUF)
-check-qtest-arm-y += tests/hexloader-test$(EXESUF)
-check-qtest-arm-$(CONFIG_PFLASH_CFI02) += tests/pflash-cfi02-test$(EXESUF)
-
-check-qtest-aarch64-y = tests/numa-test$(EXESUF)
-check-qtest-aarch64-y += tests/boot-serial-test$(EXESUF)
-check-qtest-aarch64-y += tests/migration-test$(EXESUF)
-# TODO: once aarch64 TCG is fixed on ARM 32 bit host, make test unconditional
-ifneq ($(ARCH),arm)
-check-qtest-aarch64-y += tests/bios-tables-test$(EXESUF)
-endif
-
-check-qtest-microblazeel-y += $(check-qtest-microblaze-y)
-
-check-qtest-xtensaeb-y += $(check-qtest-xtensa-y)
-
-check-qtest-s390x-y = tests/boot-serial-test$(EXESUF)
-check-qtest-s390x-$(CONFIG_SLIRP) += tests/pxe-test$(EXESUF)
-check-qtest-s390x-$(CONFIG_SLIRP) += tests/test-netfilter$(EXESUF)
-check-qtest-s390x-$(CONFIG_POSIX) += tests/test-filter-mirror$(EXESUF)
-check-qtest-s390x-$(CONFIG_POSIX) += tests/test-filter-redirector$(EXESUF)
-check-qtest-s390x-y += tests/drive_del-test$(EXESUF)
-check-qtest-s390x-y += tests/device-plug-test$(EXESUF)
-check-qtest-s390x-y += tests/virtio-ccw-test$(EXESUF)
-check-qtest-s390x-y += tests/cpu-plug-test$(EXESUF)
-check-qtest-s390x-y += tests/migration-test$(EXESUF)
-
-QEMU_CFLAGS += -I$(SRC_PATH)/tests
-
-# Deps that are common to various different sets of tests below
-test-util-obj-y = libqemuutil.a
-test-qom-obj-y = qom/libqom.fa $(test-util-obj-y)
-test-crypto-obj-$(CONFIG_BLOCK) = $(authz-obj-y) $(crypto-obj-y) $(test-qom-obj-y)
-test-io-obj-$(CONFIG_BLOCK) = $(io-obj-y) $(test-crypto-obj-y)
-test-authz-obj-$(CONFIG_BLOCK) = $(test-qom-obj-y) $(authz-obj-y)
-test-block-obj-$(CONFIG_BLOCK) = $(block-obj-y) $(test-io-obj-y) tests/iothread.o
 
 tests/fp/%:
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
-tests/tpm-crb-swtpm-test$(EXESUF): tests/tpm-crb-swtpm-test.o tests/tpm-emu.o \
-	tests/tpm-util.o tests/tpm-tests.o $(test-io-obj-y)
-tests/tpm-crb-test$(EXESUF): tests/tpm-crb-test.o tests/tpm-emu.o $(test-io-obj-y)
-tests/tpm-tis-swtpm-test$(EXESUF): tests/tpm-tis-swtpm-test.o tests/tpm-emu.o \
-	tests/tpm-util.o tests/tpm-tests.o $(test-io-obj-y)
-tests/tpm-tis-test$(EXESUF): tests/tpm-tis-test.o tests/tpm-emu.o $(test-io-obj-y)
-
-tests/rtc-test$(EXESUF): tests/rtc-test.o
-tests/m48t59-test$(EXESUF): tests/m48t59-test.o
-tests/hexloader-test$(EXESUF): tests/hexloader-test.o
-tests/pflash-cfi02$(EXESUF): tests/pflash-cfi02-test.o
-tests/endianness-test$(EXESUF): tests/endianness-test.o
-tests/prom-env-test$(EXESUF): tests/prom-env-test.o $(libqos-obj-y)
-tests/rtas-test$(EXESUF): tests/rtas-test.o $(libqos-spapr-obj-y)
-tests/fdc-test$(EXESUF): tests/fdc-test.o
-tests/ide-test$(EXESUF): tests/ide-test.o $(libqos-pc-obj-y)
-tests/ahci-test$(EXESUF): tests/ahci-test.o $(libqos-pc-obj-y) qemu-img$(EXESUF)
-tests/ipmi-kcs-test$(EXESUF): tests/ipmi-kcs-test.o
-tests/ipmi-bt-test$(EXESUF): tests/ipmi-bt-test.o
-tests/hd-geo-test$(EXESUF): tests/hd-geo-test.o
-tests/boot-order-test$(EXESUF): tests/boot-order-test.o $(libqos-obj-y)
-tests/boot-serial-test$(EXESUF): tests/boot-serial-test.o $(libqos-obj-y)
-tests/bios-tables-test$(EXESUF): tests/bios-tables-test.o \
-	tests/boot-sector.o tests/acpi-utils.o $(libqos-obj-y)
-tests/pxe-test$(EXESUF): tests/pxe-test.o tests/boot-sector.o $(libqos-obj-y)
-tests/microbit-test$(EXESUF): tests/microbit-test.o
-tests/m25p80-test$(EXESUF): tests/m25p80-test.o
-tests/i440fx-test$(EXESUF): tests/i440fx-test.o $(libqos-pc-obj-y)
-tests/q35-test$(EXESUF): tests/q35-test.o $(libqos-pc-obj-y)
-tests/fw_cfg-test$(EXESUF): tests/fw_cfg-test.o $(libqos-pc-obj-y)
-tests/rtl8139-test$(EXESUF): tests/rtl8139-test.o $(libqos-pc-obj-y)
-tests/pnv-xscom-test$(EXESUF): tests/pnv-xscom-test.o
-tests/wdt_ib700-test$(EXESUF): tests/wdt_ib700-test.o
-tests/tco-test$(EXESUF): tests/tco-test.o $(libqos-pc-obj-y)
-tests/virtio-ccw-test$(EXESUF): tests/virtio-ccw-test.o
-tests/display-vga-test$(EXESUF): tests/display-vga-test.o
-tests/device-plug-test$(EXESUF): tests/device-plug-test.o
-tests/drive_del-test$(EXESUF): tests/drive_del-test.o
-tests/pvpanic-test$(EXESUF): tests/pvpanic-test.o
-tests/i82801b11-test$(EXESUF): tests/i82801b11-test.o
-tests/intel-hda-test$(EXESUF): tests/intel-hda-test.o
-tests/ioh3420-test$(EXESUF): tests/ioh3420-test.o
-tests/usb-hcd-uhci-test$(EXESUF): tests/usb-hcd-uhci-test.o $(libqos-usb-obj-y)
-tests/usb-hcd-ehci-test$(EXESUF): tests/usb-hcd-ehci-test.o $(libqos-usb-obj-y)
-tests/usb-hcd-xhci-test$(EXESUF): tests/usb-hcd-xhci-test.o $(libqos-usb-obj-y)
-tests/cpu-plug-test$(EXESUF): tests/cpu-plug-test.o
-tests/migration-test$(EXESUF): tests/migration-test.o
 tests/qemu-iotests/socket_scm_helper$(EXESUF): tests/qemu-iotests/socket_scm_helper.o
-tests/test-netfilter$(EXESUF): tests/test-netfilter.o $(qtest-obj-y)
-tests/test-filter-mirror$(EXESUF): tests/test-filter-mirror.o $(qtest-obj-y)
-tests/test-filter-redirector$(EXESUF): tests/test-filter-redirector.o $(qtest-obj-y)
-tests/test-x86-cpuid-compat$(EXESUF): tests/test-x86-cpuid-compat.o $(qtest-obj-y)
-tests/ivshmem-test$(EXESUF): tests/ivshmem-test.o contrib/ivshmem-server/ivshmem-server.o $(libqos-pc-obj-y) $(libqos-spapr-obj-y)
-tests/test-arm-mptimer$(EXESUF): tests/test-arm-mptimer.o
-tests/numa-test$(EXESUF): tests/numa-test.o
-tests/vmgenid-test$(EXESUF): tests/vmgenid-test.o tests/boot-sector.o tests/acpi-utils.o
 
 tests/migration/stress$(EXESUF): tests/migration/stress.o
 	$(call quiet-command, $(LINKPROG) -static -O3 $(PTHREAD_LIB) -o $@ $< ,"LINK","$(TARGET_DIR)$@")
@@ -252,73 +45,7 @@ tests/migration/initrd-stress.img: tests/migration/stress$(EXESUF)
 	rm $(INITRD_WORK_DIR)/init
 	rmdir $(INITRD_WORK_DIR)
 
-# QTest rules
-
-TARGETS=$(patsubst %-softmmu,%, $(filter %-softmmu,$(TARGET_DIRS)))
-ifeq ($(CONFIG_POSIX),y)
-QTEST_TARGETS = $(TARGETS)
-check-qtest-y=$(foreach TARGET,$(TARGETS), $(check-qtest-$(TARGET)-y))
-else
-QTEST_TARGETS =
-endif
-
-qtest-obj-y = tests/libqtest.o $(test-util-obj-y)
-$(check-qtest-y): $(qtest-obj-y)
-
 SPEED = quick
-
-# gtester tests, possibly with verbose output
-# do_test_tap runs all tests, even if some of them fail, while do_test_human
-# stops at the first failure unless -k is given on the command line
-
-define do_test_human_k
-        $(quiet-@)rc=0; $(foreach COMMAND, $1, \
-          $(call quiet-command-run, \
-            export MALLOC_PERTURB_=$${MALLOC_PERTURB_:-$$(( $${RANDOM:-0} % 255 + 1))} $2; \
-              $(COMMAND) -m=$(SPEED) -k --tap < /dev/null \
-              | ./scripts/tap-driver.pl --test-name="$(notdir $(COMMAND))" $(if $(V),, --show-failures-only) \
-              || rc=$$?;, "TEST", "$@: $(COMMAND)")) exit $$rc
-endef
-define do_test_human_no_k
-        $(foreach COMMAND, $1, \
-          $(call quiet-command, \
-            MALLOC_PERTURB_=$${MALLOC_PERTURB_:-$$(( $${RANDOM:-0} % 255 + 1))} $2 \
-              $(COMMAND) -m=$(SPEED) -k --tap < /dev/null \
-              | ./scripts/tap-driver.pl --test-name="$(notdir $(COMMAND))" $(if $(V),, --show-failures-only), \
-              "TEST", "$@: $(COMMAND)")
-)
-endef
-do_test_human = \
-        $(if $(findstring k, $(MAKEFLAGS)), $(do_test_human_k), $(do_test_human_no_k))
-
-define do_test_tap
-	$(call quiet-command, \
-          { export MALLOC_PERTURB_=$${MALLOC_PERTURB_:-$$(( $${RANDOM:-0} % 255 + 1))} $2; \
-            $(foreach COMMAND, $1, \
-	      $(COMMAND) -m=$(SPEED) -k --tap < /dev/null \
-	      | sed "s/^[a-z][a-z]* [0-9]* /&$(notdir $(COMMAND)) /" || true; ) } \
-	      | ./scripts/tap-merge.pl | tee "$@" \
-	      | ./scripts/tap-driver.pl $(if $(V),, --show-failures-only), \
-	  "TAP","$@")
-endef
-
-.PHONY: $(patsubst %, check-qtest-%, $(QTEST_TARGETS))
-$(patsubst %, check-qtest-%, $(QTEST_TARGETS)): check-qtest-%: $(check-qtest-y)
-	$(call do_test_human,$(check-qtest-$*-y), \
-	  QTEST_QEMU_BINARY=$(BUILD_DIR)/qemu-system-$* \
-	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
-
-# gtester tests with TAP output
-
-$(patsubst %, check-report-qtest-%.tap, $(QTEST_TARGETS)): check-report-qtest-%.tap: $(check-qtest-y)
-	$(call do_test_tap, $(check-qtest-$*-y), \
-	  QTEST_QEMU_BINARY=$(BUILD_DIR)/qemu-system-$* \
-	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
-
-# Reports and overall runs
-
-check-report.tap: $(patsubst %,check-report-qtest-%.tap, $(QTEST_TARGETS)) check-report-unit.tap
-	$(call quiet-command, cat $^ | scripts/tap-merge.pl >$@,"GEN","$@")
 
 # FPU Emulation tests (aka softfloat)
 #
@@ -547,15 +274,13 @@ check-acceptance: check-venv $(TESTS_RESULTS_DIR)
 
 # Consolidated targets
 
-.PHONY: check-block check-qtest check check-clean
-check-qtest: $(patsubst %,check-qtest-%, $(QTEST_TARGETS))
+.PHONY: check-block check check-clean
 ifeq ($(CONFIG_TOOLS),y)
 check-block: $(patsubst %,check-%, $(check-block-y))
 endif
-check: check-block check-softfloat check-qtest check-decodetree
+check: check-block check-softfloat check-decodetree
 check-clean:
 	rm -rf tests/*.o $(QEMU_IOTESTS_HELPERS-y)
-	rm -rf $(sort $(foreach target,$(SYSEMU_TARGET_LIST), $(check-qtest-$(target)-y)))
 	rm -rf $(TESTS_VENV_DIR) $(TESTS_RESULTS_DIR)
 
 clean: check-clean

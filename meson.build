@@ -886,6 +886,7 @@ foreach target : target_dirs
     qemu += [{
       'target-type': target_type,
       'target-name': target_name,
+      'config': config_target,
       'exe': target_exe,
       'gui': exe['gui']
     }]
@@ -924,7 +925,7 @@ if 'CONFIG_GUEST_AGENT' in config_host
 endif
 
 if have_tools
-  executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil], install: true)
+  qemu_img = executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil], install: true)
   if host_machine.system() == 'linux' or host_machine.system() == 'sunos' or host_machine.system().endswith('bsd')
     executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil], install: true)
   endif
