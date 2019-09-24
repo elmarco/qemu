@@ -8013,6 +8013,9 @@ NINJA=$PWD/ninjatool $python $meson setup \
 	--buildtype $(if test "$debug" = yes; then echo debug; else echo debugoptimized; fi) \
 	"$PWD" "$source_path"
 
+if test "$?" -ne 0 ; then
+    error_exit "meson setup failed"
+fi
 
 # Save the configure command line for later reuse.
 cat <<EOD >config.status
