@@ -791,6 +791,7 @@ common_all = static_library('common',
 feature_to_c = find_program('scripts/feature_to_c.sh')
 tracetool = find_program('scripts/tracetool.py')
 
+qemu = []
 i = 0
 foreach target : target_dirs
   config_target = kconfig.load(meson.current_build_dir() / target / 'config-target.mak')
@@ -868,18 +869,26 @@ foreach target : target_dirs
   endif
   foreach exe: execs
     exe_name = qemu_target_name + exe['postfix']
-    executable(exe_name,
-               install: true,
-               sources: target_specific.sources() + arch_srcs + [config_target_h],
-               dependencies: [qom, qemuutil] + target_specific.dependencies() + arch_deps + deps,
-               link_depends: [block_syms, qemu_syms],
-               link_args: link_args,
-               objects: objects,
-               gui_app: exe['gui'],
-               include_directories: target_inc,
-               c_args: ['-DNEED_CPU_H',
-                        '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
-                        '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)])
+    target_exe = executable(
+      exe_name,
+      install: true,
+      sources: target_specific.sources() + arch_srcs + [config_target_h],
+      dependencies: [qom, qemuutil] + target_specific.dependencies() + arch_deps + deps,
+      link_depends: [block_syms, qemu_syms],
+      link_args: link_args,
+      objects: objects,
+      gui_app: exe['gui'],
+      include_directories: target_inc,
+      c_args: ['-DNEED_CPU_H',
+               '-DCONFIG_TARGET="@0@-config-target.h"'.format(target),
+               '-DCONFIG_DEVICES="@0@-config-devices.h"'.format(target)]
+    )
+    qemu += [{
+      'target-type': target_type,
+      'target-name': target_name,
+      'exe': target_exe,
+      'gui': exe['gui']
+    }]
 
     if 'CONFIG_TRACE_SYSTEMTAP' in config_host
       foreach stp: [

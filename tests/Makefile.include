@@ -36,13 +36,6 @@ check-block-$(call land,$(CONFIG_POSIX),$(CONFIG_SOFTMMU)) += tests/check-block.
 # All QTests for now are POSIX-only, but the dependencies are
 # really in libqtest, not in the testcases themselves.
 
-check-qtest-generic-y += tests/qmp-test$(EXESUF)
-check-qtest-generic-y += tests/qmp-cmd-test$(EXESUF)
-check-qtest-generic-$(CONFIG_MODULES) += tests/modules-test$(EXESUF)
-
-check-qtest-generic-y += tests/device-introspect-test$(EXESUF)
-check-qtest-generic-y += tests/cdrom-test$(EXESUF)
-
 check-qtest-pci-$(CONFIG_RTL8139_PCI) += tests/rtl8139-test$(EXESUF)
 check-qtest-pci-$(CONFIG_VGA) += tests/display-vga-test$(EXESUF)
 check-qtest-pci-$(CONFIG_HDA) += tests/intel-hda-test$(EXESUF)
@@ -177,10 +170,6 @@ check-qtest-s390x-y += tests/virtio-ccw-test$(EXESUF)
 check-qtest-s390x-y += tests/cpu-plug-test$(EXESUF)
 check-qtest-s390x-y += tests/migration-test$(EXESUF)
 
-check-qtest-generic-y += tests/machine-none-test$(EXESUF)
-check-qtest-generic-y += tests/qom-test$(EXESUF)
-check-qtest-generic-y += tests/test-hmp$(EXESUF)
-
 QEMU_CFLAGS += -I$(SRC_PATH)/tests
 
 # Deps that are common to various different sets of tests below
@@ -201,86 +190,6 @@ tests/tpm-tis-swtpm-test$(EXESUF): tests/tpm-tis-swtpm-test.o tests/tpm-emu.o \
 	tests/tpm-util.o tests/tpm-tests.o $(test-io-obj-y)
 tests/tpm-tis-test$(EXESUF): tests/tpm-tis-test.o tests/tpm-emu.o $(test-io-obj-y)
 
-libqgraph-obj-y = tests/libqos/qgraph.o
-
-libqos-obj-y = $(libqgraph-obj-y) tests/libqos/pci.o tests/libqos/fw_cfg.o
-libqos-obj-y += tests/libqos/malloc.o
-libqos-obj-y += tests/libqos/libqos.o
-libqos-spapr-obj-y = $(libqos-obj-y) tests/libqos/malloc-spapr.o
-libqos-spapr-obj-y += tests/libqos/libqos-spapr.o
-libqos-spapr-obj-y += tests/libqos/rtas.o
-libqos-spapr-obj-y += tests/libqos/pci-spapr.o
-libqos-pc-obj-y = $(libqos-obj-y) tests/libqos/pci-pc.o
-libqos-pc-obj-y += tests/libqos/malloc-pc.o tests/libqos/libqos-pc.o
-libqos-pc-obj-y += tests/libqos/ahci.o
-libqos-usb-obj-y = $(libqos-spapr-obj-y) $(libqos-pc-obj-y) tests/libqos/usb.o
-
-# Devices
-qos-test-obj-y = tests/qos-test.o $(libqgraph-obj-y)
-qos-test-obj-y += $(libqos-pc-obj-y) $(libqos-spapr-obj-y)
-qos-test-obj-y += tests/libqos/e1000e.o
-qos-test-obj-y += tests/libqos/i2c.o
-qos-test-obj-y += tests/libqos/i2c-imx.o
-qos-test-obj-y += tests/libqos/i2c-omap.o
-qos-test-obj-y += tests/libqos/sdhci.o
-qos-test-obj-y += tests/libqos/tpci200.o
-qos-test-obj-y += tests/libqos/virtio.o
-qos-test-obj-$(CONFIG_VIRTFS) += tests/libqos/virtio-9p.o
-qos-test-obj-y += tests/libqos/virtio-balloon.o
-qos-test-obj-y += tests/libqos/virtio-blk.o
-qos-test-obj-y += tests/libqos/virtio-mmio.o
-qos-test-obj-y += tests/libqos/virtio-net.o
-qos-test-obj-y += tests/libqos/virtio-pci.o
-qos-test-obj-y += tests/libqos/virtio-rng.o
-qos-test-obj-y += tests/libqos/virtio-scsi.o
-qos-test-obj-y += tests/libqos/virtio-serial.o
-
-# Machines
-qos-test-obj-y += tests/libqos/aarch64-xlnx-zcu102-machine.o
-qos-test-obj-y += tests/libqos/arm-imx25-pdk-machine.o
-qos-test-obj-y += tests/libqos/arm-n800-machine.o
-qos-test-obj-y += tests/libqos/arm-raspi2-machine.o
-qos-test-obj-y += tests/libqos/arm-sabrelite-machine.o
-qos-test-obj-y += tests/libqos/arm-smdkc210-machine.o
-qos-test-obj-y += tests/libqos/arm-virt-machine.o
-qos-test-obj-y += tests/libqos/arm-xilinx-zynq-a9-machine.o
-qos-test-obj-y += tests/libqos/ppc64_pseries-machine.o
-qos-test-obj-y += tests/libqos/x86_64_pc-machine.o
-
-# Tests
-qos-test-obj-y += tests/ac97-test.o
-qos-test-obj-y += tests/ds1338-test.o
-qos-test-obj-y += tests/e1000-test.o
-qos-test-obj-y += tests/e1000e-test.o
-qos-test-obj-y += tests/eepro100-test.o
-qos-test-obj-y += tests/es1370-test.o
-qos-test-obj-y += tests/ipoctal232-test.o
-qos-test-obj-y += tests/megasas-test.o
-qos-test-obj-y += tests/ne2000-test.o
-qos-test-obj-y += tests/nvme-test.o
-qos-test-obj-y += tests/pca9552-test.o
-qos-test-obj-y += tests/pci-test.o
-qos-test-obj-y += tests/pcnet-test.o
-qos-test-obj-y += tests/sdhci-test.o
-qos-test-obj-y += tests/spapr-phb-test.o
-qos-test-obj-y += tests/tmp105-test.o
-qos-test-obj-y += tests/usb-hcd-ohci-test.o $(libqos-usb-obj-y)
-qos-test-obj-$(CONFIG_VHOST_NET_USER) += tests/vhost-user-test.o $(chardev-obj-y) $(test-io-obj-y)
-qos-test-obj-y += tests/virtio-test.o
-qos-test-obj-$(CONFIG_VIRTFS) += tests/virtio-9p-test.o
-qos-test-obj-y += tests/virtio-blk-test.o
-qos-test-obj-y += tests/virtio-net-test.o
-qos-test-obj-y += tests/virtio-rng-test.o
-qos-test-obj-y += tests/virtio-scsi-test.o
-qos-test-obj-y += tests/virtio-serial-test.o
-qos-test-obj-y += tests/vmxnet3-test.o
-
-check-qtest-generic-y += tests/qos-test$(EXESUF)
-tests/qos-test$(EXESUF): $(qos-test-obj-y)
-
-tests/qmp-test$(EXESUF): tests/qmp-test.o
-tests/qmp-cmd-test$(EXESUF): tests/qmp-cmd-test.o
-tests/device-introspect-test$(EXESUF): tests/device-introspect-test.o
 tests/rtc-test$(EXESUF): tests/rtc-test.o
 tests/m48t59-test$(EXESUF): tests/m48t59-test.o
 tests/hexloader-test$(EXESUF): tests/hexloader-test.o
@@ -310,9 +219,6 @@ tests/wdt_ib700-test$(EXESUF): tests/wdt_ib700-test.o
 tests/tco-test$(EXESUF): tests/tco-test.o $(libqos-pc-obj-y)
 tests/virtio-ccw-test$(EXESUF): tests/virtio-ccw-test.o
 tests/display-vga-test$(EXESUF): tests/display-vga-test.o
-tests/qom-test$(EXESUF): tests/qom-test.o
-tests/test-hmp$(EXESUF): tests/test-hmp.o
-tests/machine-none-test$(EXESUF): tests/machine-none-test.o
 tests/device-plug-test$(EXESUF): tests/device-plug-test.o
 tests/drive_del-test$(EXESUF): tests/drive_del-test.o
 tests/pvpanic-test$(EXESUF): tests/pvpanic-test.o
@@ -333,7 +239,6 @@ tests/ivshmem-test$(EXESUF): tests/ivshmem-test.o contrib/ivshmem-server/ivshmem
 tests/test-arm-mptimer$(EXESUF): tests/test-arm-mptimer.o
 tests/numa-test$(EXESUF): tests/numa-test.o
 tests/vmgenid-test$(EXESUF): tests/vmgenid-test.o tests/boot-sector.o tests/acpi-utils.o
-tests/cdrom-test$(EXESUF): tests/cdrom-test.o tests/boot-sector.o $(libqos-obj-y)
 
 tests/migration/stress$(EXESUF): tests/migration/stress.o
 	$(call quiet-command, $(LINKPROG) -static -O3 $(PTHREAD_LIB) -o $@ $< ,"LINK","$(TARGET_DIR)$@")
@@ -353,7 +258,6 @@ TARGETS=$(patsubst %-softmmu,%, $(filter %-softmmu,$(TARGET_DIRS)))
 ifeq ($(CONFIG_POSIX),y)
 QTEST_TARGETS = $(TARGETS)
 check-qtest-y=$(foreach TARGET,$(TARGETS), $(check-qtest-$(TARGET)-y))
-check-qtest-y += $(check-qtest-generic-y)
 else
 QTEST_TARGETS =
 endif
@@ -400,14 +304,14 @@ endef
 
 .PHONY: $(patsubst %, check-qtest-%, $(QTEST_TARGETS))
 $(patsubst %, check-qtest-%, $(QTEST_TARGETS)): check-qtest-%: $(check-qtest-y)
-	$(call do_test_human,$(check-qtest-$*-y) $(check-qtest-generic-y), \
+	$(call do_test_human,$(check-qtest-$*-y), \
 	  QTEST_QEMU_BINARY=$(BUILD_DIR)/qemu-system-$* \
 	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
 
 # gtester tests with TAP output
 
 $(patsubst %, check-report-qtest-%.tap, $(QTEST_TARGETS)): check-report-qtest-%.tap: $(check-qtest-y)
-	$(call do_test_tap, $(check-qtest-$*-y) $(check-qtest-generic-y), \
+	$(call do_test_tap, $(check-qtest-$*-y), \
 	  QTEST_QEMU_BINARY=$(BUILD_DIR)/qemu-system-$* \
 	  QTEST_QEMU_IMG=qemu-img$(EXESUF))
 
@@ -651,7 +555,7 @@ endif
 check: check-block check-softfloat check-qtest check-decodetree
 check-clean:
 	rm -rf tests/*.o $(QEMU_IOTESTS_HELPERS-y)
-	rm -rf $(sort $(foreach target,$(SYSEMU_TARGET_LIST), $(check-qtest-$(target)-y)) $(check-qtest-generic-y))
+	rm -rf $(sort $(foreach target,$(SYSEMU_TARGET_LIST), $(check-qtest-$(target)-y)))
 	rm -rf $(TESTS_VENV_DIR) $(TESTS_RESULTS_DIR)
 
 clean: check-clean

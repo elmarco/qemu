@@ -2,7 +2,7 @@ py3 = import('python').find_installation()
 
 rand = run_command(py3, '-c', 'import os; print(ord(os.urandom(1)))').stdout().strip()
 
-benchmark_timeout = 300 # seconds
+slow_timeout = 300 # seconds
 
 test_env = environment()
 test_env.set('G_TEST_SRCDIR', meson.current_source_dir())
@@ -33,6 +33,9 @@ test_qapi_outputs = [
   'test-qapi-visit.c',
   'test-qapi-visit.h',
 ]
+
+inctests = include_directories('.')
+subdir('libqos')
 
 # meson doesn't like output in other directories...
 subdir('include')
@@ -234,7 +237,7 @@ foreach test_name, extra_args: tests
     benchmark(test_name, exe,
               env: test_env,
               suite: suite,
-              timeout: benchmark_timeout)
+              timeout: slow_timeout)
   else
     test(test_name, exe,
          depends: extra_args.get('test_deps', []),
@@ -243,6 +246,89 @@ foreach test_name, extra_args: tests
          suite: suite,
          protocol: 'tap')
   endif
+endforeach
+
+qos_tests_ss = ss.source_set()
+qos_tests_ss.add(qos)
+qos_tests_ss.add(files(
+  'ac97-test.c',
+  'ds1338-test.c',
+  'e1000-test.c',
+  'e1000e-test.c',
+  'eepro100-test.c',
+  'es1370-test.c',
+  'ipoctal232-test.c',
+  'megasas-test.c',
+  'ne2000-test.c',
+  'nvme-test.c',
+  'pca9552-test.c',
+  'pci-test.c',
+  'pcnet-test.c',
+  'sdhci-test.c',
+  'spapr-phb-test.c',
+  'tmp105-test.c',
+  'usb-hcd-ohci-test.c',
+  'virtio-blk-test.c',
+  'virtio-net-test.c',
+  'virtio-rng-test.c',
+  'virtio-scsi-test.c',
+  'virtio-serial-test.c',
+  'virtio-test.c',
+  'vmxnet3-test.c',
+))
+
+qos_tests_ss.add(when: 'CONFIG_VIRTFS', if_true: files('virtio-9p-test.c'))
+qos_tests_ss.add(when: 'CONFIG_VHOST_NET_USER', if_true: [files('vhost-user-test.c'), chardev, io])
+qos_tests = qos_tests_ss.apply(config_host, strict: false)
+
+qtests = {
+  'qmp-test': {},
+  'qmp-cmd-test': {},
+  'modules-test': {'if': ['CONFIG_MODULES']},
+  'device-introspect-test': {},
+  'cdrom-test': {'extra_src': files('boot-sector.c')},
+  'machine-none-test': {},
+  'qom-test': {},
+  'test-hmp': {},
+  'qos-test': {'extra_src': qos_tests.sources(), 'deps': qos_tests.dependencies()},
+}
+
+test_deps += [qtest]
+
+foreach test_name, extra_args: qtests
+  check_if = true
+  foreach t: extra_args.get('if', [])
+    if t not in config_host
+      check_if = false
+      break
+    endif
+  endforeach
+  if not check_if
+    continue
+  endif
+
+  src = extra_args.get('src', [test_name + '.c'])
+  extra_src = extra_args.get('extra_src', [])
+  test_exe = executable(test_name, src + extra_src,
+                        dependencies : test_deps + extra_args.get('deps', []),
+                        build_by_default: false)
+
+  foreach q: qemu
+    if q['target-type'] != 'system' or q['gui']
+      continue
+    endif
+
+    test_env.set('QTEST_QEMU_BINARY', q['exe'].full_path())
+
+    test(test_name,
+         test_exe,
+         depends: extra_args.get('test_deps', []),
+         args: ['--tap'],
+         env: test_env,
+         suite: ['qtest'] + extra_args.get('suite', []),
+         protocol: 'tap',
+         timeout: slow_timeout)
+  endforeach
 endforeach
 
 subdir('qapi-schema')
