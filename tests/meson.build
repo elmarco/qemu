@@ -58,6 +58,24 @@ qhtbench = executable('qht-bench',
                       sources: files('qht-bench.c'),
                       dependencies: [qemuutil])
 
+executable('atomic_add-bench',
+           sources: files('atomic_add-bench.c'),
+           dependencies: [qemuutil],
+           build_by_default: false)
+
+executable('atomic64-bench',
+           sources: files('atomic64-bench.c'),
+           dependencies: [qemuutil],
+           build_by_default: false)
+
+if have_tools and 'CONFIG_VHOST_USER' in config_host and 'CONFIG_LINUX' in config_host
+  executable('vhost-user-bridge',
+             sources: files('vhost-user-bridge.c'),
+             link_with: [libvhost_user],
+             dependencies: [qemuutil],
+             build_by_default: false)
+endif
+
 # common dependencies
 test_deps = [qemuutil]
 
