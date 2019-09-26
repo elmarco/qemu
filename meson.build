@@ -927,9 +927,9 @@ endif
 if have_tools
   qemu_img = executable('qemu-img', [files('qemu-img.c'), hxdep], dependencies: [block, qemuutil], install: true)
   if host_machine.system() == 'linux' or host_machine.system() == 'sunos' or host_machine.system().endswith('bsd')
-    executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil], install: true)
+    qemu_nbd = executable('qemu-nbd', files('qemu-nbd.c'), dependencies: [block, qemuutil], install: true)
   endif
-  executable('qemu-io', files('qemu-io.c'), dependencies: [block, qemuutil], install: true)
+  qemu_io = executable('qemu-io', files('qemu-io.c'), dependencies: [block, qemuutil], install: true)
 
   subdir('contrib/rdmacm-mux')
   subdir('contrib/elf2dmp')

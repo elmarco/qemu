@@ -6,7 +6,6 @@ check-help:
 	@echo
 	@echo " $(MAKE) check                Run unit, qtest and decodetree"
 	@echo
-	@echo " $(MAKE) check-block          Run block tests"
 	@echo " $(MAKE) check-tcg            Run TCG tests"
 	@echo " $(MAKE) check-softfloat      Run FPU emulation tests"
 	@echo " $(MAKE) check-acceptance     Run all acceptance (functional) tests"
@@ -25,13 +24,8 @@ check-help:
 ifneq ($(wildcard config-host.mak),)
 export SRC_PATH
 
-check-block-$(call land,$(CONFIG_POSIX),$(CONFIG_SOFTMMU)) += tests/check-block.sh
-
-
 tests/fp/%:
 	$(MAKE) -C $(dir $@) $(notdir $@)
-
-tests/qemu-iotests/socket_scm_helper$(EXESUF): tests/qemu-iotests/socket_scm_helper.o
 
 tests/migration/stress$(EXESUF): tests/migration/stress.o
 	$(call quiet-command, $(LINKPROG) -static -O3 $(PTHREAD_LIB) -o $@ $< ,"LINK","$(TARGET_DIR)$@")
@@ -216,13 +210,6 @@ clean-tcg: $(CLEAN_TCG_TARGET_RULES)
 
 # Other tests
 
-QEMU_IOTESTS_HELPERS-$(call land,$(CONFIG_SOFTMMU),$(CONFIG_LINUX)) = tests/qemu-iotests/socket_scm_helper$(EXESUF)
-
-.PHONY: check-tests/check-block.sh
-check-tests/check-block.sh: tests/check-block.sh qemu-img$(EXESUF) \
-		qemu-io$(EXESUF) qemu-nbd$(EXESUF) $(QEMU_IOTESTS_HELPERS-y)
-	$<
-
 .PHONY: check-decodetree
 check-decodetree:
 	$(call quiet-command, \
@@ -274,20 +261,14 @@ check-acceptance: check-venv $(TESTS_RESULTS_DIR)
 
 # Consolidated targets
 
-.PHONY: check-block check check-clean
-ifeq ($(CONFIG_TOOLS),y)
-check-block: $(patsubst %,check-%, $(check-block-y))
-endif
-check: check-block check-softfloat check-decodetree
+.PHONY: check check-clean
+check: check-softfloat check-decodetree
 check-clean:
-	rm -rf tests/*.o $(QEMU_IOTESTS_HELPERS-y)
 	rm -rf $(TESTS_VENV_DIR) $(TESTS_RESULTS_DIR)
 
 clean: check-clean
 
 # Build the help program automatically
-
-all: $(QEMU_IOTESTS_HELPERS-y)
 
 -include $(wildcard tests/*.d)
 -include $(wildcard tests/libqos/*.d)

@@ -418,4 +418,14 @@ foreach test_name, extra_args: qtests
   endforeach
 endforeach
 
+subdir('qemu-iotests')
+
+if have_system and have_tools and 'CONFIG_POSIX' in config_host
+  check_block = find_program('check-block.sh')
+  test('check-block', check_block,
+       depends: [qemu_img, qemu_io, qemu_nbd, socket_scm_helper],
+       suite: ['block'],
+       timeout: slow_timeout)
+endif
+
 subdir('qapi-schema')
