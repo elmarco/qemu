@@ -430,3 +430,42 @@ endif
 
 subdir('qapi-schema')
 subdir('decode')
+
+# https://github.com/mesonbuild/meson/issues/3551
+#  Source: https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported
+has_venv = true
+foreach m: ['venv', 'ensurepip']
+  t = 'import importlib.util; exit(1) if importlib.util.find_spec(\'' + m + '\') is None else exit(0)'
+  if run_command(py3, '-c', t).returncode() != 0
+    has_venv = false
+    break
+  endif
+endforeach
+
+if has_venv
+  avocado_venv = custom_target(
+    'avocado-venv',
+    command: [find_program('avocado-venv.sh'), '@INPUT@', '@OUTPUT@', py3.path()],
+    input: files('requirements.txt'),
+    output: 'venv',
+  )
+
+  avocado_test = find_program('avocado-test.sh')
+  foreach q: qemu
+    if q['target-type'] != 'system' or q['gui']
+      continue
+    endif
+
+    test('acceptance-' + q['target-name'],
+         avocado_test,
+         args: [
+           avocado_venv,
+           q['target-name'],
+           meson.current_source_dir() / 'acceptance',
+           meson.current_build_dir() / 'results'
+         ],
+         suite: ['acceptance', q['target-name']],
+         protocol: 'tap',
+         timeout: slow_timeout)
+  endforeach
+endif
