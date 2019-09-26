@@ -37,7 +37,8 @@ configure_file(input: files('scripts/ninjatool.py'),
                output: 'ninjatool',
                configuration: config_host)
 
-decodetree = generator(find_program('scripts/decodetree.py'),
+decodetree_py = find_program('scripts/decodetree.py')
+decodetree = generator(decodetree_py,
                        output: 'decode-@BASENAME@.inc',
                        arguments: ['@INPUT@', '@EXTRA_ARGS@', '-o', '@OUTPUT@'])
 
