@@ -430,7 +430,88 @@ endif
 
 subdir('qapi-schema')
 subdir('decode')
-subdir('fp')
+
+if 'CONFIG_TCG' in config_host
+  # FPU Emulation tests (aka softfloat)
+  subdir('fp')
+
+  # The full test suite can take a bit of time, default to a quick run
+  # "-l 2 -r all" can take more than a day for some operations and is best
+  # run manually
+  fp_tl = ['-l', '1', '-r', 'all']
+
+  # Conversion Routines:
+  # FIXME: i32_to_extF80 (broken), i64_to_extF80 (broken)
+  #        ui32_to_f128 (not implemented), extF80_roundToInt (broken)
+  #
+  foreach desc, t: {
+    'int-to-float': '''
+       i32_to_f16 i64_to_f16
+       i32_to_f32 i64_to_f32
+       i32_to_f64 i64_to_f64
+       i32_to_f128 i64_to_f128
+    ''',
+    'uint-to-float': '''
+       ui32_to_f16 ui64_to_f16
+       ui32_to_f32 ui64_to_f32
+       ui32_to_f64 ui64_to_f64
+       ui64_to_f128
+    ''',
+    'float-to-int': '''
+      f16_to_i32 f16_to_i32_r_minMag
+      f32_to_i32 f32_to_i32_r_minMag
+      f64_to_i32 f64_to_i32_r_minMag
+      extF80_to_i32 extF80_to_i32_r_minMag
+      f128_to_i32 f128_to_i32_r_minMag
+      f16_to_i64 f16_to_i64_r_minMag
+      f32_to_i64 f32_to_i64_r_minMag
+      f64_to_i64 f64_to_i64_r_minMag
+      extF80_to_i64 extF80_to_i64_r_minMag
+      f128_to_i64 f128_to_i64_r_minMag
+    ''',
+    'float-to-uint': '''
+      f16_to_ui32 f16_to_ui32_r_minMag
+      f32_to_ui32 f32_to_ui32_r_minMag
+      f64_to_ui32 f64_to_ui32_r_minMag
+      f128_to_ui32 f128_to_ui32_r_minMag
+      f16_to_ui64 f16_to_ui64_r_minMag
+      f32_to_ui64 f32_to_ui64_r_minMag
+      f64_to_ui64 f64_to_ui64_r_minMag
+      f128_to_ui64 f128_to_ui64_r_minMag
+    ''',
+    'round-to-integer': '''
+      f16_roundToInt f32_roundToInt
+      f64_roundToInt f128_roundToInt
+    ''',
+  }
+    test(desc, fptest, args: fp_tl + t.split(), suite: ['fp', 'conv'])
+  endforeach
+
+  # Float Compare routines
+  foreach op: ['eq', 'eq_signaling', 'le', 'le_quiet', 'lt_quiet']
+    tests = 'f16_@0@ f32_@0@ f64_@0@ f128_@0@'.format(op).split()
+    # FIXME: extF80_{le,lt}_quiet (broken)
+    if not op.endswith('quiet')
+      tests += ['extF80_' + op]
+    endif
+    test(op, fptest, args: fp_tl + tests, suite: ['fp', 'comp'])
+  endforeach
+
+  # Float Math operations
+  foreach op: ['add', 'sub', 'mul', 'mulAdd', 'div', 'rem', 'sqrt']
+    tests = 'f16_@0@ f32_@0@ f64_@0@ f128_@0@'.format(op).split()
+    # FIXME: extF80_{mulAdd,rem} (missing, broken)
+    if op not in ['mulAdd', 'rem']
+      tests += ['extF80_' + op]
+    endif
+    if op == 'mulAdd'
+      test(op, fptest, args: ['-l', '1'] + tests, suite: ['fp', 'math'], timeout: slow_timeout)
+    else
+      test(op, fptest, args: fp_tl + tests, suite: ['fp', 'math'], timeout: slow_timeout)
+    endif
+  endforeach
+
+endif
 
 # https://github.com/mesonbuild/meson/issues/3551
 #  Source: https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported
