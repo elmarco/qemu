@@ -430,6 +430,7 @@ endif
 
 subdir('qapi-schema')
 subdir('decode')
+subdir('fp')
 
 # https://github.com/mesonbuild/meson/issues/3551
 #  Source: https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported

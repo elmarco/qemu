@@ -529,16 +529,17 @@ modules = {}
 hw_arch = {}
 target_arch = {}
 
+fpusoftfloat = files('fpu/softfloat.c')
+
 specific_ss.add(files('disas.c', 'exec.c'), capstone)
-specific_ss.add(when: 'CONFIG_TCG', if_true: files(
-  'fpu/softfloat.c',
+specific_ss.add(when: 'CONFIG_TCG', if_true: [files(
   'tcg/optimize.c',
   'tcg/tcg-common.c',
   'tcg/tcg-op-gvec.c',
   'tcg/tcg-op-vec.c',
   'tcg/tcg-op.c',
   'tcg/tcg.c',
-))
+), fpusoftfloat])
 specific_ss.add(when: 'CONFIG_TCG_INTERPRETER', if_true: files('disas/tci.c', 'tcg/tci.c'))
 
 specific_ss.add(when: 'CONFIG_SOFTMMU', if_true: files(
