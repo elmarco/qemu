@@ -551,3 +551,5 @@ if has_venv
          timeout: slow_timeout)
   endforeach
 endif
+
+subdir('migration')
