@@ -11,7 +11,8 @@ authz_ss.add(when: ['CONFIG_AUTH_PAM', pam], if_true: files('pamacct.c'))
 
 authz_ss = authz_ss.apply(config_host, strict: false)
 libauthz = static_library('authz', authz_ss.sources(),
-                          dependencies: [qom, authz_ss.dependencies()],
+                          dependencies: [authz_ss.dependencies()],
+                          link_with: [libqom],
                           name_suffix: 'fa',
                           build_by_default: false)
 

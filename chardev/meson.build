@@ -26,8 +26,7 @@ chardev_ss.add(when: 'CONFIG_WIN32', if_true: files(
 
 chardev_ss = chardev_ss.apply(config_host, strict: false)
 libchardev = static_library('chardev', chardev_ss.sources(),
-                            dependencies: [crypto, io, qom],
-                            link_with: libqemuutil,
+                            link_with: [libcrypto, libio, libqom, libqemuutil],
                             name_suffix: 'fa',
                             build_by_default: false)
 

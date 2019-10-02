@@ -734,7 +734,7 @@ softmmu_mods = []
 foreach d, list : modules
   foreach m : list
     if enable_modules and host_machine.system() != 'windows'
-      sl = static_library(d + '-' + m[0], m[1], dependencies: [m[2], modulecommon], pic: true)
+      sl = static_library(d + '-' + m[0], m[1], dependencies: m[2], link_with: libmodulecommon, pic: true)
       if d == 'block'
         block_mods += sl
       else
@@ -764,9 +764,9 @@ qemu_syms = custom_target('qemu.syms', output: 'qemu.syms',
 
 block_ss = block_ss.apply(config_host, strict: false)
 libblock = static_library('block', block_ss.sources(),
-                          dependencies: [authz, crypto, io, block_ss.dependencies()],
+                          dependencies: [block_ss.dependencies()],
                           link_depends: block_syms,
-                          link_with: libqemuutil,
+                          link_with: [libqemuutil, libauthz, libcrypto, libio],
                           name_suffix: 'fa',
                           build_by_default: false)
 

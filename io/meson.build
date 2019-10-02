@@ -17,8 +17,8 @@ io_ss.add(files(
 
 io_ss = io_ss.apply(config_host, strict: false)
 libio = static_library('io', io_ss.sources(),
-                       dependencies: [crypto, qom, io_ss.dependencies()],
-                       link_with: libqemuutil,
+                       dependencies: [io_ss.dependencies()],
+                       link_with: [libqemuutil, libcrypto, libqom],
                        name_suffix: 'fa',
                        build_by_default: false)
 

@@ -22,7 +22,6 @@ crypto_ss.add(files(
   'tlssession.c',
   'xts.c',
 ))
-crypto_ss.add(authz)
 
 if 'CONFIG_GCRYPT' in config_host
   wo_nettle = files('hash-gcrypt.c', 'pbkdf-gcrypt.c')
@@ -42,6 +41,7 @@ crypto_ss.add(when: 'CONFIG_AF_ALG', if_true: files('afalg.c', 'cipher-afalg.c',
 crypto_ss = crypto_ss.apply(config_host, strict: false)
 libcrypto = static_library('crypto', crypto_ss.sources(),
                            dependencies: [crypto_ss.dependencies()],
+                           link_with: [libauthz],
                            name_suffix: 'fa',
                            build_by_default: false)
 
