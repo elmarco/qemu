@@ -18,6 +18,20 @@ check-help:
 	@echo "Default options are -k and (for $(MAKE) V=1) --verbose; they can be"
 	@echo "changed with variable GTESTER_OPTIONS."
 
+check-unit:
+	$(MESON) test --no-rebuild --suite unit
+
+check-qtest:
+	$(MESON) test --no-rebuild --suite qtest
+
+check-softfloat:
+	$(MESON) test --no-rebuild --suite fp
+
+check: check-unit check-softfloat check-qtest
+
+check-acceptance:
+	$(MESON) test --no-rebuild --suite acceptance
+
 ifneq ($(wildcard config-host.mak),)
 export SRC_PATH
 
