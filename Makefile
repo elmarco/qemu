@@ -174,25 +174,10 @@ recurse-install:
 
 COMMON_LDADDS = libqemuutil.a
 
-ifdef QEMU_GA_MSI_ENABLED
-QEMU_GA_MSI=qga/qemu-ga-$(ARCH).msi
-
-msi: $(QEMU_GA_MSI)
-else
-msi:
-	@echo "MSI build not configured or dependency resolution failed (reconfigure with --enable-guest-agent-msi option)"
-endif
-
-ifneq ($(EXESUF),)
-.PHONY: qga/qemu-ga
-qga/qemu-ga: qga/qemu-ga$(EXESUF) $(QGA_VSS_PROVIDER) $(QEMU_GA_MSI)
-endif
-
 clean: recurse-clean
 # avoid old build problems by removing potentially incorrect old files
 	rm -f config.mak op-i386.h opc-i386.h gen-op-i386.h op-arm.h opc-arm.h gen-op-arm.h
 	rm -f qemu-options.def
-	rm -f qga/*.msi
 	find . \( -name '*.so' -o -name '*.dll' -o -name '*.mo' -o -name '*.[oda]' \) -type f \
 		! -path ./roms/edk2/ArmPkg/Library/GccLto/liblto-aarch64.a \
 		! -path ./roms/edk2/ArmPkg/Library/GccLto/liblto-arm.a \
@@ -264,12 +249,5 @@ endif
 	@echo  '  docker          - Help about targets running tests inside containers'
 	@echo  '  vm-help         - Help about targets running tests inside VM'
 	@echo  ''
-ifdef CONFIG_WIN32
-	@echo  'Windows targets:'
-ifdef QEMU_GA_MSI_ENABLED
-	@echo  '  msi             - Build MSI-based installer for qemu-ga'
-endif
-	@echo  ''
-endif
 	@echo  '  $(MAKE) [targets]      (quiet build, default)'
 	@echo  '  $(MAKE) V=1 [targets]  (verbose build)'
