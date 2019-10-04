@@ -92,9 +92,6 @@ endif
 
 include $(SRC_PATH)/rules.mak
 
-# lor is defined in rules.mak
-CONFIG_BLOCK := $(call lor,$(CONFIG_SOFTMMU),$(CONFIG_TOOLS))
-
 generated-files-y = config-host.h
 
 generated-files-y += .git-submodule-status
@@ -107,19 +104,11 @@ configure: ;
 .PHONY: all clean distclean install \
 	recurse-all dist msi FORCE
 
-$(call set-vpath, $(SRC_PATH))
-
-LIBS+=-lz $(LIBS_TOOLS)
-
 SUBDIR_MAKEFLAGS=$(if $(V),,--no-print-directory --quiet) BUILD_DIR=$(BUILD_DIR)
-
-ifneq ($(wildcard config-host.mak),)
-include $(SRC_PATH)/Makefile.objs
-endif
 
 include $(SRC_PATH)/tests/Makefile.include
 
-all: recurse-all modules
+all: recurse-all
 
 DTC_MAKE_ARGS=-I$(SRC_PATH)/dtc VPATH=$(SRC_PATH)/dtc -C dtc V="$(V)" LIBFDT_srcdir=$(SRC_PATH)/dtc/libfdt
 DTC_CFLAGS=$(CFLAGS) $(QEMU_CFLAGS)
@@ -172,8 +161,6 @@ recurse-install:
 
 ######################################################################
 
-COMMON_LDADDS = libqemuutil.a
-
 clean: recurse-clean
 # avoid old build problems by removing potentially incorrect old files
 	rm -f config.mak op-i386.h opc-i386.h gen-op-i386.h op-arm.h opc-arm.h gen-op-arm.h
@@ -220,10 +207,6 @@ Makefile: $(generated-files-y)
 endif
 endif
 
-# Include automatically generated dependency files
-# Dependencies in Makefile.objs files come from our recursive subdir rules
--include $(wildcard *.d tests/*.d)
-
 include $(SRC_PATH)/tests/docker/Makefile.include
 include $(SRC_PATH)/tests/vm/Makefile.include
 
@@ -231,10 +214,6 @@ include $(SRC_PATH)/tests/vm/Makefile.include
 help:
 	@echo  'Generic targets:'
 	@echo  '  all             - Build all'
-ifdef CONFIG_MODULES
-	@echo  '  modules         - Build all modules'
-endif
-	@echo  '  dir/file.o      - Build specified target only'
 	@echo  '  install         - Install QEMU, documentation and tools'
 	@echo  '  ctags/TAGS      - Generate tags file for editors'
 	@echo  '  cscope          - Generate cscope index'
