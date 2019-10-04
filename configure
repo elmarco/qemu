@@ -398,7 +398,6 @@ tcg_interpreter="no"
 bigendian="no"
 mingw32="no"
 gcov="no"
-gcov_tool="gcov"
 EXESUF=""
 DSOSUF=".so"
 LDFLAGS_SHARED="-shared"
@@ -976,8 +975,6 @@ for opt do
   --python=*) python="$optarg"
   ;;
   --meson=*) meson="$optarg"
-  ;;
-  --gcov=*) gcov_tool="$optarg"
   ;;
   --smbd=*) smbd="$optarg"
   ;;
@@ -1740,7 +1737,6 @@ Advanced options (experts only):
   --with-coroutine=BACKEND coroutine backend. Supported options:
                            ucontext, sigaltstack, windows
   --enable-gcov            enable test coverage analysis with gcov
-  --gcov=GCOV              use specified gcov [$gcov_tool]
   --disable-blobs          disable installing provided firmware blobs
   --with-vss-sdk=SDK-path  enable Windows VSS support in QEMU Guest Agent
   --with-win-sdk=SDK-path  path to Windows Platform SDK (to build VSS .tlb)
@@ -5993,8 +5989,7 @@ esac
 write_c_skeleton
 
 if test "$gcov" = "yes" ; then
-  CFLAGS="-fprofile-arcs -ftest-coverage -g $CFLAGS"
-  LDFLAGS="-fprofile-arcs -ftest-coverage $LDFLAGS"
+  :
 elif test "$fortify_source" = "yes" ; then
   CFLAGS="-O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 $CFLAGS"
 elif test "$debug" = "no"; then
@@ -6464,7 +6459,6 @@ echo "debug stack usage $debug_stack_usage"
 echo "mutex debugging   $debug_mutex"
 echo "crypto afalg      $crypto_afalg"
 echo "GlusterFS support $glusterfs"
-echo "gcov              $gcov_tool"
 echo "gcov enabled      $gcov"
 echo "TPM support       $tpm"
 echo "libssh support    $libssh"
@@ -7390,7 +7384,6 @@ echo "TASN1_CFLAGS=$tasn1_cflags" >> $config_host_mak
 echo "POD2MAN=$POD2MAN" >> $config_host_mak
 if test "$gcov" = "yes" ; then
   echo "CONFIG_GCOV=y" >> $config_host_mak
-  echo "GCOV=$gcov_tool" >> $config_host_mak
 fi
 
 if test "$docker" != "no"; then
@@ -8051,6 +8044,7 @@ NINJA=$PWD/ninjatool $python $meson setup \
 	$(test "$strip_opt" = yes && echo --strip) \
 	--buildtype $(if test "$debug" = yes; then echo debug; else echo debugoptimized; fi) \
         -Db_pie=$(if test "$pie" = yes; then echo true; else echo false; fi) \
+        -Db_coverage=$(if test "$gcov" = yes; then echo true; else echo false; fi) \
         $cross_arg \
 	"$PWD" "$source_path"
 
