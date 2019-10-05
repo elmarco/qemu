@@ -162,11 +162,11 @@ if have_block
     'test-crypto-secret': {'deps': [crypto], 'suite': ['block']},
     'test-crypto-tlscredsx509': {
       'extra_src': files('crypto-tls-x509-helpers.c', 'pkix_asn1_tab.c'),
-      'deps': [tasn1, crypto], 'suite': ['block'],
+      'deps': [tasn1, crypto], 'suite': ['block', 'slow'],
       'if': ['CONFIG_GNUTLS', 'CONFIG_TASN1']},
     'test-crypto-tlssession': {
       'extra_src': files('crypto-tls-x509-helpers.c', 'pkix_asn1_tab.c', 'crypto-tls-psk-helpers.c'),
-      'deps': [tasn1, crypto], 'suite': ['block'],
+      'deps': [tasn1, crypto], 'suite': ['block', 'slow'],
       'if': ['CONFIG_GNUTLS', 'CONFIG_TASN1']},
     'test-authz-simple': {'deps': [authz], 'suite': ['block']},
     'test-authz-list': {'deps': [authz], 'suite': ['block']},

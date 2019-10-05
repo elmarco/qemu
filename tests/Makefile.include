@@ -16,7 +16,7 @@ meson-test = $(call quiet-command,$(MESON) test --no-rebuild $2 \
 	       --suite $1, "TEST", "$1")
 
 check-unit:
-	$(call meson-test,"unit",--test-args "-m $(SPEED)")
+	$(call meson-test,"unit" --no-suite "slow",--test-args "-m $(SPEED)")
 
 check-qtest:
 	$(call meson-test,"qtest",--test-args "-m $(SPEED)")
