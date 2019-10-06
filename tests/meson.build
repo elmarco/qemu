@@ -319,7 +319,6 @@ qtests = {
     'if_i386': ['CONFIG_SGA'],
     'if_x86_64': ['CONFIG_SGA'],
   },
-  'pxe-test': {'extra_src': ['boot-sector.c'], 'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_SLIRP'], 'deps': [qos]},
   'rtc-test': {'targets': ['i386']},
   'ipmi-kcs-test': {'targets': ['i386'], 'if': ['CONFIG_ISA_IPMI_KCS']},
   # Disabled temporarily as it fails intermittently especially under NetBSD VM
@@ -343,7 +342,6 @@ qtests = {
   'tpm-crb-test': {'extra_src': ['tpm-emu.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_CRB'], 'deps': [io]},
   'tpm-tis-swtpm-test': {'extra_src': ['tpm-emu.c', 'tpm-util.c', 'tpm-tests.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_TIS'], 'deps': [io]},
   'tpm-tis-test': {'extra_src': ['tpm-emu.c'], 'targets': ['i386'], 'if': ['CONFIG_TPM_TIS'], 'deps': [io]},
-  'test-netfilter': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_SLIRP']},
   'test-filter-mirror': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_POSIX']},
   'test-filter-redirector': {'targets': ['i386', 'ppc64', 's390x'], 'if': ['CONFIG_RTL8139_PCI']},
   'migration-test': {'targets': ['i386', 'ppc64', 's390x', 'aarch64']},
@@ -360,6 +358,13 @@ qtests = {
   'pflash-cfi02-test': {'targets': ['arm'], 'if': ['CONFIG_PFLASH_CFI02']},
   'virtio-ccw-test': {'targets': ['s390x']},
 }
+
+if slirp.found()
+  qtests += {
+    'test-netfilter': {'targets': ['i386', 'ppc64', 's390x']},
+    'pxe-test': {'extra_src': ['boot-sector.c'], 'targets': ['i386', 'ppc64', 's390x'], 'deps': [qos]},
+  }
+endif
 
 if have_tools
   qtests += {'ahci-test': {'targets': ['i386'], 'if': ['CONFIG_TOOLS'], 'deps': [qos], 'test_deps': qemu_img}}

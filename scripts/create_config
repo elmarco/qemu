@@ -129,3 +129,5 @@ case $line in
 esac
 
 done # read
+
+echo "#include \"config-meson.h\""

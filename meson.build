@@ -6,6 +6,7 @@ kconfig = import('unstable-kconfig')
 ss = import('sourceset')
 config_host = kconfig.load(meson.current_build_dir() / 'config-host.mak')
 config_all_disas = kconfig.load(meson.current_build_dir() / 'config-all-disas.mak')
+conf_data = configuration_data()
 
 enable_modules = 'CONFIG_MODULES' in config_host
 build_docs = 'BUILD_DOCS' in config_host
@@ -117,11 +118,13 @@ if 'CONFIG_LIBCAP' in config_host
   libcap_ng = declare_dependency(link_args: config_host['LIBCAP_NG_LIBS'].split())
 endif
 xkbcommon = dependency('xkbcommon', required: false)
-slirp = declare_dependency()
-if config_host.has_key('CONFIG_SLIRP')
-  slirp = declare_dependency(compile_args: config_host['SLIRP_CFLAGS'].split(),
-                             link_args: config_host['SLIRP_LIBS'].split())
-endif
+
+slirp = dependency('slirp',
+                   required: get_option('slirp'),
+                   fallback: ['slirp', 'libslirp_dep'],
+                   default_options: ['static=true'])
+conf_data.set('CONFIG_SLIRP', slirp.found())
+
 vde = declare_dependency()
 if config_host.has_key('CONFIG_VDE')
   vde = declare_dependency(link_args: config_host['VDE_LIBS'].split())
@@ -335,6 +338,10 @@ if 'CONFIG_TASN1' in config_host
   tasn1 = declare_dependency(compile_args: config_host['TASN1_CFLAGS'].split(),
                              link_args: config_host['TASN1_LIBS'].split())
 endif
+
+configure_file(input: 'config-meson.h.in',
+               output: 'config-meson.h',
+               configuration: conf_data)
 
 create_config = find_program('scripts/create_config')
 minikconf = find_program('scripts/minikconf.py')
