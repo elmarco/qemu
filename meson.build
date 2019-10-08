@@ -331,11 +331,20 @@ if 'CONFIG_USB_LIBUSB' in config_host
   libusb = declare_dependency(compile_args: config_host['LIBUSB_CFLAGS'].split(),
                               link_args: config_host['LIBUSB_LIBS'].split())
 endif
-capstone = declare_dependency()
-if 'CONFIG_CAPSTONE' in config_host
-  capstone = declare_dependency(compile_args: config_host['CAPSTONE_CFLAGS'].split(),
-                                link_args: config_host['CAPSTONE_LIBS'].split())
+
+capstone = dependency('capstone',
+                      required: get_option('capstone'))
+
+if not capstone.found() and get_option('capstone') == 'auto'
+  cmake = import('cmake')
+  capstone = cmake.subproject(
+    'capstone',
+    cmake_options: ['-DCAPSTONE_BUILD_SHARED=0', '-DCAPSTONE_BUILD_TESTS=0', '-DCAPSTONE_BUILD_CSTOOL=0'],
+  ).dependency('capstone-static')
 endif
+
+conf_data.set('CONFIG_CAPSTONE', capstone.found())
+
 tasn1 = declare_dependency()
 if 'CONFIG_TASN1' in config_host
   tasn1 = declare_dependency(compile_args: config_host['TASN1_CFLAGS'].split(),
