@@ -110,17 +110,6 @@ include $(SRC_PATH)/tests/Makefile.include
 
 all: recurse-all
 
-DTC_MAKE_ARGS=-I$(SRC_PATH)/dtc VPATH=$(SRC_PATH)/dtc -C dtc V="$(V)" LIBFDT_srcdir=$(SRC_PATH)/dtc/libfdt
-DTC_CFLAGS=$(CFLAGS) $(QEMU_CFLAGS)
-DTC_CPPFLAGS=-I$(BUILD_DIR)/dtc -I$(SRC_PATH)/dtc -I$(SRC_PATH)/dtc/libfdt
-
-.PHONY: dtc/all
-dtc/all: .git-submodule-status dtc/libfdt dtc/tests
-	$(call quiet-command,$(MAKE) $(DTC_MAKE_ARGS) CPPFLAGS="$(DTC_CPPFLAGS)" CFLAGS="$(DTC_CFLAGS)" LDFLAGS="$(LDFLAGS)" ARFLAGS="$(ARFLAGS)" CC="$(CC)" AR="$(AR)" LD="$(LD)" $(SUBDIR_MAKEFLAGS) libfdt/libfdt.a,)
-
-dtc/%: .git-submodule-status
-	@mkdir -p $@
-
 # Overriding CFLAGS causes us to lose defines added in the sub-makefile.
 # Not overriding CFLAGS leads to mis-matches between compilation modes.
 # Therefore we replicate some of the logic in the sub-makefile.
@@ -139,7 +128,6 @@ capstone/all: .git-submodule-status
 
 # Compatibility gunk to keep make working across the rename of targets
 # for recursion, to be removed some time after 4.1.
-subdir-dtc: dtc/all
 subdir-capstone: capstone/all
 
 ROM_DIRS = $(addprefix pc-bios/, $(ROMS))
@@ -191,7 +179,6 @@ distclean: clean
 	rm -f config.log
 	rm -f linux-headers/asm
 	rm -Rf .sdk
-	if test -f dtc/version_gen.h; then $(MAKE) $(DTC_MAKE_ARGS) clean; fi
 
 install: recurse-install
 # Add a dependency on the generated files, so that they are always

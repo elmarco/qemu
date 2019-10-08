@@ -354,7 +354,7 @@ brlapi=""
 curl=""
 curses=""
 docs=""
-fdt=""
+fdt="auto"
 netmap="no"
 sdl=""
 sdl_image=""
@@ -4088,46 +4088,7 @@ if test "$fdt_required" = "yes"; then
   fdt=yes
 fi
 
-if test "$fdt" != "no" ; then
-  fdt_libs="-lfdt"
-  # explicitly check for libfdt_env.h as it is missing in some stable installs
-  # and test for required functions to make sure we are on a version >= 1.4.2
-  cat > $TMPC << EOF
-#include <libfdt.h>
-#include <libfdt_env.h>
-int main(void) { fdt_check_full(NULL, 0); return 0; }
-EOF
-  if compile_prog "" "$fdt_libs" ; then
-    # system DTC is good - use it
-    fdt=system
-  else
-      # have GIT checkout, so activate dtc submodule
-      if test -e "${source_path}/.git" ; then
-          git_submodules="${git_submodules} dtc"
-      fi
-      if test -d "${source_path}/dtc/libfdt" || test -e "${source_path}/.git" ; then
-          fdt=git
-          mkdir -p dtc
-          if [ "$pwd_is_source_path" != "y" ] ; then
-              symlink "$source_path/dtc/Makefile" "dtc/Makefile"
-              symlink "$source_path/dtc/scripts" "dtc/scripts"
-          fi
-          fdt_cflags="-I${source_path}/dtc/libfdt"
-          fdt_ldflags="-L$PWD/dtc/libfdt"
-          fdt_libs="$fdt_libs"
-      elif test "$fdt" = "yes" ; then
-          # Not a git build & no libfdt found, prompt for system install
-          error_exit "DTC (libfdt) version >= 1.4.2 not present." \
-                     "Please install the DTC (libfdt) devel package"
-      else
-          # don't have and don't want
-          fdt_libs=
-          fdt=no
-      fi
-  fi
-fi
-
-libs_softmmu="$libs_softmmu $fdt_libs"
+libs_softmmu="$libs_softmmu"
 
 ##########################################
 # opengl probe (for sdl2, gtk, milkymist-tmu2)
@@ -6261,8 +6222,8 @@ echo_version() {
 }
 
 # prepend pixman and ftd flags after all config tests are done
-QEMU_CFLAGS="$pixman_cflags $fdt_cflags $QEMU_CFLAGS"
-QEMU_LDFLAGS="$fdt_ldflags $QEMU_LDFLAGS"
+QEMU_CFLAGS="$pixman_cflags $QEMU_CFLAGS"
+QEMU_LDFLAGS="$QEMU_LDFLAGS"
 libs_softmmu="$pixman_libs $libs_softmmu"
 
 echo "Install prefix    $prefix"
@@ -6892,11 +6853,6 @@ if test "$iovec" = "yes" ; then
 fi
 if test "$preadv" = "yes" ; then
   echo "CONFIG_PREADV=y" >> $config_host_mak
-fi
-if test "$fdt" != "no" ; then
-  echo "CONFIG_FDT=y" >> $config_host_mak
-  echo "FDT_CFLAGS=$fdt_cflags" >> $config_host_mak
-  echo "FDT_LIBS=$fdt_ldflags $fdt_libs" >> $config_host_mak
 fi
 if test "$membarrier" = "yes" ; then
   echo "CONFIG_MEMBARRIER=y" >> $config_host_mak
@@ -7871,9 +7827,6 @@ if test -n "$enabled_cross_compilers"; then
     echo "NOTE: cross-compilers enabled: $enabled_cross_compilers"
 fi
 
-if [ "$fdt" = "git" ]; then
-  echo "config-host.h: dtc/all" >> $config_host_mak
-fi
 if [ "$capstone" = "git" -o "$capstone" = "internal" ]; then
   echo "config-host.h: capstone/all" >> $config_host_mak
 fi
@@ -8023,6 +7976,7 @@ NINJA=$PWD/ninjatool $python $meson setup \
         -Db_pie=$(if test "$pie" = yes; then echo true; else echo false; fi) \
         -Db_coverage=$(if test "$gcov" = yes; then echo true; else echo false; fi) \
         -Dslirp="$slirp" \
+        -Dfdt="$fdt" \
         $cross_arg \
 	"$PWD" "$source_path"
 

@@ -282,11 +282,14 @@ if 'CONFIG_SECCOMP' in config_host
   seccomp = declare_dependency(compile_args: config_host['SECCOMP_CFLAGS'].split(),
                                link_args: config_host['SECCOMP_LIBS'].split())
 endif
-fdt = declare_dependency()
-if 'CONFIG_FDT' in config_host
-  fdt = declare_dependency(compile_args: config_host['FDT_CFLAGS'].split(),
-                           link_args: config_host['FDT_LIBS'].split())
-endif
+
+fdt = dependency('libfdt',
+                 version: '>= 1.4.2',
+                 required: get_option('fdt'),
+                 fallback: ['dtc', 'libfdt_dep'],
+                 default_options: ['static=true', 'tools=false', 'python=disabled'])
+conf_data.set('CONFIG_FDT', fdt.found())
+
 snappy = declare_dependency()
 if 'CONFIG_SNAPPY' in config_host
   snappy = declare_dependency(link_args: config_host['SNAPPY_LIBS'].split())
@@ -712,7 +715,7 @@ softmmu_ss.add(when: 'CONFIG_WIN32', if_true: [files('os-win32.c'), winmm])
 softmmu_ss.add(when: 'CONFIG_POSIX', if_true: files('os-posix.c'))
 softmmu_ss.add(when: 'CONFIG_TPM', if_true: files('tpm.c'))
 softmmu_ss.add(when: 'CONFIG_SECCOMP', if_true: [files('qemu-seccomp.c'), seccomp])
-softmmu_ss.add(when: ['CONFIG_FDT', fdt],  if_true: [files('device_tree.c')])
+softmmu_ss.add(when: fdt,  if_true: [files('device_tree.c')])
 
 common_ss.add(files('cpus-common.c'))
 
