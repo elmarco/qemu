@@ -100,3 +100,7 @@ if dtc.found()
   endforeach
   alias_target('update-dtb', t)
 endif
+
+if host_machine.cpu_family() == 'ppc64'
+  subdir('spapr-rtas')
+endif
