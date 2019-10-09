@@ -6222,14 +6222,6 @@ if { test "$cpu" = "i386" || test "$cpu" = "x86_64"; } && \
     done
 fi
 
-# Only build s390-ccw bios if we're on s390x and the compiler has -march=z900
-if test "$cpu" = "s390x" ; then
-  write_c_skeleton
-  if compile_prog "-march=z900" ""; then
-    roms="$roms s390-ccw"
-  fi
-fi
-
 # Probe for the need for relocating the user-only binary.
 if ( [ "$linux_user" = yes ] || [ "$bsd_user" = yes ] ) && [ "$pie" = no ]; then
   textseg_addr=
