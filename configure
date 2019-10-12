@@ -6205,23 +6205,6 @@ if test "$guest_agent_msi" = "yes"; then
   esac
 fi
 
-# Mac OS X ships with a broken assembler
-roms=
-if { test "$cpu" = "i386" || test "$cpu" = "x86_64"; } && \
-        test "$targetos" != "Darwin" && test "$targetos" != "SunOS" && \
-        test "$softmmu" = yes ; then
-    # Different host OS linkers have different ideas about the name of the ELF
-    # emulation. Linux and OpenBSD/amd64 use 'elf_i386'; FreeBSD uses the _fbsd
-    # variant; OpenBSD/i386 uses the _obsd variant; and Windows uses i386pe.
-    for emu in elf_i386 elf_i386_fbsd elf_i386_obsd i386pe; do
-        if "$ld" -verbose 2>&1 | grep -q "^[[:space:]]*$emu[[:space:]]*$"; then
-            ld_i386_emulation="$emu"
-            roms="optionrom"
-            break
-        fi
-    done
-fi
-
 # Probe for the need for relocating the user-only binary.
 if ( [ "$linux_user" = yes ] || [ "$bsd_user" = yes ] ) && [ "$pie" = no ]; then
   textseg_addr=
@@ -7352,7 +7335,6 @@ else
 fi
 QEMU_INCLUDES="-iquote ${source_path}/tcg $QEMU_INCLUDES"
 
-echo "ROMS=$roms" >> $config_host_mak
 echo "MAKE=$make" >> $config_host_mak
 echo "INSTALL=$install" >> $config_host_mak
 echo "INSTALL_DIR=$install -d -m 0755" >> $config_host_mak
@@ -7959,7 +7941,7 @@ LINKS="Makefile tests/tcg/Makefile"
 LINKS="$LINKS tests/tcg/cris/Makefile tests/tcg/cris/.gdbinit"
 LINKS="$LINKS tests/tcg/lm32/Makefile tests/tcg/xtensa/Makefile po/Makefile"
 LINKS="$LINKS tests/fp/Makefile"
-LINKS="$LINKS pc-bios/optionrom/Makefile pc-bios/keymaps"
+LINKS="$LINKS pc-bios/keymaps"
 LINKS="$LINKS pc-bios/spapr-rtas/Makefile"
 LINKS="$LINKS pc-bios/s390-ccw/Makefile"
 LINKS="$LINKS roms/seabios/Makefile roms/vgabios/Makefile"
