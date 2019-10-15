@@ -213,20 +213,6 @@ static const VMStateDescription vmstate_pcm3680i_pci = {
     }
 };
 
-static void pcm3680i_pci_instance_init(Object *obj)
-{
-    Pcm3680iPCIState *d = PCM3680i_PCI_DEV(obj);
-
-    object_property_add_link(obj, "canbus0", TYPE_CAN_BUS,
-                             (Object **)&d->canbus[0],
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
-    object_property_add_link(obj, "canbus1", TYPE_CAN_BUS,
-                             (Object **)&d->canbus[1],
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
-}
-
 static void pcm3680i_pci_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
@@ -244,6 +230,15 @@ static void pcm3680i_pci_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_pcm3680i_pci;
     set_bit(DEVICE_CATEGORY_MISC, dc->categories);
     dc->reset = pcm3680i_pci_reset;
+
+    object_class_property_add_link(klass, "canbus0", TYPE_CAN_BUS,
+                                   offsetof(Pcm3680iPCIState, canbus[0]),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+    object_class_property_add_link(klass, "canbus1", TYPE_CAN_BUS,
+                                   offsetof(Pcm3680iPCIState, canbus[1]),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo pcm3680i_pci_info = {
@@ -251,7 +246,6 @@ static const TypeInfo pcm3680i_pci_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(Pcm3680iPCIState),
     .class_init    = pcm3680i_pci_class_init,
-    .instance_init = pcm3680i_pci_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { },
