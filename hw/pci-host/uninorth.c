@@ -172,11 +172,6 @@ static void pci_unin_main_init(Object *obj)
                              "unin-pci-hole", &s->pci_mmio,
                              0x80000000ULL, 0x10000000ULL);
 
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     sysbus_init_mmio(sbd, &h->conf_mem);
     sysbus_init_mmio(sbd, &h->data_mem);
     sysbus_init_mmio(sbd, &s->pci_hole);
@@ -220,11 +215,6 @@ static void pci_u3_agp_init(Object *obj)
                              "unin-pci-hole", &s->pci_mmio,
                              0x80000000ULL, 0x70000000ULL);
 
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     sysbus_init_mmio(sbd, &h->conf_mem);
     sysbus_init_mmio(sbd, &h->data_mem);
     sysbus_init_mmio(sbd, &s->pci_hole);
@@ -249,7 +239,6 @@ static void pci_unin_agp_realize(DeviceState *dev, Error **errp)
 
 static void pci_unin_agp_init(Object *obj)
 {
-    UNINHostState *s = UNI_NORTH_AGP_HOST_BRIDGE(obj);
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     PCIHostState *h = PCI_HOST_BRIDGE(obj);
 
@@ -258,11 +247,6 @@ static void pci_unin_agp_init(Object *obj)
                           obj, "unin-agp-conf-idx", 0x1000);
     memory_region_init_io(&h->data_mem, OBJECT(h), &pci_host_data_le_ops,
                           obj, "unin-agp-conf-data", 0x1000);
-
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
 
     sysbus_init_mmio(sbd, &h->conf_mem);
     sysbus_init_mmio(sbd, &h->data_mem);
@@ -286,7 +270,6 @@ static void pci_unin_internal_realize(DeviceState *dev, Error **errp)
 
 static void pci_unin_internal_init(Object *obj)
 {
-    UNINHostState *s = UNI_NORTH_INTERNAL_PCI_HOST_BRIDGE(obj);
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     PCIHostState *h = PCI_HOST_BRIDGE(obj);
 
@@ -295,11 +278,6 @@ static void pci_unin_internal_init(Object *obj)
                           obj, "unin-pci-conf-idx", 0x1000);
     memory_region_init_io(&h->data_mem, OBJECT(h), &pci_host_data_le_ops,
                           obj, "unin-pci-conf-data", 0x1000);
-
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
 
     sysbus_init_mmio(sbd, &h->conf_mem);
     sysbus_init_mmio(sbd, &h->data_mem);
@@ -465,6 +443,25 @@ static const TypeInfo unin_internal_pci_host_info = {
     },
 };
 
+static void pci_uni_host_bridge_class_init(ObjectClass *oc, void *data)
+{
+    DeviceClass *dc = DEVICE_CLASS(oc);
+
+    object_class_property_add_link(oc, "pic", TYPE_OPENPIC,
+                                   offsetof(UNINHostState, pic),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+
+    set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
+}
+
+static const TypeInfo pci_uni_host_bridge_info = {
+    .name          = TYPE_UNI_PCI_HOST_BRIDGE,
+    .parent        = TYPE_PCI_HOST_BRIDGE,
+    .instance_size = sizeof(UNINHostState),
+    .class_init    = pci_uni_host_bridge_class_init,
+};
+
 static Property pci_unin_main_pci_host_props[] = {
     DEFINE_PROP_UINT32("ofw-addr", UNINHostState, ofw_addr, -1),
     DEFINE_PROP_END_OF_LIST()
@@ -477,14 +474,13 @@ static void pci_unin_main_class_init(ObjectClass *klass, void *data)
 
     dc->realize = pci_unin_main_realize;
     device_class_set_props(dc, pci_unin_main_pci_host_props);
-    set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     dc->fw_name = "pci";
     sbc->explicit_ofw_unit_address = pci_unin_main_ofw_unit_address;
 }
 
 static const TypeInfo pci_unin_main_info = {
     .name          = TYPE_UNI_NORTH_PCI_HOST_BRIDGE,
-    .parent        = TYPE_PCI_HOST_BRIDGE,
+    .parent        = TYPE_UNI_PCI_HOST_BRIDGE,
     .instance_size = sizeof(UNINHostState),
     .instance_init = pci_unin_main_init,
     .class_init    = pci_unin_main_class_init,
@@ -495,12 +491,11 @@ static void pci_u3_agp_class_init(ObjectClass *klass, void *data)
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = pci_u3_agp_realize;
-    set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
 }
 
 static const TypeInfo pci_u3_agp_info = {
     .name          = TYPE_U3_AGP_HOST_BRIDGE,
-    .parent        = TYPE_PCI_HOST_BRIDGE,
+    .parent        = TYPE_UNI_PCI_HOST_BRIDGE,
     .instance_size = sizeof(UNINHostState),
     .instance_init = pci_u3_agp_init,
     .class_init    = pci_u3_agp_class_init,
@@ -511,12 +506,11 @@ static void pci_unin_agp_class_init(ObjectClass *klass, void *data)
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = pci_unin_agp_realize;
-    set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
 }
 
 static const TypeInfo pci_unin_agp_info = {
     .name          = TYPE_UNI_NORTH_AGP_HOST_BRIDGE,
-    .parent        = TYPE_PCI_HOST_BRIDGE,
+    .parent        = TYPE_UNI_PCI_HOST_BRIDGE,
     .instance_size = sizeof(UNINHostState),
     .instance_init = pci_unin_agp_init,
     .class_init    = pci_unin_agp_class_init,
@@ -527,12 +521,11 @@ static void pci_unin_internal_class_init(ObjectClass *klass, void *data)
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = pci_unin_internal_realize;
-    set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
 }
 
 static const TypeInfo pci_unin_internal_info = {
     .name          = TYPE_UNI_NORTH_INTERNAL_PCI_HOST_BRIDGE,
-    .parent        = TYPE_PCI_HOST_BRIDGE,
+    .parent        = TYPE_UNI_PCI_HOST_BRIDGE,
     .instance_size = sizeof(UNINHostState),
     .instance_init = pci_unin_internal_init,
     .class_init    = pci_unin_internal_class_init,
@@ -600,6 +593,7 @@ static void unin_register_types(void)
     type_register_static(&unin_agp_pci_host_info);
     type_register_static(&unin_internal_pci_host_info);
 
+    type_register_static(&pci_uni_host_bridge_info);
     type_register_static(&pci_unin_main_info);
     type_register_static(&pci_u3_agp_info);
     type_register_static(&pci_unin_agp_info);

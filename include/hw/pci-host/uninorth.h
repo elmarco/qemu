@@ -31,6 +31,7 @@
 /* UniNorth version */
 #define UNINORTH_VERSION_10A    0x7
 
+#define TYPE_UNI_PCI_HOST_BRIDGE "uni-pci-host-bridge"
 #define TYPE_UNI_NORTH_PCI_HOST_BRIDGE "uni-north-pci-pcihost"
 #define TYPE_UNI_NORTH_AGP_HOST_BRIDGE "uni-north-agp-pcihost"
 #define TYPE_UNI_NORTH_INTERNAL_PCI_HOST_BRIDGE "uni-north-internal-pci-pcihost"
