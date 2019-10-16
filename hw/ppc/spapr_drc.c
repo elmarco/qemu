@@ -387,11 +387,6 @@ void spapr_drc_attach(SpaprDrc *drc, DeviceState *d, Error **errp)
              || (drc->state == SPAPR_DRC_STATE_PHYSICAL_POWERON));
 
     drc->dev = d;
-
-    object_property_add_link(OBJECT(drc), "device",
-                             object_get_typename(OBJECT(drc->dev)),
-                             (Object **)(&drc->dev),
-                             NULL, 0, NULL);
 }
 
 static void spapr_drc_release(SpaprDrc *drc)
@@ -404,7 +399,6 @@ static void spapr_drc_release(SpaprDrc *drc)
     g_free(drc->fdt);
     drc->fdt = NULL;
     drc->fdt_start_offset = 0;
-    object_property_del(OBJECT(drc), "device", &error_abort);
     drc->dev = NULL;
 }
 
@@ -572,6 +566,9 @@ static void spapr_dr_connector_class_init(ObjectClass *k, void *data)
      * Reason: it crashes FIXME find and document the real reason
      */
     dk->user_creatable = false;
+
+    object_class_property_add_link(k, "device", TYPE_DEVICE,
+                                   offsetof(SpaprDrc, dev), NULL, 0);
 }
 
 static bool drc_physical_needed(void *opaque)
