@@ -212,20 +212,6 @@ static const VMStateDescription vmstate_mioe3680_pci = {
     }
 };
 
-static void mioe3680_pci_instance_init(Object *obj)
-{
-    Mioe3680PCIState *d = MIOe3680_PCI_DEV(obj);
-
-    object_property_add_link(obj, "canbus0", TYPE_CAN_BUS,
-                             (Object **)&d->canbus[0],
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
-    object_property_add_link(obj, "canbus1", TYPE_CAN_BUS,
-                             (Object **)&d->canbus[1],
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
-}
-
 static void mioe3680_pci_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
@@ -243,6 +229,15 @@ static void mioe3680_pci_class_init(ObjectClass *klass, void *data)
     dc->vmsd = &vmstate_mioe3680_pci;
     set_bit(DEVICE_CATEGORY_MISC, dc->categories);
     dc->reset = mioe3680_pci_reset;
+
+    object_class_property_add_link(klass, "canbus0", TYPE_CAN_BUS,
+                                   offsetof(Mioe3680PCIState, canbus[0]),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+    object_class_property_add_link(klass, "canbus1", TYPE_CAN_BUS,
+                                   offsetof(Mioe3680PCIState, canbus[1]),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo mioe3680_pci_info = {
@@ -250,7 +245,6 @@ static const TypeInfo mioe3680_pci_info = {
     .parent        = TYPE_PCI_DEVICE,
     .instance_size = sizeof(Mioe3680PCIState),
     .class_init    = mioe3680_pci_class_init,
-    .instance_init = mioe3680_pci_instance_init,
     .interfaces = (InterfaceInfo[]) {
         { INTERFACE_CONVENTIONAL_PCI_DEVICE },
         { },
