@@ -1353,17 +1353,6 @@ static void xlnx_zynqmp_qspips_realize(DeviceState *dev, Error **errp)
     fifo32_create(&s->fifo_g, 32);
 }
 
-static void xlnx_zynqmp_qspips_init(Object *obj)
-{
-    XlnxZynqMPQSPIPS *rq = XLNX_ZYNQMP_QSPIPS(obj);
-
-    object_property_add_link(obj, "stream-connected-dma", TYPE_STREAM_SLAVE,
-                             (Object **)&rq->dma,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             NULL);
-}
-
 static int xilinx_spips_post_load(void *opaque, int version_id)
 {
     xilinx_spips_update_ixr((XilinxSPIPS *)opaque);
@@ -1475,6 +1464,12 @@ static void xlnx_zynqmp_qspips_class_init(ObjectClass *klass, void * data)
     xsc->reg_ops = &xlnx_zynqmp_qspips_ops;
     xsc->rx_fifo_size = RXFF_A_Q;
     xsc->tx_fifo_size = TXFF_A_Q;
+
+    object_class_property_add_link(klass, "stream-connected-dma",
+                                   TYPE_STREAM_SLAVE,
+                                   offsetof(XlnxZynqMPQSPIPS, dma),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static const TypeInfo xilinx_spips_info = {
@@ -1496,7 +1491,6 @@ static const TypeInfo xlnx_zynqmp_qspips_info = {
     .name  = TYPE_XLNX_ZYNQMP_QSPIPS,
     .parent = TYPE_XILINX_QSPIPS,
     .instance_size  = sizeof(XlnxZynqMPQSPIPS),
-    .instance_init  = xlnx_zynqmp_qspips_init,
     .class_init = xlnx_zynqmp_qspips_class_init,
 };
 
