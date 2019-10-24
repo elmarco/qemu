@@ -185,11 +185,13 @@ static void pxa2xx_pcmcia_initfn(Object *obj)
                                 &s->common_iomem);
 
     s->slot.irq = qemu_allocate_irq(pxa2xx_pcmcia_set_irq, s, 0);
+}
 
-    object_property_add_link(obj, "card", TYPE_PCMCIA_CARD,
-                             (Object **)&s->card,
-                             NULL, /* read-only property */
-                             0, NULL);
+static void pxa2xx_pcmcia_class_init(ObjectClass *oc, void *data)
+{
+    object_class_property_add_link(oc, "card", TYPE_PCMCIA_CARD,
+                                   offsetof(PXA2xxPCMCIAState, card),
+                                   NULL, OBJ_PROP_LINK_NONE);
 }
 
 /* Insert a new card into a slot */
@@ -256,6 +258,7 @@ static const TypeInfo pxa2xx_pcmcia_type_info = {
     .parent = TYPE_SYS_BUS_DEVICE,
     .instance_size = sizeof(PXA2xxPCMCIAState),
     .instance_init = pxa2xx_pcmcia_initfn,
+    .class_init = pxa2xx_pcmcia_class_init,
 };
 
 static void pxa2xx_pcmcia_register_types(void)
