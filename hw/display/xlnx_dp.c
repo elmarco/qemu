@@ -1234,12 +1234,6 @@ static void xlnx_dp_init(Object *obj)
     sysbus_init_mmio(sbd, &s->container);
     sysbus_init_irq(sbd, &s->irq);
 
-    object_property_add_link(obj, "dpdma", TYPE_XLNX_DPDMA,
-                             (Object **) &s->dpdma,
-                             xlnx_dp_set_dpdma,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
-
     /*
      * Initialize AUX Bus.
      */
@@ -1346,6 +1340,12 @@ static void xlnx_dp_class_init(ObjectClass *oc, void *data)
     dc->realize = xlnx_dp_realize;
     dc->vmsd = &vmstate_dp;
     dc->reset = xlnx_dp_reset;
+
+    object_class_property_add_link(oc, "dpdma", TYPE_XLNX_DPDMA,
+                                   offsetof(XlnxDPState, dpdma),
+                                   xlnx_dp_set_dpdma,
+                                   OBJ_PROP_LINK_STRONG);
+
 }
 
 static const TypeInfo xlnx_dp_info = {
