@@ -770,11 +770,6 @@ static void pmu_init(Object *obj)
     SysBusDevice *d = SYS_BUS_DEVICE(obj);
     PMUState *s = VIA_PMU(obj);
 
-    object_property_add_link(obj, "gpio", TYPE_MACIO_GPIO,
-                             (Object **) &s->gpio,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     sysbus_init_child_obj(obj, "mos6522-pmu", &s->mos6522_pmu,
                           sizeof(s->mos6522_pmu), TYPE_MOS6522_PMU);
 
@@ -797,6 +792,12 @@ static void pmu_class_init(ObjectClass *oc, void *data)
     dc->vmsd = &vmstate_pmu;
     device_class_set_props(dc, pmu_properties);
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
+
+    object_class_property_add_link(oc, "gpio", TYPE_MACIO_GPIO,
+                                   offsetof(PMUState, gpio),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+
 }
 
 static const TypeInfo pmu_type_info = {
