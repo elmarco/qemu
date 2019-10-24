@@ -211,12 +211,6 @@ static void qbus_initfn(Object *obj)
     BusState *bus = BUS(obj);
 
     QTAILQ_INIT(&bus->children);
-    object_property_add_link(obj, QDEV_HOTPLUG_HANDLER_PROPERTY,
-                             TYPE_HOTPLUG_HANDLER,
-                             (Object **)&bus->hotplug_handler,
-                             object_property_allow_set_link,
-                             0,
-                             NULL);
     object_property_add_bool(obj, "realized",
                              bus_get_realized, bus_set_realized, NULL);
 }
@@ -303,6 +297,12 @@ static void bus_class_init(ObjectClass *class, void *data)
      */
     bc->reset = bus_phases_reset;
     rc->get_transitional_function = bus_get_transitional_reset;
+
+    object_class_property_add_link(class, QDEV_HOTPLUG_HANDLER_PROPERTY,
+                                   TYPE_HOTPLUG_HANDLER,
+                                   offsetof(BusState, hotplug_handler),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static void qbus_finalize(Object *obj)
