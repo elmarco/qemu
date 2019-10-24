@@ -255,11 +255,6 @@ static void mv88w8618_audio_init(Object *obj)
     memory_region_init_io(&s->iomem, obj, &mv88w8618_audio_ops, s,
                           "audio", MP_AUDIO_SIZE);
     sysbus_init_mmio(dev, &s->iomem);
-
-    object_property_add_link(OBJECT(dev), "wm8750", TYPE_WM8750,
-                             (Object **) &s->wm,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
 }
 
 static void mv88w8618_audio_realize(DeviceState *dev, Error **errp)
@@ -295,6 +290,11 @@ static void mv88w8618_audio_class_init(ObjectClass *klass, void *data)
     dc->reset = mv88w8618_audio_reset;
     dc->vmsd = &mv88w8618_audio_vmsd;
     dc->user_creatable = false;
+
+    object_class_property_add_link(klass, "wm8750", TYPE_WM8750,
+                                   offsetof(mv88w8618_audio_state, wm),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo mv88w8618_audio_info = {
