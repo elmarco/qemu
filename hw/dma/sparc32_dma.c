@@ -261,11 +261,6 @@ static void sparc32_dma_device_init(Object *obj)
 
     sysbus_init_mmio(sbd, &s->iomem);
 
-    object_property_add_link(OBJECT(dev), "iommu", TYPE_SUN4M_IOMMU,
-                             (Object **) &s->iommu,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     qdev_init_gpio_in(dev, dma_set_irq, 1);
     qdev_init_gpio_out(dev, s->gpio, 2);
 }
@@ -276,6 +271,11 @@ static void sparc32_dma_device_class_init(ObjectClass *klass, void *data)
 
     dc->reset = sparc32_dma_device_reset;
     dc->vmsd = &vmstate_sparc32_dma_device;
+
+    object_class_property_add_link(klass, "iommu", TYPE_SUN4M_IOMMU,
+                                   offsetof(DMADeviceState, iommu),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo sparc32_dma_device_info = {
