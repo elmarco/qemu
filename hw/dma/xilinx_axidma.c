@@ -526,19 +526,6 @@ static void xilinx_axidma_realize(DeviceState *dev, Error **errp)
                                                             &s->rx_control_dev);
     Error *local_err = NULL;
 
-    object_property_add_link(OBJECT(ds), "dma", TYPE_XILINX_AXI_DMA,
-                             (Object **)&ds->dma,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &local_err);
-    object_property_add_link(OBJECT(cs), "dma", TYPE_XILINX_AXI_DMA,
-                             (Object **)&cs->dma,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &local_err);
-    if (local_err) {
-        goto xilinx_axidma_realize_fail;
-    }
     object_property_set_link(OBJECT(ds), OBJECT(s), "dma", &local_err);
     object_property_set_link(OBJECT(cs), OBJECT(s), "dma", &local_err);
     if (local_err) {
@@ -617,6 +604,11 @@ static void xilinx_axidma_stream_class_init(ObjectClass *klass, void *data)
 
     ssc->push = ((StreamSlaveClass *)data)->push;
     ssc->can_push = ((StreamSlaveClass *)data)->can_push;
+
+    object_class_property_add_link(klass, "dma", TYPE_XILINX_AXI_DMA,
+                                   offsetof(XilinxAXIDMAStreamSlave, dma),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static const TypeInfo axidma_info = {
