@@ -1161,6 +1161,10 @@ static void colo_compare_class_init(ObjectClass *oc, void *data)
     UserCreatableClass *ucc = USER_CREATABLE_CLASS(oc);
 
     ucc->complete = colo_compare_complete;
+    object_class_property_add_link(oc, "iothread", TYPE_IOTHREAD,
+                                   offsetof(CompareState, iothread),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static void colo_compare_init(Object *obj)
@@ -1176,10 +1180,6 @@ static void colo_compare_init(Object *obj)
     object_property_add_str(obj, "outdev",
                             compare_get_outdev, compare_set_outdev,
                             NULL);
-    object_property_add_link(obj, "iothread", TYPE_IOTHREAD,
-                            (Object **)&s->iothread,
-                            object_property_allow_set_link,
-                            OBJ_PROP_LINK_STRONG, NULL);
     /* This parameter just for Xen COLO */
     object_property_add_str(obj, "notify_dev",
                             compare_get_notify_dev, compare_set_notify_dev,
