@@ -456,10 +456,6 @@ static void macio_ide_initfn(Object *obj)
     sysbus_init_irq(d, &s->real_dma_irq);
     s->dma_irq = qemu_allocate_irq(pmac_ide_irq, s, 0);
     s->ide_irq = qemu_allocate_irq(pmac_ide_irq, s, 1);
-
-    object_property_add_link(obj, "dbdma", TYPE_MAC_DBDMA,
-                             (Object **) &s->dbdma,
-                             qdev_prop_allow_set_link_before_realize, 0, NULL);
 }
 
 static Property macio_ide_properties[] = {
@@ -477,6 +473,10 @@ static void macio_ide_class_init(ObjectClass *oc, void *data)
     device_class_set_props(dc, macio_ide_properties);
     dc->vmsd = &vmstate_pmac;
     set_bit(DEVICE_CATEGORY_STORAGE, dc->categories);
+
+    object_class_property_add_link(oc, "dbdma", TYPE_MAC_DBDMA,
+        offsetof(MACIOIDEState, dbdma),
+        qdev_prop_allow_set_link_before_realize, OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo macio_ide_type_info = {
