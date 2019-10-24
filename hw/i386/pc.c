@@ -653,11 +653,6 @@ void pc_cmos_init(PCMachineState *pcms,
     rtc_set_memory(s, 0x5c, val >> 8);
     rtc_set_memory(s, 0x5d, val >> 16);
 
-    object_property_add_link(OBJECT(pcms), "rtc_state",
-                             TYPE_ISA_DEVICE,
-                             (Object **)&x86ms->rtc,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG, &error_abort);
     object_property_set_link(OBJECT(pcms), OBJECT(s),
                              "rtc_state", &error_abort);
 
@@ -1971,6 +1966,11 @@ static void pc_machine_class_init(ObjectClass *oc, void *data)
 
     object_class_property_add_bool(oc, PC_MACHINE_PIT, pc_machine_get_pit,
                                    pc_machine_set_pit);
+
+    object_class_property_add_link(oc, "rtc_state", TYPE_ISA_DEVICE,
+                                   offsetof(X86MachineState, rtc),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static void pc_machine_finalize(Object *obj)
