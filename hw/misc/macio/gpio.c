@@ -167,11 +167,6 @@ static void macio_gpio_init(Object *obj)
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     MacIOGPIOState *s = MACIO_GPIO(obj);
 
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     memory_region_init_io(&s->gpiomem, OBJECT(s), &macio_gpio_ops, obj,
                           "gpio", 0x30);
     sysbus_init_mmio(sbd, &s->gpiomem);
@@ -211,6 +206,11 @@ static void macio_gpio_class_init(ObjectClass *oc, void *data)
     dc->reset = macio_gpio_reset;
     dc->vmsd = &vmstate_macio_gpio;
     nc->nmi_monitor_handler = macio_gpio_nmi;
+
+    object_class_property_add_link(oc, "pic", TYPE_OPENPIC,
+                                   offsetof(MacIOGPIOState, pic),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo macio_gpio_init_info = {
