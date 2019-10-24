@@ -171,11 +171,6 @@ static void pcspk_initfn(Object *obj)
     PCSpkState *s = PC_SPEAKER(obj);
 
     memory_region_init_io(&s->ioport, OBJECT(s), &pcspk_io_ops, s, "pcspk", 1);
-
-    object_property_add_link(obj, "pit", TYPE_PIT_COMMON,
-                             (Object **)&s->pit,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, &error_abort);
 }
 
 static void pcspk_realizefn(DeviceState *dev, Error **errp)
@@ -226,6 +221,11 @@ static void pcspk_class_initfn(ObjectClass *klass, void *data)
     /* Reason: realize sets global pcspk_state */
     /* Reason: pit object link */
     dc->user_creatable = false;
+
+    object_class_property_add_link(klass, "pit", TYPE_PIT_COMMON,
+                                   offsetof(PCSpkState, pit),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo pcspk_info = {
