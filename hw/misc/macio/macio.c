@@ -389,11 +389,6 @@ static void macio_newworld_init(Object *obj)
     NewWorldMacIOState *ns = NEWWORLD_MACIO(obj);
     int i;
 
-    object_property_add_link(obj, "pic", TYPE_OPENPIC,
-                             (Object **) &ns->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     macio_init_child_obj(s, "gpio", &ns->gpio, sizeof(ns->gpio),
                          TYPE_MACIO_GPIO);
 
@@ -468,6 +463,11 @@ static void macio_newworld_class_init(ObjectClass *oc, void *data)
     pdc->device_id = PCI_DEVICE_ID_APPLE_UNI_N_KEYL;
     dc->vmsd = &vmstate_macio_newworld;
     device_class_set_props(dc, macio_newworld_properties);
+
+    object_class_property_add_link(oc, "pic", TYPE_OPENPIC,
+                                   offsetof(NewWorldMacIOState, pic),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static Property macio_properties[] = {
