@@ -72,17 +72,6 @@ static void can_host_complete(UserCreatable *uc, Error **errp)
     can_host_connect(CAN_HOST(uc), errp);
 }
 
-static void can_host_instance_init(Object *obj)
-{
-    CanHostState *ch = CAN_HOST(obj);
-
-    object_property_add_link(obj, "canbus", TYPE_CAN_BUS,
-                             (Object **)&ch->bus,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
-}
-
 static void can_host_class_init(ObjectClass *klass,
                                 void *class_data G_GNUC_UNUSED)
 {
@@ -90,6 +79,11 @@ static void can_host_class_init(ObjectClass *klass,
 
     klass->unparent = can_host_unparent;
     uc_klass->complete = can_host_complete;
+
+    object_class_property_add_link(klass, "canbus", TYPE_CAN_BUS,
+                                   offsetof(CanHostState, bus),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static const TypeInfo can_host_info = {
@@ -98,7 +92,6 @@ static const TypeInfo can_host_info = {
     .instance_size = sizeof(CanHostState),
     .class_size = sizeof(CanHostClass),
     .abstract = true,
-    .instance_init = can_host_instance_init,
     .class_init = can_host_class_init,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_USER_CREATABLE },
