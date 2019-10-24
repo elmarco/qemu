@@ -1584,12 +1584,6 @@ static void gem_init(Object *obj)
                           "enet", sizeof(s->regs));
 
     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &s->iomem);
-
-    object_property_add_link(obj, "dma", TYPE_MEMORY_REGION,
-                             (Object **)&s->dma_mr,
-                             qdev_prop_allow_set_link_before_realize,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
 }
 
 static const VMStateDescription vmstate_cadence_gem = {
@@ -1630,6 +1624,11 @@ static void gem_class_init(ObjectClass *klass, void *data)
     device_class_set_props(dc, gem_properties);
     dc->vmsd = &vmstate_cadence_gem;
     dc->reset = gem_reset;
+
+    object_class_property_add_link(klass, "dma", TYPE_MEMORY_REGION,
+                                   offsetof(CadenceGEMState, dma_mr),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static const TypeInfo gem_info = {
