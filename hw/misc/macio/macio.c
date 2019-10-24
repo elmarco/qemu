@@ -238,11 +238,6 @@ static void macio_oldworld_init(Object *obj)
     DeviceState *dev;
     int i;
 
-    object_property_add_link(obj, "pic", TYPE_HEATHROW,
-                             (Object **) &os->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     macio_init_child_obj(s, "cuda", &s->cuda, sizeof(s->cuda), TYPE_CUDA);
 
     object_initialize(&os->nvram, sizeof(os->nvram), TYPE_MACIO_NVRAM);
@@ -440,6 +435,12 @@ static void macio_oldworld_class_init(ObjectClass *oc, void *data)
     pdc->realize = macio_oldworld_realize;
     pdc->device_id = PCI_DEVICE_ID_APPLE_343S1201;
     dc->vmsd = &vmstate_macio_oldworld;
+
+    object_class_property_add_link(oc, "pic", TYPE_HEATHROW,
+                                   offsetof(OldWorldMacIOState, pic),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+
 }
 
 static const VMStateDescription vmstate_macio_newworld = {
