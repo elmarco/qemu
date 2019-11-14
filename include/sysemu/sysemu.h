@@ -95,9 +95,6 @@ char *get_boot_devices_list(size_t *size);
 DeviceState *get_boot_device(uint32_t position);
 void check_boot_index(int32_t bootindex, Error **errp);
 void del_boot_device_path(DeviceState *dev, const char *suffix);
-void device_add_bootindex_property(Object *obj, int32_t *bootindex,
-                                   const char *name, const char *suffix,
-                                   DeviceState *dev, Error **errp);
 void device_class_add_bootindex_property(DeviceClass *dc,
                                          ptrdiff_t bootindex_off,
                                          const char *name, const char *suffix);
