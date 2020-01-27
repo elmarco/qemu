@@ -1224,12 +1224,10 @@ static char *get_description(Object *obj, Error **errp)
 
 void s390_cpu_model_class_register_props(ObjectClass *oc)
 {
-    object_class_property_add_bool(oc, "migration-safe", get_is_migration_safe,
-                                   NULL, NULL);
-    object_class_property_add_bool(oc, "static", get_is_static,
-                                   NULL, NULL);
-    object_class_property_add_str(oc, "description", get_description, NULL,
-                                  NULL);
+    object_class_property_add_bool(oc, "migration-safe",
+                                   get_is_migration_safe, NULL);
+    object_class_property_add_bool(oc, "static", get_is_static, NULL);
+    object_class_property_add_str(oc, "description", get_description, NULL);
 }
 
 #ifdef CONFIG_KVM

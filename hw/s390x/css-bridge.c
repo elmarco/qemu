@@ -140,12 +140,11 @@ static void virtual_css_bridge_class_init(ObjectClass *klass, void *data)
     hc->unplug = ccw_device_unplug;
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     device_class_set_props(dc, virtual_css_bridge_properties);
-    object_class_property_add_bool(klass, "cssid-unrestricted",
-                                   prop_get_true, NULL, NULL);
+    object_class_property_add_bool(klass, "cssid-unrestricted", prop_get_true,
+                                   NULL);
     object_class_property_set_description(klass, "cssid-unrestricted",
-            "A css device can use any cssid, regardless whether virtual"
-            " or not (read only, always true)",
-            NULL);
+                                          "A css device can use any cssid, regardless whether virtual"
+                                          " or not (read only, always true)");
 }
 
 static const TypeInfo virtual_css_bridge_info = {

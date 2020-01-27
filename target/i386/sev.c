@@ -246,24 +246,20 @@ qsev_guest_set_sev_device(Object *obj, const char *value, Error **errp)
 static void
 qsev_guest_class_init(ObjectClass *oc, void *data)
 {
-    object_class_property_add_str(oc, "sev-device",
-                                  qsev_guest_get_sev_device,
-                                  qsev_guest_set_sev_device,
-                                  NULL);
+    object_class_property_add_str(oc, "sev-device", qsev_guest_get_sev_device,
+                                  qsev_guest_set_sev_device);
     object_class_property_set_description(oc, "sev-device",
-            "SEV device to use", NULL);
+                                          "SEV device to use");
     object_class_property_add_str(oc, "dh-cert-file",
                                   qsev_guest_get_dh_cert_file,
-                                  qsev_guest_set_dh_cert_file,
-                                  NULL);
+                                  qsev_guest_set_dh_cert_file);
     object_class_property_set_description(oc, "dh-cert-file",
-            "guest owners DH certificate (encoded with base64)", NULL);
+                                          "guest owners DH certificate (encoded with base64)");
     object_class_property_add_str(oc, "session-file",
                                   qsev_guest_get_session_file,
-                                  qsev_guest_set_session_file,
-                                  NULL);
+                                  qsev_guest_set_session_file);
     object_class_property_set_description(oc, "session-file",
-            "guest owners session parameters (encoded with base64)", NULL);
+                                          "guest owners session parameters (encoded with base64)");
 }
 
 static void

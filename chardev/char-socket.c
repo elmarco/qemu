@@ -1488,11 +1488,10 @@ static void char_socket_class_init(ObjectClass *oc, void *data)
     cc->chr_update_read_handler = tcp_chr_update_read_handler;
 
     object_class_property_add(oc, "addr", "SocketAddress",
-                              char_socket_get_addr, NULL,
-                              NULL, NULL, &error_abort);
+                              char_socket_get_addr, NULL, NULL, NULL);
 
     object_class_property_add_bool(oc, "connected", char_socket_get_connected,
-                                   NULL, &error_abort);
+                                   NULL);
 }
 
 static const TypeInfo char_socket_type_info = {

@@ -201,16 +201,13 @@ static void tcg_accel_class_init(ObjectClass *oc, void *data)
     ac->init_machine = tcg_init;
     ac->allowed = &tcg_allowed;
 
-    object_class_property_add_str(oc, "thread",
-                                  tcg_get_thread,
-                                  tcg_set_thread,
-                                  NULL);
+    object_class_property_add_str(oc, "thread", tcg_get_thread,
+                                  tcg_set_thread);
 
-    object_class_property_add(oc, "tb-size", "int",
-        tcg_get_tb_size, tcg_set_tb_size,
-        NULL, NULL, &error_abort);
+    object_class_property_add(oc, "tb-size", "int", tcg_get_tb_size,
+                              tcg_set_tb_size, NULL, NULL);
     object_class_property_set_description(oc, "tb-size",
-        "TCG translation block cache size", &error_abort);
+                                          "TCG translation block cache size");
 
 }
 

@@ -1246,8 +1246,7 @@ static void create_link_property(ObjectClass *oc, Property *prop, Error **errp)
     object_class_property_add_link(oc, prop->name, prop->link_type,
                                    prop->offset,
                                    qdev_prop_allow_set_link_before_realize,
-                                   OBJ_PROP_LINK_STRONG,
-                                   errp);
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 const PropertyInfo qdev_prop_link = {

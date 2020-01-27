@@ -1954,23 +1954,23 @@ static void pc_machine_class_init(ObjectClass *oc, void *data)
     mc->numa_mem_supported = true;
 
     object_class_property_add(oc, PC_MACHINE_DEVMEM_REGION_SIZE, "int",
-        pc_machine_get_device_memory_region_size, NULL,
-        NULL, NULL, &error_abort);
+                              pc_machine_get_device_memory_region_size, NULL,
+                              NULL, NULL);
 
     object_class_property_add(oc, PC_MACHINE_VMPORT, "OnOffAuto",
-        pc_machine_get_vmport, pc_machine_set_vmport,
-        NULL, NULL, &error_abort);
+                              pc_machine_get_vmport, pc_machine_set_vmport,
+                              NULL, NULL);
     object_class_property_set_description(oc, PC_MACHINE_VMPORT,
-        "Enable vmport (pc & q35)", &error_abort);
+                                          "Enable vmport (pc & q35)");
 
-    object_class_property_add_bool(oc, PC_MACHINE_SMBUS,
-        pc_machine_get_smbus, pc_machine_set_smbus, &error_abort);
+    object_class_property_add_bool(oc, PC_MACHINE_SMBUS, pc_machine_get_smbus,
+                                   pc_machine_set_smbus);
 
-    object_class_property_add_bool(oc, PC_MACHINE_SATA,
-        pc_machine_get_sata, pc_machine_set_sata, &error_abort);
+    object_class_property_add_bool(oc, PC_MACHINE_SATA, pc_machine_get_sata,
+                                   pc_machine_set_sata);
 
-    object_class_property_add_bool(oc, PC_MACHINE_PIT,
-        pc_machine_get_pit, pc_machine_set_pit, &error_abort);
+    object_class_property_add_bool(oc, PC_MACHINE_PIT, pc_machine_get_pit,
+                                   pc_machine_set_pit);
 }
 
 static const TypeInfo pc_machine_info = {

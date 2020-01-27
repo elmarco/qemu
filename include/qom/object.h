@@ -1055,7 +1055,7 @@ ObjectProperty *object_class_property_add(ObjectClass *klass, const char *name,
                                           ObjectPropertyAccessor *get,
                                           ObjectPropertyAccessor *set,
                                           ObjectPropertyRelease *release,
-                                          void *opaque, Error **errp);
+                                          void *opaque);
 
 /**
  * object_property_set_default_bool:
@@ -1569,8 +1569,7 @@ ObjectProperty *object_class_property_add_link(ObjectClass *oc,
                               const char *type, ptrdiff_t offset,
                               void (*check)(const Object *obj, const char *name,
                                             Object *val, Error **errp),
-                              ObjectPropertyLinkFlags flags,
-                              Error **errp);
+                              ObjectPropertyLinkFlags flags);
 
 /**
  * object_property_add_str:
@@ -1593,8 +1592,7 @@ ObjectProperty *object_class_property_add_str(ObjectClass *klass,
                                    const char *name,
                                    char *(*get)(Object *, Error **),
                                    void (*set)(Object *, const char *,
-                                               Error **),
-                                   Error **errp);
+                                               Error **));
 
 /**
  * object_property_add_bool:
@@ -1615,8 +1613,7 @@ void object_property_add_bool(Object *obj, const char *name,
 ObjectProperty *object_class_property_add_bool(ObjectClass *klass,
                                     const char *name,
                                     bool (*get)(Object *, Error **),
-                                    void (*set)(Object *, bool, Error **),
-                                    Error **errp);
+                                    void (*set)(Object *, bool, Error **));
 
 /**
  * object_property_add_enum:
@@ -1642,8 +1639,7 @@ ObjectProperty *object_class_property_add_enum(ObjectClass *klass,
                                     const char *typename,
                                     const QEnumLookup *lookup,
                                     int (*get)(Object *, Error **),
-                                    void (*set)(Object *, int, Error **),
-                                    Error **errp);
+                                    void (*set)(Object *, int, Error **));
 
 /**
  * object_property_add_tm:
@@ -1661,8 +1657,7 @@ void object_property_add_tm(Object *obj, const char *name,
 
 ObjectProperty *object_class_property_add_tm(ObjectClass *klass,
                                   const char *name,
-                                  void (*get)(Object *, struct tm *, Error **),
-                                  Error **errp);
+                                  void (*get)(Object *, struct tm *, Error **));
 
 typedef enum {
     /* Automatically add a getter to the property */
@@ -1691,8 +1686,7 @@ void object_property_add_uint8_ptr(Object *obj, const char *name,
 ObjectProperty *object_class_property_add_uint8_ptr(ObjectClass *klass,
                                          const char *name,
                                          const uint8_t *v,
-                                         ObjectPropertyFlags flags,
-                                         Error **errp);
+                                         ObjectPropertyFlags flags);
 
 /**
  * object_property_add_uint16_ptr:
@@ -1713,8 +1707,7 @@ void object_property_add_uint16_ptr(Object *obj, const char *name,
 ObjectProperty *object_class_property_add_uint16_ptr(ObjectClass *klass,
                                           const char *name,
                                           const uint16_t *v,
-                                          ObjectPropertyFlags flags,
-                                          Error **errp);
+                                          ObjectPropertyFlags flags);
 
 /**
  * object_property_add_uint32_ptr:
@@ -1735,8 +1728,7 @@ void object_property_add_uint32_ptr(Object *obj, const char *name,
 ObjectProperty *object_class_property_add_uint32_ptr(ObjectClass *klass,
                                           const char *name,
                                           const uint32_t *v,
-                                          ObjectPropertyFlags flags,
-                                          Error **errp);
+                                          ObjectPropertyFlags flags);
 
 /**
  * object_property_add_uint64_ptr:
@@ -1757,8 +1749,7 @@ void object_property_add_uint64_ptr(Object *obj, const char *name,
 ObjectProperty *object_class_property_add_uint64_ptr(ObjectClass *klass,
                                           const char *name,
                                           const uint64_t *v,
-                                          ObjectPropertyFlags flags,
-                                          Error **Errp);
+                                          ObjectPropertyFlags flags);
 
 /**
  * object_property_add_alias:
@@ -1811,8 +1802,7 @@ void object_property_add_const_link(Object *obj, const char *name,
 void object_property_set_description(Object *obj, const char *name,
                                      const char *description, Error **errp);
 void object_class_property_set_description(ObjectClass *klass, const char *name,
-                                           const char *description,
-                                           Error **errp);
+                                           const char *description);
 
 /**
  * object_child_foreach:

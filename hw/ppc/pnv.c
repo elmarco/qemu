@@ -1979,11 +1979,9 @@ static void pnv_machine_class_init(ObjectClass *oc, void *data)
     ispc->print_info = pnv_pic_print_info;
 
     object_class_property_add_bool(oc, "hb-mode",
-                                   pnv_machine_get_hb, pnv_machine_set_hb,
-                                   &error_abort);
+                                   pnv_machine_get_hb, pnv_machine_set_hb);
     object_class_property_set_description(oc, "hb-mode",
-                              "Use a hostboot like boot loader",
-                              NULL);
+                              "Use a hostboot like boot loader");
 }
 
 #define DEFINE_PNV8_CHIP_TYPE(type, class_initfn) \

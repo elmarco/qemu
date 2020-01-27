@@ -105,10 +105,8 @@ qauthz_pam_class_init(ObjectClass *oc, void *data)
     ucc->complete = qauthz_pam_complete;
     authz->is_allowed = qauthz_pam_is_allowed;
 
-    object_class_property_add_str(oc, "service",
-                                  qauthz_pam_prop_get_service,
-                                  qauthz_pam_prop_set_service,
-                                  NULL);
+    object_class_property_add_str(oc, "service", qauthz_pam_prop_get_service,
+                                  qauthz_pam_prop_set_service);
 }
 
 

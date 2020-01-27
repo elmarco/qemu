@@ -137,20 +137,11 @@ static void dummy_init(Object *obj)
 
 static void dummy_class_init(ObjectClass *cls, void *data)
 {
-    object_class_property_add_bool(cls, "bv",
-                                   dummy_get_bv,
-                                   dummy_set_bv,
-                                   NULL);
-    object_class_property_add_str(cls, "sv",
-                                  dummy_get_sv,
-                                  dummy_set_sv,
-                                  NULL);
-    object_class_property_add_enum(cls, "av",
-                                   "DummyAnimal",
-                                   &dummy_animal_map,
-                                   dummy_get_av,
-                                   dummy_set_av,
-                                   NULL);
+    object_class_property_add_bool(cls, "bv", dummy_get_bv, dummy_set_bv);
+    object_class_property_add_str(cls, "sv", dummy_get_sv, dummy_set_sv);
+    object_class_property_add_enum(cls, "av", "DummyAnimal",
+                                   &dummy_animal_map, dummy_get_av,
+                                   dummy_set_av);
 }
 
 

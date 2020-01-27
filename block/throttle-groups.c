@@ -949,22 +949,15 @@ static void throttle_group_obj_class_init(ObjectClass *klass, void *class_data)
 
     /* individual properties */
     for (i = 0; i < sizeof(properties) / sizeof(ThrottleParamInfo); i++) {
-        object_class_property_add(klass,
-                                  properties[i].name,
-                                  "int",
-                                  throttle_group_get,
-                                  throttle_group_set,
-                                  NULL, &properties[i],
-                                  &error_abort);
+        object_class_property_add(klass, properties[i].name, "int",
+                                  throttle_group_get, throttle_group_set,
+                                  NULL, &properties[i]);
     }
 
     /* ThrottleLimits */
-    object_class_property_add(klass,
-                              "limits", "ThrottleLimits",
+    object_class_property_add(klass, "limits", "ThrottleLimits",
                               throttle_group_get_limits,
-                              throttle_group_set_limits,
-                              NULL, NULL,
-                              &error_abort);
+                              throttle_group_set_limits, NULL, NULL);
 }
 
 static const TypeInfo throttle_group_info = {

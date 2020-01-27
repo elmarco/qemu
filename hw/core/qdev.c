@@ -758,7 +758,7 @@ static void qdev_class_add_legacy_property(DeviceClass *dc, Property *prop)
     name = g_strdup_printf("legacy-%s", prop->name);
     object_class_property_add(OBJECT_CLASS(dc), name, "str",
         prop->info->print ? qdev_get_legacy_property : prop->info->get,
-        NULL, NULL, prop, &error_abort);
+        NULL, NULL, prop);
 }
 
 void qdev_property_add_static(DeviceState *dev, Property *prop)
@@ -794,18 +794,15 @@ static void qdev_class_add_property(DeviceClass *klass, Property *prop)
     } else {
         ObjectProperty *op;
 
-        op = object_class_property_add(oc,
-                                       prop->name, prop->info->name,
+        op = object_class_property_add(oc, prop->name, prop->info->name,
                                        prop->info->get, prop->info->set,
-                                       prop->info->release,
-                                       prop, &error_abort);
+                                       prop->info->release, prop);
         if (prop->set_default) {
             prop->info->set_default_value(op, prop);
         }
     }
     object_class_property_set_description(oc, prop->name,
-                                          prop->info->description,
-                                          &error_abort);
+                                          prop->info->description);
 }
 
 /* @qdev_alias_all_properties - Add alias properties to the source object for
@@ -1190,18 +1187,14 @@ static void device_class_init(ObjectClass *class, void *data)
     dc->reset = device_phases_reset;
     rc->get_transitional_function = device_get_transitional_reset;
 
-    object_class_property_add_bool(class, "realized",
-                                   device_get_realized, device_set_realized,
-                                   &error_abort);
+    object_class_property_add_bool(class, "realized", device_get_realized,
+                                   device_set_realized);
     object_class_property_add_bool(class, "hotpluggable",
-                                   device_get_hotpluggable, NULL,
-                                   &error_abort);
-    object_class_property_add_bool(class, "hotplugged",
-                                   device_get_hotplugged, NULL,
-                                   &error_abort);
+                                   device_get_hotpluggable, NULL);
+    object_class_property_add_bool(class, "hotplugged", device_get_hotplugged,
+                                   NULL);
     object_class_property_add_link(class, "parent_bus", TYPE_BUS,
-                                   offsetof(DeviceState, parent_bus), NULL, 0,
-                                   &error_abort);
+                                   offsetof(DeviceState, parent_bus), NULL, 0);
 }
 
 void device_class_set_props(DeviceClass *dc, Property *props)

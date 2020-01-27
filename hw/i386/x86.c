@@ -914,16 +914,15 @@ static void x86_machine_class_init(ObjectClass *oc, void *data)
     nc->nmi_monitor_handler = x86_nmi;
 
     object_class_property_add(oc, X86_MACHINE_MAX_RAM_BELOW_4G, "size",
-        x86_machine_get_max_ram_below_4g, x86_machine_set_max_ram_below_4g,
-        NULL, NULL, &error_abort);
+                              x86_machine_get_max_ram_below_4g,
+                              x86_machine_set_max_ram_below_4g, NULL, NULL);
     object_class_property_set_description(oc, X86_MACHINE_MAX_RAM_BELOW_4G,
-        "Maximum ram below the 4G boundary (32bit boundary)", &error_abort);
+                                          "Maximum ram below the 4G boundary (32bit boundary)");
 
     object_class_property_add(oc, X86_MACHINE_SMM, "OnOffAuto",
-        x86_machine_get_smm, x86_machine_set_smm,
-        NULL, NULL, &error_abort);
-    object_class_property_set_description(oc, X86_MACHINE_SMM,
-        "Enable SMM", &error_abort);
+                              x86_machine_get_smm, x86_machine_set_smm, NULL,
+                              NULL);
+    object_class_property_set_description(oc, X86_MACHINE_SMM, "Enable SMM");
 }
 
 static const TypeInfo x86_machine_info = {
