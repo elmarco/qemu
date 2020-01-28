@@ -1510,6 +1510,8 @@ void object_property_add_child(Object *obj, const char *name,
                                Object *child, Error **errp);
 
 typedef enum {
+    OBJ_PROP_LINK_NONE = 0x0,
+
     /* Unref the link pointer when the property is deleted */
     OBJ_PROP_LINK_STRONG = 0x1,
 
