@@ -316,17 +316,6 @@ static int pnv_pbcq_dt_xscom(PnvXScomInterface *dev, void *fdt,
     return 0;
 }
 
-static void phb3_pbcq_instance_init(Object *obj)
-{
-    PnvPBCQState *pbcq = PNV_PBCQ(obj);
-
-    object_property_add_link(obj, "phb", TYPE_PNV_PHB3,
-                             (Object **)&pbcq->phb,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
-}
-
 static void pnv_pbcq_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
@@ -336,13 +325,17 @@ static void pnv_pbcq_class_init(ObjectClass *klass, void *data)
 
     dc->realize = pnv_pbcq_realize;
     dc->user_creatable = false;
+
+    object_class_property_add_link(klass, "phb", TYPE_PNV_PHB3,
+                                   offsetof(PnvPBCQState, phb),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 }
 
 static const TypeInfo pnv_pbcq_type_info = {
     .name          = TYPE_PNV_PBCQ,
     .parent        = TYPE_DEVICE,
     .instance_size = sizeof(PnvPBCQState),
-    .instance_init = phb3_pbcq_instance_init,
     .class_init    = pnv_pbcq_class_init,
     .interfaces    = (InterfaceInfo[]) {
         { TYPE_PNV_XSCOM_INTERFACE },

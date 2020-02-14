@@ -106,11 +106,6 @@ static void grackle_init(Object *obj)
     memory_region_init_io(&phb->data_mem, obj, &pci_host_data_le_ops,
                           DEVICE(obj), "pci-data-idx", 0x1000);
 
-    object_property_add_link(obj, "pic", TYPE_HEATHROW,
-                             (Object **) &s->pic,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     sysbus_init_mmio(sbd, &phb->conf_mem);
     sysbus_init_mmio(sbd, &phb->data_mem);
     sysbus_init_mmio(sbd, &s->pci_hole);
@@ -172,6 +167,11 @@ static void grackle_class_init(ObjectClass *klass, void *data)
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     dc->fw_name = "pci";
     sbc->explicit_ofw_unit_address = grackle_ofw_unit_address;
+
+    object_class_property_add_link(klass, "pic", TYPE_HEATHROW,
+                                   offsetof(GrackleState, pic),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo grackle_host_info = {

@@ -438,12 +438,6 @@ static void sabre_init(Object *obj)
     s->irq_request = NO_IRQ_REQUEST;
     s->pci_irq_in = 0ULL;
 
-    /* IOMMU */
-    object_property_add_link(obj, "iommu", TYPE_SUN4U_IOMMU,
-                             (Object **) &s->iommu,
-                             qdev_prop_allow_set_link_before_realize,
-                             0, NULL);
-
     /* sabre_config */
     memory_region_init_io(&s->sabre_config, OBJECT(s), &sabre_config_ops, s,
                           "sabre-config", 0x10000);
@@ -525,6 +519,11 @@ static void sabre_class_init(ObjectClass *klass, void *data)
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     dc->fw_name = "pci";
     sbc->explicit_ofw_unit_address = sabre_ofw_unit_address;
+
+    object_class_property_add_link(klass, "iommu", TYPE_SUN4U_IOMMU,
+                                   offsetof(SabreState, iommu),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static const TypeInfo sabre_info = {

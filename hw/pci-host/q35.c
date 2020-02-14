@@ -199,6 +199,27 @@ static void q35_host_class_init(ObjectClass *klass, void *data)
     dc->user_creatable = false;
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     dc->fw_name = "pci";
+
+    object_class_property_add_link(klass, MCH_HOST_PROP_RAM_MEM,
+                                   TYPE_MEMORY_REGION,
+                                   offsetof(Q35PCIHost, mch.ram_memory),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+    object_class_property_add_link(klass, MCH_HOST_PROP_PCI_MEM,
+                                   TYPE_MEMORY_REGION,
+                                   offsetof(Q35PCIHost, mch.pci_address_space),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+    object_class_property_add_link(klass, MCH_HOST_PROP_SYSTEM_MEM,
+                                   TYPE_MEMORY_REGION,
+                                   offsetof(Q35PCIHost, mch.system_memory),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
+    object_class_property_add_link(klass, MCH_HOST_PROP_IO_MEM,
+                                   TYPE_MEMORY_REGION,
+                                   offsetof(Q35PCIHost, mch.address_space_io),
+                                   qdev_prop_allow_set_link_before_realize,
+                                   OBJ_PROP_LINK_NONE);
 }
 
 static void q35_host_initfn(Object *obj)
@@ -237,22 +258,6 @@ static void q35_host_initfn(Object *obj)
 
     object_property_add_uint64_ptr(obj, PCIE_HOST_MCFG_SIZE,
                                    &pehb->size, OBJ_PROP_FLAG_READ, NULL);
-
-    object_property_add_link(obj, MCH_HOST_PROP_RAM_MEM, TYPE_MEMORY_REGION,
-                             (Object **) &s->mch.ram_memory,
-                             qdev_prop_allow_set_link_before_realize, 0, NULL);
-
-    object_property_add_link(obj, MCH_HOST_PROP_PCI_MEM, TYPE_MEMORY_REGION,
-                             (Object **) &s->mch.pci_address_space,
-                             qdev_prop_allow_set_link_before_realize, 0, NULL);
-
-    object_property_add_link(obj, MCH_HOST_PROP_SYSTEM_MEM, TYPE_MEMORY_REGION,
-                             (Object **) &s->mch.system_memory,
-                             qdev_prop_allow_set_link_before_realize, 0, NULL);
-
-    object_property_add_link(obj, MCH_HOST_PROP_IO_MEM, TYPE_MEMORY_REGION,
-                             (Object **) &s->mch.address_space_io,
-                             qdev_prop_allow_set_link_before_realize, 0, NULL);
 }
 
 static const TypeInfo q35_host_info = {

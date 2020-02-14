@@ -274,21 +274,6 @@ static void phb3_msi_realize(DeviceState *dev, Error **errp)
     qemu_register_reset(phb3_msi_reset_handler, dev);
 }
 
-static void phb3_msi_instance_init(Object *obj)
-{
-    Phb3MsiState *msi = PHB3_MSI(obj);
-    ICSState *ics = ICS(obj);
-
-    object_property_add_link(obj, "phb", TYPE_PNV_PHB3,
-                             (Object **)&msi->phb,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
-
-    /* Will be overriden later */
-    ics->offset = 0;
-}
-
 static void phb3_msi_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
@@ -298,6 +283,11 @@ static void phb3_msi_class_init(ObjectClass *klass, void *data)
                                     &isc->parent_realize);
     device_class_set_parent_reset(dc, phb3_msi_reset,
                                   &isc->parent_reset);
+
+    object_class_property_add_link(klass, "phb", TYPE_PNV_PHB3,
+                                   offsetof(Phb3MsiState, phb),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
 
     isc->reject = phb3_msi_reject;
     isc->resend = phb3_msi_resend;
@@ -309,7 +299,6 @@ static const TypeInfo phb3_msi_info = {
     .instance_size = sizeof(Phb3MsiState),
     .class_init = phb3_msi_class_init,
     .class_size = sizeof(ICSStateClass),
-    .instance_init = phb3_msi_instance_init,
 };
 
 static void pnv_phb3_msi_register_types(void)
