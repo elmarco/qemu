@@ -1029,18 +1029,20 @@ static void pnv_chip_power10_intc_print_info(PnvChip *chip, PowerPCCPU *cpu,
 
 #define POWER10_CORE_MASK  (0xffffffffffffffull)
 
+static void pnv8_chip_class_init(ObjectClass *oc, void *data)
+{
+    object_class_property_add_link(oc, "xics", TYPE_XICS_FABRIC,
+                                   offsetof(Pnv8Chip, xics),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
+}
+
 static void pnv_chip_power8_instance_init(Object *obj)
 {
     PnvChip *chip = PNV_CHIP(obj);
     Pnv8Chip *chip8 = PNV8_CHIP(obj);
     PnvChipClass *pcc = PNV_CHIP_GET_CLASS(obj);
     int i;
-
-    object_property_add_link(obj, "xics", TYPE_XICS_FABRIC,
-                             (Object **)&chip8->xics,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
 
     object_initialize_child(obj, "psi",  &chip8->psi, sizeof(chip8->psi),
                             TYPE_PNV8_PSI, &error_abort, NULL);
@@ -2078,6 +2080,7 @@ static const TypeInfo types[] = {
     {
         .name          = TYPE_PNV8_CHIP,
         .parent        = TYPE_PNV_CHIP,
+        .class_init = pnv8_chip_class_init,
         .instance_init = pnv_chip_power8_instance_init,
         .instance_size = sizeof(Pnv8Chip),
     },
