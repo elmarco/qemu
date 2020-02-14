@@ -30,6 +30,7 @@
 
 #include "qemu/osdep.h"
 #include "cpu.h"
+#include "qapi/error.h"
 #include "qapi/visitor.h"
 #include "qemu/range.h"
 #include "hw/isa/isa.h"
@@ -628,19 +629,7 @@ static const MemoryRegionOps ich9_rst_cnt_ops = {
 
 static void ich9_lpc_initfn(Object *obj)
 {
-    ICH9LPCState *lpc = ICH9_LPC_DEVICE(obj);
-
-    static const uint8_t acpi_enable_cmd = ICH9_APM_ACPI_ENABLE;
-    static const uint8_t acpi_disable_cmd = ICH9_APM_ACPI_DISABLE;
-
-    object_property_add_uint8_ptr(obj, ACPI_PM_PROP_SCI_INT,
-                                  &lpc->sci_gsi, OBJ_PROP_FLAG_READ, NULL);
-    object_property_add_uint8_ptr(OBJECT(lpc), ACPI_PM_PROP_ACPI_ENABLE_CMD,
-                                  &acpi_enable_cmd, OBJ_PROP_FLAG_READ, NULL);
-    object_property_add_uint8_ptr(OBJECT(lpc), ACPI_PM_PROP_ACPI_DISABLE_CMD,
-                                  &acpi_disable_cmd, OBJ_PROP_FLAG_READ, NULL);
-
-    ich9_pm_add_properties(obj, &lpc->pm, NULL);
+    ich9_pm_initfn(&ICH9_LPC_DEVICE(obj)->pm);
 }
 
 static void ich9_lpc_realize(PCIDevice *d, Error **errp)
@@ -764,6 +753,8 @@ static void ich9_lpc_class_init(ObjectClass *klass, void *data)
     PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
     HotplugHandlerClass *hc = HOTPLUG_HANDLER_CLASS(klass);
     AcpiDeviceIfClass *adevc = ACPI_DEVICE_IF_CLASS(klass);
+    static const uint8_t acpi_enable_cmd = ICH9_APM_ACPI_ENABLE;
+    static const uint8_t acpi_disable_cmd = ICH9_APM_ACPI_DISABLE;
 
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
     dc->reset = ich9_lpc_reset;
@@ -788,6 +779,15 @@ static void ich9_lpc_class_init(ObjectClass *klass, void *data)
     adevc->ospm_status = ich9_pm_ospm_status;
     adevc->send_event = ich9_send_gpe;
     adevc->madt_cpu = pc_madt_cpu_entry;
+
+    object_class_property_add_uint8(klass, ACPI_PM_PROP_SCI_INT,
+                                    offsetof(ICH9LPCState, sci_gsi),
+                                    OBJ_PROP_FLAG_READ);
+    object_class_property_add_uint8_ptr(klass, ACPI_PM_PROP_ACPI_ENABLE_CMD,
+                                        &acpi_enable_cmd, OBJ_PROP_FLAG_READ);
+    object_class_property_add_uint8_ptr(klass, ACPI_PM_PROP_ACPI_DISABLE_CMD,
+                                        &acpi_disable_cmd, OBJ_PROP_FLAG_READ);
+    ich9_pm_add_properties(klass);
 }
 
 static const TypeInfo ich9_lpc_info = {
