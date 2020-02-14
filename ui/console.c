@@ -1284,6 +1284,19 @@ static void text_console_update(void *opaque, console_ch_t *chardata)
     }
 }
 
+static void
+qemu_console_class_init(ObjectClass *oc, void *data)
+{
+    object_class_property_add_link(oc, "device", TYPE_DEVICE,
+                                   offsetof(QemuConsole, device),
+                                   object_property_allow_set_link,
+                                   OBJ_PROP_LINK_STRONG);
+
+    object_class_property_add_uint32(oc, "head",
+                                     offsetof(QemuConsole, head),
+                                     OBJ_PROP_FLAG_READ);
+}
+
 static QemuConsole *new_console(DisplayState *ds, console_type_t console_type,
                                 uint32_t head)
 {
@@ -1294,13 +1307,6 @@ static QemuConsole *new_console(DisplayState *ds, console_type_t console_type,
     obj = object_new(TYPE_QEMU_CONSOLE);
     s = QEMU_CONSOLE(obj);
     s->head = head;
-    object_property_add_link(obj, "device", TYPE_DEVICE,
-                             (Object **)&s->device,
-                             object_property_allow_set_link,
-                             OBJ_PROP_LINK_STRONG,
-                             &error_abort);
-    object_property_add_uint32_ptr(obj, "head", &s->head,
-                                   OBJ_PROP_FLAG_READ, &error_abort);
 
     if (!active_console || ((active_console->console_type != GRAPHIC_CONSOLE) &&
         (console_type == GRAPHIC_CONSOLE))) {
@@ -2388,6 +2394,7 @@ static const TypeInfo qemu_console_info = {
     .parent = TYPE_OBJECT,
     .instance_size = sizeof(QemuConsole),
     .class_size = sizeof(QemuConsoleClass),
+    .class_init = qemu_console_class_init,
 };
 
 static void char_vc_class_init(ObjectClass *oc, void *data)
