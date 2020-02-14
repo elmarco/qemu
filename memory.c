@@ -1158,16 +1158,6 @@ void memory_region_init(MemoryRegion *mr,
     memory_region_do_init(mr, owner, name, size);
 }
 
-static void memory_region_get_priority(Object *obj, Visitor *v,
-                                       const char *name, void *opaque,
-                                       Error **errp)
-{
-    MemoryRegion *mr = MEMORY_REGION(obj);
-    int32_t value = mr->priority;
-
-    visit_type_int32(v, name, &value, errp);
-}
-
 static void memory_region_get_size(Object *obj, Visitor *v, const char *name,
                                    void *opaque, Error **errp)
 {
@@ -1188,20 +1178,22 @@ static void memory_region_initfn(Object *obj)
     mr->destructor = memory_region_destructor_none;
     QTAILQ_INIT(&mr->subregions);
     QTAILQ_INIT(&mr->coalesced);
+}
 
-    object_property_add_link(OBJECT(mr), "container", TYPE_MEMORY_REGION,
-                             (Object **)&mr->container, NULL, 0, &error_abort);
-
-    object_property_add_uint64_ptr(OBJECT(mr), "addr",
-                                   &mr->addr, OBJ_PROP_FLAG_READ, &error_abort);
-    object_property_add(OBJECT(mr), "priority", "int32",
-                        memory_region_get_priority,
-                        NULL, /* memory_region_set_priority */
-                        NULL, NULL, &error_abort);
-    object_property_add(OBJECT(mr), "size", "uint64",
-                        memory_region_get_size,
-                        NULL, /* memory_region_set_size, */
-                        NULL, NULL, &error_abort);
+static void memory_region_class_init(ObjectClass *oc, void *opaque)
+{
+    object_class_property_add_link(oc, "container", TYPE_MEMORY_REGION,
+                                   offsetof(MemoryRegion, container),
+                                   NULL, 0);
+    object_class_property_add_uint64(oc, "addr", offsetof(MemoryRegion, addr),
+                                     OBJ_PROP_FLAG_READ);
+    object_class_property_add_int32(oc, "priority",
+                                    offsetof(MemoryRegion, priority),
+                                    OBJ_PROP_FLAG_READ);
+    object_class_property_add(oc, "size", "uint64",
+                              memory_region_get_size,
+                              NULL, /* memory_region_set_size, */
+                              NULL, NULL);
 }
 
 static void iommu_memory_region_initfn(Object *obj)
@@ -3192,6 +3184,7 @@ static const TypeInfo memory_region_info = {
     .parent             = TYPE_OBJECT,
     .name               = TYPE_MEMORY_REGION,
     .class_size         = sizeof(MemoryRegionClass),
+    .class_init         = memory_region_class_init,
     .instance_size      = sizeof(MemoryRegion),
     .instance_init      = memory_region_initfn,
     .instance_finalize  = memory_region_finalize,
