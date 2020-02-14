@@ -250,9 +250,6 @@ static void dummy_dev_init(Object *obj)
     dev->bus = bus;
     object_property_add_child(OBJECT(bus), "backend", OBJECT(backend), NULL);
     bus->backend = backend;
-
-    object_property_add_link(obj, "backend", TYPE_DUMMY_BACKEND,
-                             (Object **)&bus->backend, NULL, 0, NULL);
 }
 
 static void dummy_dev_unparent(Object *obj)
@@ -264,6 +261,9 @@ static void dummy_dev_unparent(Object *obj)
 static void dummy_dev_class_init(ObjectClass *klass, void *opaque)
 {
     klass->unparent = dummy_dev_unparent;
+
+    object_class_property_add_link(klass, "backend", TYPE_DUMMY_BACKEND,
+                                   offsetof(DummyBus, backend), NULL, 0);
 }
 
 
