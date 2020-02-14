@@ -2547,6 +2547,43 @@ static void property_set_uint32(Object *obj, Visitor *v, const char *name,
                             ((void *)obj + GPOINTER_TO_INT(opaque)), errp);
 }
 
+static void property_get_int32_ptr(Object *obj, Visitor *v, const char *name,
+                                   void *opaque, Error **errp)
+{
+    int32_t value = *(int32_t *)opaque;
+    visit_type_int32(v, name, &value, errp);
+}
+
+static void property_set_int32_ptr(Object *obj, Visitor *v, const char *name,
+                                   void *opaque, Error **errp)
+{
+    int32_t *field = opaque;
+    int32_t value;
+    Error *local_err = NULL;
+
+    visit_type_int32(v, name, &value, &local_err);
+    if (local_err) {
+        error_propagate(errp, local_err);
+        return;
+    }
+
+    *field = value;
+}
+
+static void property_get_int32(Object *obj, Visitor *v, const char *name,
+                               void *opaque, Error **errp)
+{
+    property_get_int32_ptr(obj, v, name,
+                           ((void *)obj + GPOINTER_TO_INT(opaque)), errp);
+}
+
+static void property_set_int32(Object *obj, Visitor *v, const char *name,
+                               void *opaque, Error **errp)
+{
+    property_set_int32_ptr(obj, v, name,
+                           ((void *)obj + GPOINTER_TO_INT(opaque)), errp);
+}
+
 static void property_get_uint64_ptr(Object *obj, Visitor *v, const char *name,
                                     void *opaque, Error **errp)
 {
@@ -2732,6 +2769,36 @@ object_class_property_add_uint32(ObjectClass *klass, const char *name,
                flags & OBJ_PROP_FLAG_READ ? property_get_uint32 : NULL,
                flags & OBJ_PROP_FLAG_WRITE ? property_set_uint32 : NULL,
                NULL, GINT_TO_POINTER(offset));
+}
+
+ObjectProperty *
+object_class_property_add_int32(ObjectClass *klass, const char *name,
+                                ptrdiff_t offset, ObjectPropertyFlags flags)
+{
+    return object_class_property_add(klass, name, "int32",
+               flags & OBJ_PROP_FLAG_READ ? property_get_int32 : NULL,
+               flags & OBJ_PROP_FLAG_WRITE ? property_set_int32 : NULL,
+               NULL, GINT_TO_POINTER(offset));
+}
+
+void object_property_add_int32_ptr(Object *obj, const char *name,
+                                   const int32_t *v, ObjectPropertyFlags flags,
+                                   Error **errp)
+{
+    object_property_add(obj, name, "int32",
+        flags & OBJ_PROP_FLAG_READ ? property_get_int32_ptr : NULL,
+        flags & OBJ_PROP_FLAG_WRITE ? property_set_int32_ptr : NULL,
+        NULL, (void *)v, errp);
+}
+
+ObjectProperty *
+object_class_property_add_int32_ptr(ObjectClass *klass, const char *name,
+                                    const int32_t *v, ObjectPropertyFlags flags)
+{
+    return object_class_property_add(klass, name, "int32",
+               flags & OBJ_PROP_FLAG_READ ? property_get_int32_ptr : NULL,
+               flags & OBJ_PROP_FLAG_READ ? property_get_int32_ptr : NULL,
+               NULL, (void *)v);
 }
 
 void object_property_add_uint64_ptr(Object *obj, const char *name,

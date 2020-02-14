@@ -1746,6 +1746,29 @@ ObjectProperty *object_class_property_add_uint32(ObjectClass *klass,
                                                  ObjectPropertyFlags flags);
 
 /**
+ * object_property_add_int32_ptr:
+ * @obj: the object to add a property to
+ * @name: the name of the property
+ * @v: pointer to value
+ * @flags: bitwise-or'd ObjectPropertyFlags
+ * @errp: if an error occurs, a pointer to an area to store the error
+ *
+ * Add an integer property in memory.  This function will add a
+ * property of type 'int32'.
+ */
+void object_property_add_int32_ptr(Object *obj, const char *name,
+                                   const int32_t *v, ObjectPropertyFlags flags,
+                                   Error **errp);
+ObjectProperty *object_class_property_add_int32_ptr(ObjectClass *klass,
+                                                    const char *name,
+                                                    const int32_t *v,
+                                                    ObjectPropertyFlags flags);
+ObjectProperty *object_class_property_add_int32(ObjectClass *klass,
+                                                const char *name,
+                                                ptrdiff_t offset,
+                                                ObjectPropertyFlags flags);
+
+/**
  * object_property_add_uint64_ptr:
  * @obj: the object to add a property to
  * @name: the name of the property
