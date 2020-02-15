@@ -405,17 +405,6 @@ static void filter_rewriter_set_vnet_hdr(Object *obj,
     s->vnet_hdr = value;
 }
 
-static void filter_rewriter_init(Object *obj)
-{
-    RewriterState *s = FILTER_COLO_REWRITER(obj);
-
-    s->vnet_hdr = false;
-    s->failover_mode = FAILOVER_MODE_OFF;
-    object_property_add_bool(obj, "vnet_hdr_support",
-                             filter_rewriter_get_vnet_hdr,
-                             filter_rewriter_set_vnet_hdr, NULL);
-}
-
 static void colo_rewriter_class_init(ObjectClass *oc, void *data)
 {
     NetFilterClass *nfc = NETFILTER_CLASS(oc);
@@ -424,13 +413,16 @@ static void colo_rewriter_class_init(ObjectClass *oc, void *data)
     nfc->cleanup = colo_rewriter_cleanup;
     nfc->receive_iov = colo_rewriter_receive_iov;
     nfc->handle_event = colo_rewriter_handle_event;
+
+    object_class_property_add_bool(oc, "vnet_hdr_support",
+                                   filter_rewriter_get_vnet_hdr,
+                                   filter_rewriter_set_vnet_hdr);
 }
 
 static const TypeInfo colo_rewriter_info = {
     .name = TYPE_FILTER_REWRITER,
     .parent = TYPE_NETFILTER,
     .class_init = colo_rewriter_class_init,
-    .instance_init = filter_rewriter_init,
     .instance_size = sizeof(RewriterState),
 };
 
