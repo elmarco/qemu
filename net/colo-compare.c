@@ -1165,29 +1165,20 @@ static void colo_compare_class_init(ObjectClass *oc, void *data)
                                    offsetof(CompareState, iothread),
                                    object_property_allow_set_link,
                                    OBJ_PROP_LINK_STRONG);
-}
 
-static void colo_compare_init(Object *obj)
-{
-    CompareState *s = COLO_COMPARE(obj);
-
-    object_property_add_str(obj, "primary_in",
-                            compare_get_pri_indev, compare_set_pri_indev,
-                            NULL);
-    object_property_add_str(obj, "secondary_in",
-                            compare_get_sec_indev, compare_set_sec_indev,
-                            NULL);
-    object_property_add_str(obj, "outdev",
-                            compare_get_outdev, compare_set_outdev,
-                            NULL);
+    object_class_property_add_str(oc, "primary_in",
+                                  compare_get_pri_indev, compare_set_pri_indev);
+    object_class_property_add_str(oc, "secondary_in",
+                                  compare_get_sec_indev, compare_set_sec_indev);
+    object_class_property_add_str(oc, "outdev",
+                                  compare_get_outdev, compare_set_outdev);
     /* This parameter just for Xen COLO */
-    object_property_add_str(obj, "notify_dev",
-                            compare_get_notify_dev, compare_set_notify_dev,
-                            NULL);
-
-    s->vnet_hdr = false;
-    object_property_add_bool(obj, "vnet_hdr_support", compare_get_vnet_hdr,
-                             compare_set_vnet_hdr, NULL);
+    object_class_property_add_str(oc, "notify_dev",
+                                  compare_get_notify_dev,
+                                  compare_set_notify_dev);
+    object_class_property_add_bool(oc, "vnet_hdr_support",
+                                   compare_get_vnet_hdr,
+                                   compare_set_vnet_hdr);
 }
 
 static void colo_compare_finalize(Object *obj)
@@ -1241,7 +1232,6 @@ static const TypeInfo colo_compare_info = {
     .name = TYPE_COLO_COMPARE,
     .parent = TYPE_OBJECT,
     .instance_size = sizeof(CompareState),
-    .instance_init = colo_compare_init,
     .instance_finalize = colo_compare_finalize,
     .class_size = sizeof(CompareClass),
     .class_init = colo_compare_class_init,
