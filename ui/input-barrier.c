@@ -697,28 +697,6 @@ static void input_barrier_instance_init(Object *obj)
     ib->y_origin = 0;
     ib->width = 1920;
     ib->height = 1080;
-
-    object_property_add_str(obj, "name",
-                            input_barrier_get_name,
-                            input_barrier_set_name, NULL);
-    object_property_add_str(obj, "server",
-                            input_barrier_get_server,
-                            input_barrier_set_server, NULL);
-    object_property_add_str(obj, "port",
-                            input_barrier_get_port,
-                            input_barrier_set_port, NULL);
-    object_property_add_str(obj, "x-origin",
-                            input_barrier_get_x_origin,
-                            input_barrier_set_x_origin, NULL);
-    object_property_add_str(obj, "y-origin",
-                            input_barrier_get_y_origin,
-                            input_barrier_set_y_origin, NULL);
-    object_property_add_str(obj, "width",
-                            input_barrier_get_width,
-                            input_barrier_set_width, NULL);
-    object_property_add_str(obj, "height",
-                            input_barrier_get_height,
-                            input_barrier_set_height, NULL);
 }
 
 static void input_barrier_class_init(ObjectClass *oc, void *data)
@@ -726,6 +704,28 @@ static void input_barrier_class_init(ObjectClass *oc, void *data)
     UserCreatableClass *ucc = USER_CREATABLE_CLASS(oc);
 
     ucc->complete = input_barrier_complete;
+
+    object_class_property_add_str(oc, "name",
+                                  input_barrier_get_name,
+                                  input_barrier_set_name);
+    object_class_property_add_str(oc, "server",
+                                  input_barrier_get_server,
+                                  input_barrier_set_server);
+    object_class_property_add_str(oc, "port",
+                                  input_barrier_get_port,
+                                  input_barrier_set_port);
+    object_class_property_add_str(oc, "x-origin",
+                                  input_barrier_get_x_origin,
+                                  input_barrier_set_x_origin);
+    object_class_property_add_str(oc, "y-origin",
+                                  input_barrier_get_y_origin,
+                                  input_barrier_set_y_origin);
+    object_class_property_add_str(oc, "width",
+                                  input_barrier_get_width,
+                                  input_barrier_set_width);
+    object_class_property_add_str(oc, "height",
+                                  input_barrier_get_height,
+                                  input_barrier_set_height);
 }
 
 static const TypeInfo input_barrier_info = {
