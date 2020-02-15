@@ -4535,11 +4535,19 @@ static void x86_cpu_get_feature_words(Object *obj, Visitor *v,
                                       const char *name, void *opaque,
                                       Error **errp)
 {
-    uint64_t *array = (uint64_t *)opaque;
+    X86CPU *cpu = X86_CPU(obj);
+    uint64_t *array;
     FeatureWord w;
     X86CPUFeatureWordInfo word_infos[FEATURE_WORDS] = { };
     X86CPUFeatureWordInfoList list_entries[FEATURE_WORDS] = { };
     X86CPUFeatureWordInfoList *list = NULL;
+
+    if (g_str_equal(name, "feature-words")) {
+        array = cpu->env.features;
+    } else {
+        assert(g_str_equal(name, "filtered-features"));
+        array = cpu->filtered_features;
+    }
 
     for (w = 0; w < FEATURE_WORDS; w++) {
         FeatureWordInfo *wi = &feature_word_info[w];
@@ -6718,20 +6726,13 @@ static void x86_cpu_set_bit_prop(Object *obj, Visitor *v, const char *name,
     cpu->env.user_features[fp->w] |= fp->mask;
 }
 
-static void x86_cpu_release_bit_prop(Object *obj, const char *name,
-                                     void *opaque)
-{
-    BitProperty *prop = opaque;
-    g_free(prop);
-}
-
 /* Register a boolean property to get/set a single bit in a uint32_t field.
  *
  * The same property name can be registered multiple times to make it affect
  * multiple bits in the same FeatureWord. In that case, the getter will return
  * true only if all bits are set.
  */
-static void x86_cpu_register_bit_prop(X86CPU *cpu,
+static void x86_cpu_register_bit_prop(ObjectClass *oc,
                                       const char *prop_name,
                                       FeatureWord w,
                                       int bitnr)
@@ -6740,7 +6741,7 @@ static void x86_cpu_register_bit_prop(X86CPU *cpu,
     ObjectProperty *op;
     uint64_t mask = (1ULL << bitnr);
 
-    op = object_property_find(OBJECT(cpu), prop_name, NULL);
+    op = object_class_property_find(oc, prop_name, NULL);
     if (op) {
         fp = op->opaque;
         assert(fp->w == w);
@@ -6749,14 +6750,14 @@ static void x86_cpu_register_bit_prop(X86CPU *cpu,
         fp = g_new0(BitProperty, 1);
         fp->w = w;
         fp->mask = mask;
-        object_property_add(OBJECT(cpu), prop_name, "bool",
-                            x86_cpu_get_bit_prop,
-                            x86_cpu_set_bit_prop,
-                            x86_cpu_release_bit_prop, fp, &error_abort);
+        object_class_property_add(oc, prop_name, "bool",
+                                  x86_cpu_get_bit_prop,
+                                  x86_cpu_set_bit_prop,
+                                  NULL, fp);
     }
 }
 
-static void x86_cpu_register_feature_bit_props(X86CPU *cpu,
+static void x86_cpu_register_feature_bit_props(ObjectClass *oc,
                                                FeatureWord w,
                                                int bitnr)
 {
@@ -6769,13 +6770,14 @@ static void x86_cpu_register_feature_bit_props(X86CPU *cpu,
 
     /* Property names should use "-" instead of "_".
      * Old names containing underscores are registered as aliases
-     * using object_property_add_alias()
+     * using object_class_property_add_alias()
      */
     assert(!strchr(name, '_'));
     /* aliases don't use "|" delimiters anymore, they are registered
-     * manually using object_property_add_alias() */
+     * manually using object_class_property_add_alias()
+     */
     assert(!strchr(name, '|'));
-    x86_cpu_register_bit_prop(cpu, name, w, bitnr);
+    x86_cpu_register_bit_prop(oc, name, w, bitnr);
 }
 
 static GuestPanicInformation *x86_cpu_get_crash_info(CPUState *cs)
@@ -6827,87 +6829,9 @@ static void x86_cpu_initfn(Object *obj)
     X86CPU *cpu = X86_CPU(obj);
     X86CPUClass *xcc = X86_CPU_GET_CLASS(obj);
     CPUX86State *env = &cpu->env;
-    FeatureWord w;
 
     env->nr_dies = 1;
     cpu_set_cpustate_pointers(cpu);
-
-    object_property_add(obj, "family", "int",
-                        x86_cpuid_version_get_family,
-                        x86_cpuid_version_set_family, NULL, NULL, NULL);
-    object_property_add(obj, "model", "int",
-                        x86_cpuid_version_get_model,
-                        x86_cpuid_version_set_model, NULL, NULL, NULL);
-    object_property_add(obj, "stepping", "int",
-                        x86_cpuid_version_get_stepping,
-                        x86_cpuid_version_set_stepping, NULL, NULL, NULL);
-    object_property_add_str(obj, "vendor",
-                            x86_cpuid_get_vendor,
-                            x86_cpuid_set_vendor, NULL);
-    object_property_add_str(obj, "model-id",
-                            x86_cpuid_get_model_id,
-                            x86_cpuid_set_model_id, NULL);
-    object_property_add(obj, "tsc-frequency", "int",
-                        x86_cpuid_get_tsc_freq,
-                        x86_cpuid_set_tsc_freq, NULL, NULL, NULL);
-    object_property_add(obj, "feature-words", "X86CPUFeatureWordInfo",
-                        x86_cpu_get_feature_words,
-                        NULL, NULL, (void *)env->features, NULL);
-    object_property_add(obj, "filtered-features", "X86CPUFeatureWordInfo",
-                        x86_cpu_get_feature_words,
-                        NULL, NULL, (void *)cpu->filtered_features, NULL);
-    /*
-     * The "unavailable-features" property has the same semantics as
-     * CpuDefinitionInfo.unavailable-features on the "query-cpu-definitions"
-     * QMP command: they list the features that would have prevented the
-     * CPU from running if the "enforce" flag was set.
-     */
-    object_property_add(obj, "unavailable-features", "strList",
-                        x86_cpu_get_unavailable_features,
-                        NULL, NULL, NULL, &error_abort);
-
-    object_property_add(obj, "crash-information", "GuestPanicInformation",
-                        x86_cpu_get_crash_info_qom, NULL, NULL, NULL, NULL);
-
-    for (w = 0; w < FEATURE_WORDS; w++) {
-        int bitnr;
-
-        for (bitnr = 0; bitnr < 64; bitnr++) {
-            x86_cpu_register_feature_bit_props(cpu, w, bitnr);
-        }
-    }
-
-    object_property_add_alias(obj, "sse3", obj, "pni", &error_abort);
-    object_property_add_alias(obj, "pclmuldq", obj, "pclmulqdq", &error_abort);
-    object_property_add_alias(obj, "sse4-1", obj, "sse4.1", &error_abort);
-    object_property_add_alias(obj, "sse4-2", obj, "sse4.2", &error_abort);
-    object_property_add_alias(obj, "xd", obj, "nx", &error_abort);
-    object_property_add_alias(obj, "ffxsr", obj, "fxsr-opt", &error_abort);
-    object_property_add_alias(obj, "i64", obj, "lm", &error_abort);
-
-    object_property_add_alias(obj, "ds_cpl", obj, "ds-cpl", &error_abort);
-    object_property_add_alias(obj, "tsc_adjust", obj, "tsc-adjust", &error_abort);
-    object_property_add_alias(obj, "fxsr_opt", obj, "fxsr-opt", &error_abort);
-    object_property_add_alias(obj, "lahf_lm", obj, "lahf-lm", &error_abort);
-    object_property_add_alias(obj, "cmp_legacy", obj, "cmp-legacy", &error_abort);
-    object_property_add_alias(obj, "nodeid_msr", obj, "nodeid-msr", &error_abort);
-    object_property_add_alias(obj, "perfctr_core", obj, "perfctr-core", &error_abort);
-    object_property_add_alias(obj, "perfctr_nb", obj, "perfctr-nb", &error_abort);
-    object_property_add_alias(obj, "kvm_nopiodelay", obj, "kvm-nopiodelay", &error_abort);
-    object_property_add_alias(obj, "kvm_mmu", obj, "kvm-mmu", &error_abort);
-    object_property_add_alias(obj, "kvm_asyncpf", obj, "kvm-asyncpf", &error_abort);
-    object_property_add_alias(obj, "kvm_steal_time", obj, "kvm-steal-time", &error_abort);
-    object_property_add_alias(obj, "kvm_pv_eoi", obj, "kvm-pv-eoi", &error_abort);
-    object_property_add_alias(obj, "kvm_pv_unhalt", obj, "kvm-pv-unhalt", &error_abort);
-    object_property_add_alias(obj, "kvm_poll_control", obj, "kvm-poll-control",
-                              &error_abort);
-    object_property_add_alias(obj, "svm_lock", obj, "svm-lock", &error_abort);
-    object_property_add_alias(obj, "nrip_save", obj, "nrip-save", &error_abort);
-    object_property_add_alias(obj, "tsc_scale", obj, "tsc-scale", &error_abort);
-    object_property_add_alias(obj, "vmcb_clean", obj, "vmcb-clean", &error_abort);
-    object_property_add_alias(obj, "pause_filter", obj, "pause-filter", &error_abort);
-    object_property_add_alias(obj, "sse4_1", obj, "sse4.1", &error_abort);
-    object_property_add_alias(obj, "sse4_2", obj, "sse4.2", &error_abort);
 
     if (xcc->model) {
         x86_cpu_load_model(cpu, xcc->model, &error_abort);
@@ -7162,12 +7086,92 @@ static void x86_cpu_common_class_init(ObjectClass *oc, void *data)
     X86CPUClass *xcc = X86_CPU_CLASS(oc);
     CPUClass *cc = CPU_CLASS(oc);
     DeviceClass *dc = DEVICE_CLASS(oc);
+    FeatureWord w;
+    int i, bitnr;
 
     device_class_set_parent_realize(dc, x86_cpu_realizefn,
                                     &xcc->parent_realize);
     device_class_set_parent_unrealize(dc, x86_cpu_unrealizefn,
                                       &xcc->parent_unrealize);
     device_class_set_props(dc, x86_cpu_properties);
+
+    object_class_property_add(oc, "family", "int",
+                              x86_cpuid_version_get_family,
+                              x86_cpuid_version_set_family, NULL, NULL);
+    object_class_property_add(oc, "model", "int",
+                              x86_cpuid_version_get_model,
+                              x86_cpuid_version_set_model, NULL, NULL);
+    object_class_property_add(oc, "stepping", "int",
+                              x86_cpuid_version_get_stepping,
+                              x86_cpuid_version_set_stepping, NULL, NULL);
+    object_class_property_add_str(oc, "vendor",
+                                  x86_cpuid_get_vendor,
+                                  x86_cpuid_set_vendor);
+    object_class_property_add_str(oc, "model-id",
+                                  x86_cpuid_get_model_id,
+                                  x86_cpuid_set_model_id);
+    object_class_property_add(oc, "tsc-frequency", "int",
+                              x86_cpuid_get_tsc_freq,
+                              x86_cpuid_set_tsc_freq, NULL, NULL);
+    object_class_property_add(oc, "feature-words", "X86CPUFeatureWordInfo",
+                              x86_cpu_get_feature_words,
+                              NULL, NULL, NULL);
+    object_class_property_add(oc, "filtered-features", "X86CPUFeatureWordInfo",
+                              x86_cpu_get_feature_words,
+                              NULL, NULL, NULL);
+    /*
+     * The "unavailable-features" property has the same semantics as
+     * CpuDefinitionInfo.unavailable-features on the "query-cpu-definitions"
+     * QMP command: they list the features that would have prevented the
+     * CPU from running if the "enforce" flag was set.
+     */
+    object_class_property_add(oc, "unavailable-features", "strList",
+                              x86_cpu_get_unavailable_features,
+                              NULL, NULL, NULL);
+
+    object_class_property_add(oc, "crash-information", "GuestPanicInformation",
+                              x86_cpu_get_crash_info_qom, NULL, NULL, NULL);
+
+    for (w = 0; w < FEATURE_WORDS; w++) {
+        for (bitnr = 0; bitnr < 64; bitnr++) {
+            x86_cpu_register_feature_bit_props(oc, w, bitnr);
+        }
+    }
+
+    const char * const alias[][2] = {
+        { "sse3", "pni" },
+        { "pclmuldq", "pclmulqdq" },
+        { "sse4-1", "sse4.1" },
+        { "sse4-2", "sse4.2" },
+        { "xd", "nx" },
+        { "ffxsr", "fxsr-opt" },
+        { "i64", "lm" },
+        { "ds_cpl", "ds-cpl" },
+        { "tsc_adjust", "tsc-adjust" },
+        { "fxsr_opt", "fxsr-opt" },
+        { "lahf_lm", "lahf-lm" },
+        { "cmp_legacy", "cmp-legacy" },
+        { "nodeid_msr", "nodeid-msr" },
+        { "perfctr_core", "perfctr-core" },
+        { "perfctr_nb", "perfctr-nb" },
+        { "kvm_nopiodelay", "kvm-nopiodelay" },
+        { "kvm_mmu", "kvm-mmu" },
+        { "kvm_asyncpf", "kvm-asyncpf" },
+        { "kvm_steal_time", "kvm-steal-time" },
+        { "kvm_pv_eoi", "kvm-pv-eoi" },
+        { "kvm_pv_unhalt", "kvm-pv-unhalt" },
+        { "kvm_poll_control", "kvm-poll-control" },
+        { "svm_lock", "svm-lock" },
+        { "nrip_save", "nrip-save" },
+        { "tsc_scale", "tsc-scale" },
+        { "vmcb_clean", "vmcb-clean" },
+        { "pause_filter", "pause-filter" },
+        { "sse4_1", "sse4.1" },
+        { "sse4_2", "sse4.2" },
+    };
+    for (i = 0; i < G_N_ELEMENTS(alias); i++) {
+        object_class_property_add_alias(oc, alias[i][0], 0, oc, alias[i][1]);
+    }
 
     cpu_class_set_parent_reset(cc, x86_cpu_reset, &xcc->parent_reset);
     cc->reset_dump_flags = CPU_DUMP_FPU | CPU_DUMP_CCOP;
