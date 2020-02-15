@@ -172,24 +172,6 @@ static void netfilter_set_status(Object *obj, const char *str, Error **errp)
     }
 }
 
-static void netfilter_init(Object *obj)
-{
-    NetFilterState *nf = NETFILTER(obj);
-
-    nf->on = true;
-
-    object_property_add_str(obj, "netdev",
-                            netfilter_get_netdev_id, netfilter_set_netdev_id,
-                            NULL);
-    object_property_add_enum(obj, "queue", "NetFilterDirection",
-                             &NetFilterDirection_lookup,
-                             netfilter_get_direction, netfilter_set_direction,
-                             NULL);
-    object_property_add_str(obj, "status",
-                            netfilter_get_status, netfilter_set_status,
-                            NULL);
-}
-
 static void netfilter_complete(UserCreatable *uc, Error **errp)
 {
     NetFilterState *nf = NETFILTER(uc);
@@ -265,9 +247,22 @@ static void netfilter_class_init(ObjectClass *oc, void *data)
 {
     UserCreatableClass *ucc = USER_CREATABLE_CLASS(oc);
     NetFilterClass *nfc = NETFILTER_CLASS(oc);
+    ObjectProperty *op;
 
     ucc->complete = netfilter_complete;
     nfc->handle_event = default_handle_event;
+
+    object_class_property_add_str(oc, "netdev",
+                                  netfilter_get_netdev_id,
+                                  netfilter_set_netdev_id);
+    object_class_property_add_enum(oc, "queue", "NetFilterDirection",
+                                   &NetFilterDirection_lookup,
+                                   netfilter_get_direction,
+                                   netfilter_set_direction);
+    op = object_class_property_add_str(oc, "status",
+                                       netfilter_get_status,
+                                       netfilter_set_status);
+    object_property_set_default_str(op, "on");
 }
 
 static const TypeInfo netfilter_info = {
@@ -277,7 +272,6 @@ static const TypeInfo netfilter_info = {
     .class_size = sizeof(NetFilterClass),
     .class_init = netfilter_class_init,
     .instance_size = sizeof(NetFilterState),
-    .instance_init = netfilter_init,
     .instance_finalize = netfilter_finalize,
     .interfaces = (InterfaceInfo[]) {
         { TYPE_USER_CREATABLE },
