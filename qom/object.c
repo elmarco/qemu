@@ -2852,32 +2852,52 @@ object_class_property_add_uint64(ObjectClass *klass, const char *name,
 }
 
 typedef struct {
-    Object *target_obj;
+    bool class;
+    union {
+        Object *target_obj;
+        ptrdiff_t target_off;
+    };
     char *target_name;
 } AliasProperty;
+
+static Object *alias_property_get_target_object(AliasProperty *a, Object *o)
+{
+    if (a->class) {
+        if (!a->target_off) {
+            return o;
+        } else {
+            return *(Object **)((void *)o + a->target_off);
+        }
+    } else {
+        return a->target_obj;
+    }
+}
 
 static void property_get_alias(Object *obj, Visitor *v, const char *name,
                                void *opaque, Error **errp)
 {
     AliasProperty *prop = opaque;
+    Object *target_obj = alias_property_get_target_object(prop, obj);
 
-    object_property_get(prop->target_obj, v, prop->target_name, errp);
+    object_property_get(target_obj, v, prop->target_name, errp);
 }
 
 static void property_set_alias(Object *obj, Visitor *v, const char *name,
                                void *opaque, Error **errp)
 {
     AliasProperty *prop = opaque;
+    Object *target_obj = alias_property_get_target_object(prop, obj);
 
-    object_property_set(prop->target_obj, v, prop->target_name, errp);
+    object_property_set(target_obj, v, prop->target_name, errp);
 }
 
 static Object *property_resolve_alias(Object *obj, void *opaque,
                                       const gchar *part)
 {
     AliasProperty *prop = opaque;
+    Object *target_obj = alias_property_get_target_object(prop, obj);
 
-    return object_resolve_path_component(prop->target_obj, prop->target_name);
+    return object_resolve_path_component(target_obj, prop->target_name);
 }
 
 static void property_release_alias(Object *obj, const char *name, void *opaque)
@@ -2935,6 +2955,41 @@ void object_property_add_alias(Object *obj, const char *name,
 
 out:
     g_free(prop_type);
+}
+
+void object_class_property_add_alias(ObjectClass *oc, const char *name,
+                                     ptrdiff_t target_offset,
+                                     ObjectClass *target_class,
+                                     const char *target_name)
+{
+    ObjectProperty *tp;
+    g_autofree gchar *prop_type = NULL;
+    AliasProperty *prop;
+    ObjectProperty *op;
+
+    tp = object_class_property_find(target_class, target_name, &error_abort);
+    if (object_property_is_child(tp)) {
+        prop_type = g_strdup_printf("link%s",
+                                    tp->type + strlen("child"));
+    } else {
+        prop_type = g_strdup(tp->type);
+    }
+
+    prop = g_new0(AliasProperty, 1);
+    prop->class = true;
+    prop->target_name = g_strdup(target_name);
+    prop->target_off = target_offset;
+
+    op = object_class_property_add(oc, name, prop_type,
+                                   property_get_alias,
+                                   property_set_alias,
+                                   NULL, prop);
+    op->resolve = property_resolve_alias;
+    if (tp->defval) {
+        op->defval = qobject_ref(tp->defval);
+    }
+
+    op->description = g_strdup(tp->description);
 }
 
 void object_property_set_description(Object *obj, const char *name,

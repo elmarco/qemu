@@ -1816,6 +1816,11 @@ void object_property_add_alias(Object *obj, const char *name,
                                Object *target_obj, const char *target_name,
                                Error **errp);
 
+void object_class_property_add_alias(ObjectClass *oc, const char *name,
+                                     ptrdiff_t target_offset,
+                                     ObjectClass *target_class,
+                                     const char *target_name);
+
 /**
  * object_property_add_const_link:
  * @obj: the object to add a property to
