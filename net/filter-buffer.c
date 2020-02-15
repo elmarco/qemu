@@ -153,53 +153,16 @@ static void filter_buffer_class_init(ObjectClass *oc, void *data)
     nfc->cleanup = filter_buffer_cleanup;
     nfc->receive_iov = filter_buffer_receive_iov;
     nfc->status_changed = filter_buffer_status_changed;
-}
 
-static void filter_buffer_get_interval(Object *obj, Visitor *v,
-                                       const char *name, void *opaque,
-                                       Error **errp)
-{
-    FilterBufferState *s = FILTER_BUFFER(obj);
-    uint32_t value = s->interval;
-
-    visit_type_uint32(v, name, &value, errp);
-}
-
-static void filter_buffer_set_interval(Object *obj, Visitor *v,
-                                       const char *name, void *opaque,
-                                       Error **errp)
-{
-    FilterBufferState *s = FILTER_BUFFER(obj);
-    Error *local_err = NULL;
-    uint32_t value;
-
-    visit_type_uint32(v, name, &value, &local_err);
-    if (local_err) {
-        goto out;
-    }
-    if (!value) {
-        error_setg(&local_err, "Property '%s.%s' requires a positive value",
-                   object_get_typename(obj), name);
-        goto out;
-    }
-    s->interval = value;
-
-out:
-    error_propagate(errp, local_err);
-}
-
-static void filter_buffer_init(Object *obj)
-{
-    object_property_add(obj, "interval", "uint32",
-                        filter_buffer_get_interval,
-                        filter_buffer_set_interval, NULL, NULL, NULL);
+    object_class_property_add_uint32(oc, "interval",
+                                     offsetof(FilterBufferState, interval),
+                                     OBJ_PROP_FLAG_READWRITE);
 }
 
 static const TypeInfo filter_buffer_info = {
     .name = TYPE_FILTER_BUFFER,
     .parent = TYPE_NETFILTER,
     .class_init = filter_buffer_class_init,
-    .instance_init = filter_buffer_init,
     .instance_size = sizeof(FilterBufferState),
 };
 
