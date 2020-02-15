@@ -179,37 +179,6 @@ static void filter_dump_setup(NetFilterState *nf, Error **errp)
     net_dump_state_init(&nfds->ds, nfds->filename, nfds->maxlen, errp);
 }
 
-static void filter_dump_get_maxlen(Object *obj, Visitor *v, const char *name,
-                                   void *opaque, Error **errp)
-{
-    NetFilterDumpState *nfds = FILTER_DUMP(obj);
-    uint32_t value = nfds->maxlen;
-
-    visit_type_uint32(v, name, &value, errp);
-}
-
-static void filter_dump_set_maxlen(Object *obj, Visitor *v, const char *name,
-                                   void *opaque, Error **errp)
-{
-    NetFilterDumpState *nfds = FILTER_DUMP(obj);
-    Error *local_err = NULL;
-    uint32_t value;
-
-    visit_type_uint32(v, name, &value, &local_err);
-    if (local_err) {
-        goto out;
-    }
-    if (value == 0) {
-        error_setg(&local_err, "Property '%s.%s' doesn't take value '%u'",
-                   object_get_typename(obj), name, value);
-        goto out;
-    }
-    nfds->maxlen = value;
-
-out:
-    error_propagate(errp, local_err);
-}
-
 static char *file_dump_get_filename(Object *obj, Error **errp)
 {
     NetFilterDumpState *nfds = FILTER_DUMP(obj);
@@ -225,18 +194,6 @@ static void file_dump_set_filename(Object *obj, const char *value, Error **errp)
     nfds->filename = g_strdup(value);
 }
 
-static void filter_dump_instance_init(Object *obj)
-{
-    NetFilterDumpState *nfds = FILTER_DUMP(obj);
-
-    nfds->maxlen = 65536;
-
-    object_property_add(obj, "maxlen", "uint32", filter_dump_get_maxlen,
-                        filter_dump_set_maxlen, NULL, NULL, NULL);
-    object_property_add_str(obj, "file", file_dump_get_filename,
-                            file_dump_set_filename, NULL);
-}
-
 static void filter_dump_instance_finalize(Object *obj)
 {
     NetFilterDumpState *nfds = FILTER_DUMP(obj);
@@ -247,17 +204,25 @@ static void filter_dump_instance_finalize(Object *obj)
 static void filter_dump_class_init(ObjectClass *oc, void *data)
 {
     NetFilterClass *nfc = NETFILTER_CLASS(oc);
+    ObjectProperty *op;
 
     nfc->setup = filter_dump_setup;
     nfc->cleanup = filter_dump_cleanup;
     nfc->receive_iov = filter_dump_receive_iov;
+
+    op = object_class_property_add_uint32(oc, "maxlen",
+                                          offsetof(NetFilterDumpState, maxlen),
+                                          OBJ_PROP_FLAG_READWRITE);
+    object_property_set_default_uint(op, 65536);
+    object_class_property_add_str(oc, "file",
+                                  file_dump_get_filename,
+                                  file_dump_set_filename);
 }
 
 static const TypeInfo filter_dump_info = {
     .name = TYPE_FILTER_DUMP,
     .parent = TYPE_NETFILTER,
     .class_init = filter_dump_class_init,
-    .instance_init = filter_dump_instance_init,
     .instance_finalize = filter_dump_instance_finalize,
     .instance_size = sizeof(NetFilterDumpState),
 };
