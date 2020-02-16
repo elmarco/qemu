@@ -2930,7 +2930,7 @@ void object_property_add_alias(Object *obj, const char *name,
         prop_type = g_strdup(target_prop->type);
     }
 
-    prop = g_malloc(sizeof(*prop));
+    prop = g_new0(AliasProperty, 1);
     prop->target_obj = target_obj;
     prop->target_name = g_strdup(target_name);
 
