@@ -50,7 +50,8 @@ endef
 
 suites = defaultdict(Suite)
 i = 0
-for test in json.load(sys.stdin):
+introspect = json.load(sys.stdin)
+for test in introspect['tests'] + introspect['benchmarks']:
     env = ' '.join(('%s=%s' % (shlex.quote(k), shlex.quote(v))
                     for k, v in test['env'].items()))
     executable = test['cmd'][0]
