@@ -408,6 +408,8 @@ if 'CONFIG_TASN1' in config_host
 endif
 keyutils = dependency('keyutils', required: false)
 
+has_gettid = cc.has_function('gettid')
+
 # Create config-host.h
 
 config_host_data.set('CONFIG_SDL', sdl.found())
@@ -418,6 +420,7 @@ config_host_data.set('CONFIG_VNC_PNG', png.found())
 config_host_data.set('CONFIG_VNC_SASL', sasl.found())
 config_host_data.set('CONFIG_XKBCOMMON', xkbcommon.found())
 config_host_data.set('CONFIG_KEYUTILS', keyutils.found())
+config_host_data.set('CONFIG_GETTID', has_gettid)
 config_host_data.set('QEMU_VERSION', '"@0@"'.format(meson.project_version()))
 config_host_data.set('QEMU_VERSION_MAJOR', meson.project_version().split('.')[0])
 config_host_data.set('QEMU_VERSION_MINOR', meson.project_version().split('.')[1])
