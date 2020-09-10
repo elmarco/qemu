@@ -46,7 +46,7 @@ from typing import (
 
 from .common import c_name
 from .error import QAPISemError
-from .parser import QAPIDoc
+from .parser import ParsedExpression
 from .source import QAPISourceInfo
 
 
@@ -531,7 +531,7 @@ _CHECK_FN: Dict[str, Callable[[Expression, QAPISourceInfo], None]] = {
 }
 
 
-def check_exprs(exprs: List[_JSObject]) -> List[_JSObject]:
+def check_exprs(exprs: List[ParsedExpression]) -> List[ParsedExpression]:
     """
     Validate and normalize a list of parsed QAPI schema expressions. [RW]
 
@@ -541,49 +541,33 @@ def check_exprs(exprs: List[_JSObject]) -> List[_JSObject]:
     :param exprs: The list of expressions to normalize/validate.
     :return: The same list of expressions (now modified).
     """
-    for expr_elem in exprs:
-        # Expression
-        assert isinstance(expr_elem['expr'], dict)
-        expr: Expression = expr_elem['expr']
-        for key in expr.keys():
-            assert isinstance(key, str)
-
-        # QAPISourceInfo
-        assert isinstance(expr_elem['info'], QAPISourceInfo)
-        info: QAPISourceInfo = expr_elem['info']
-
-        # Optional[QAPIDoc]
-        tmp = expr_elem.get('doc')
-        assert tmp is None or isinstance(tmp, QAPIDoc)
-        doc: Optional[QAPIDoc] = tmp
-
+    for expr in exprs:
         for kind in ExpressionType:
-            if kind in expr:
+            if kind in expr.expr:
                 meta = kind
                 break
         else:
-            raise QAPISemError(info, "expression is missing metatype")
+            raise QAPISemError(expr.info, "expression is missing metatype")
 
         if meta == ExpressionType.INCLUDE:
             continue
 
-        name = cast(str, expr[meta])  # asserted right below:
-        check_name_is_str(name, info, "'%s'" % meta.value)
-        info.set_defn(meta.value, name)
-        check_defn_name_str(name, info, meta.value)
+        name = cast(str, expr.expr[meta])  # asserted right below:
+        check_name_is_str(name, expr.info, "'%s'" % meta.value)
+        expr.info.set_defn(meta.value, name)
+        check_defn_name_str(name, expr.info, meta.value)
 
-        if doc:
-            if doc.symbol != name:
-                raise QAPISemError(
-                    info, "documentation comment is for '%s'" % doc.symbol)
-            doc.check_expr(expr)
-        elif info.pragma.doc_required:
-            raise QAPISemError(info,
-                               "documentation comment required")
+        if expr.doc:
+            if expr.doc.symbol != name:
+                msg = f"documentation comment is for '{expr.doc.symbol}'"
+                raise QAPISemError(expr.info, msg)
+            expr.doc.check_expr(expr.expr)
+        elif expr.info.pragma.doc_required:
+            raise QAPISemError(expr.info, "documentation comment required")
 
-        _CHECK_FN[meta](expr, info)
-        check_if(expr, info, meta.value)
-        check_features(expr.get('features'), info)
-        check_flags(expr, info)
+        _CHECK_FN[meta](expr.expr, expr.info)
+        check_if(expr.expr, expr.info, meta.value)
+        check_features(expr.expr.get('features'), expr.info)
+        check_flags(expr.expr, expr.info)
 
     return exprs

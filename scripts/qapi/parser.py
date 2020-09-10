@@ -18,9 +18,8 @@ from collections import OrderedDict
 import os
 import re
 from typing import (
-    Any,
-    Dict,
     List,
+    NamedTuple,
     Optional,
     Set,
     Type,
@@ -33,11 +32,16 @@ from .error import QAPIError, QAPISemError, QAPISourceError
 from .source import QAPISourceInfo
 
 
-Expression = Dict[str, Any]
 _Value = Union[List[object], 'OrderedDict[str, object]', str, bool]
 # Necessary imprecision: mypy does not (yet?) support recursive types;
 # so we must stub out that recursion with 'object'.
 # Note, we do not support numerics or null in this parser.
+
+
+class ParsedExpression(NamedTuple):
+    expr: 'OrderedDict[str, object]'
+    info: QAPISourceInfo
+    doc: Optional['QAPIDoc']
 
 
 class QAPIParseError(QAPISourceError):
@@ -86,7 +90,7 @@ class QAPISchemaParser:
         self.line_pos = 0
 
         # Parser output:
-        self.exprs: List[Expression] = []
+        self.exprs: List[ParsedExpression] = []
         self.docs: List[QAPIDoc] = []
 
         # Showtime!
@@ -138,8 +142,7 @@ class QAPISchemaParser:
                                        "value of 'include' must be a string")
                 incl_fname = os.path.join(os.path.dirname(self._fname),
                                           include)
-                self.exprs.append({'expr': {'include': incl_fname},
-                                   'info': info})
+                self._add_expr(OrderedDict({'include': incl_fname}), info)
                 exprs_include = self._include(include, info, incl_fname,
                                               self._included)
                 if exprs_include:
@@ -156,19 +159,20 @@ class QAPISchemaParser:
                 for name, value in pragma.items():
                     self._pragma(name, value, info)
             else:
-                expr_elem = {'expr': expr,
-                             'info': info}
-                if cur_doc:
-                    if not cur_doc.symbol:
-                        raise QAPISemError(
-                            cur_doc.info, "definition documentation required")
-                    expr_elem['doc'] = cur_doc
-                self.exprs.append(expr_elem)
+                if cur_doc and not cur_doc.symbol:
+                    raise QAPISemError(
+                        cur_doc.info, "definition documentation required")
+                self._add_expr(expr, info, cur_doc)
             cur_doc = None
         self.reject_expr_doc(cur_doc)
 
     def _parse_error(self, msg: str) -> QAPIParseError:
         return QAPIParseError.make(self, msg)
+
+    def _add_expr(self, expr: 'OrderedDict[str, object]',
+                  info: QAPISourceInfo,
+                  doc: Optional['QAPIDoc'] = None) -> None:
+        self.exprs.append(ParsedExpression(expr, info, doc))
 
     @classmethod
     def reject_expr_doc(cls, doc: Optional['QAPIDoc']) -> None:
