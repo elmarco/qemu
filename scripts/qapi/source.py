@@ -11,20 +11,9 @@
 
 import copy
 import sys
-from typing import List, Optional, TypeVar
+from typing import Optional, TypeVar
 
-
-class QAPISchemaPragma:
-    # Replace with @dataclass in Python 3.7+
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self) -> None:
-        # Are documentation comments required?
-        self.doc_required = False
-        # Whitelist of commands allowed to return a non-dictionary
-        self.returns_whitelist: List[str] = []
-        # Whitelist of entities allowed to violate case conventions
-        self.name_case_whitelist: List[str] = []
+from .pragma import QAPISchemaPragma
 
 
 class QAPISourceInfo:
