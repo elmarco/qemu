@@ -274,9 +274,9 @@ class QAPISchemaParser:
         if self.tok == ']':
             self.accept()
             return expr
-        if self.tok not in "{['tfn":
+        if self.tok not in "{['tf":
             raise self._parse_error(
-                "expected '{', '[', ']', string, boolean or 'null'")
+                "expected '{', '[', ']', string, or boolean")
         while True:
             expr.append(self.get_expr(True))
             if self.tok == ']':
@@ -295,12 +295,12 @@ class QAPISchemaParser:
         elif self.tok == '[':
             self.accept()
             expr = self.get_values()
-        elif self.tok in "'tfn":
+        elif self.tok in "'tf":
             expr = self.val
             self.accept()
         else:
             raise self._parse_error(
-                "expected '{', '[', string, boolean or 'null'")
+                "expected '{', '[', string, or boolean")
         return expr
 
     def _get_doc(self, info):
