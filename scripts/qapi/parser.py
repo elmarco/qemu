@@ -143,8 +143,7 @@ class QAPISchemaParser:
                 incl_fname = os.path.join(os.path.dirname(self._fname),
                                           include)
                 self._add_expr(OrderedDict({'include': incl_fname}), info)
-                exprs_include = self._include(include, info, incl_fname,
-                                              self._included)
+                exprs_include = self._include(include, incl_fname)
                 if exprs_include:
                     self.exprs.extend(exprs_include.exprs)
                     self.docs.extend(exprs_include.docs)
@@ -178,26 +177,22 @@ class QAPISchemaParser:
                 "documentation for '%s' is not followed by the definition"
                 % doc.symbol)
 
-    @classmethod
-    def _include(cls,
-                 include: str,
-                 info: QAPISourceInfo,
-                 incl_fname: str,
-                 previously_included: Set[str]
-                 ) -> Optional['QAPISchemaParser']:
+    def _include(self, include: str,
+                 incl_fname: str) -> Optional['QAPISchemaParser']:
         incl_abs_fname = os.path.abspath(incl_fname)
+
         # catch inclusion cycle
-        inf = info
+        inf = self.info
         while inf:
             if incl_abs_fname == os.path.abspath(inf.fname):
-                raise QAPISemError(info, "inclusion loop for %s" % include)
+                raise QAPISemError(self.info, f"inclusion loop for {include}")
             inf = inf.parent
 
         # skip multiple include of the same file
-        if incl_abs_fname in previously_included:
+        if incl_abs_fname in self._included:
             return None
 
-        return QAPISchemaParser(incl_fname, previously_included, info)
+        return QAPISchemaParser(incl_fname, self._included, self.info)
 
     def accept(self, skip_comment: bool = True) -> None:
         """Read the next lexeme.
