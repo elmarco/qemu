@@ -25,10 +25,10 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    cast,
 )
 
 from .error import QAPIError, QAPISemError, QAPISourceError
+from .pragma import PragmaError
 from .source import QAPISourceInfo
 
 
@@ -150,14 +150,10 @@ class QAPISchemaParser:
                     self.docs.extend(exprs_include.docs)
             elif "pragma" in expr:
                 self.reject_expr_doc(cur_doc)
-                if len(expr) != 1:
-                    raise QAPISemError(info, "invalid 'pragma' directive")
-                pragma = expr['pragma']
-                if not isinstance(pragma, dict):
-                    raise QAPISemError(
-                        info, "value of 'pragma' must be an object")
-                for name, value in pragma.items():
-                    self._pragma(name, value, info)
+                try:
+                    info.pragma.parse(expr)
+                except PragmaError as err:
+                    raise QAPISemError(info, str(err)) from err
             else:
                 if cur_doc and not cur_doc.symbol:
                     raise QAPISemError(
@@ -202,33 +198,6 @@ class QAPISchemaParser:
             return None
 
         return QAPISchemaParser(incl_fname, previously_included, info)
-
-    @classmethod
-    def _pragma(cls,
-                name: str,
-                value: object,
-                info: QAPISourceInfo) -> None:
-        if name == 'doc-required':
-            if not isinstance(value, bool):
-                raise QAPISemError(info,
-                                   "pragma 'doc-required' must be boolean")
-            info.pragma.doc_required = value
-        elif name == 'returns-whitelist':
-            if (not isinstance(value, list)
-                    or any([not isinstance(elt, str) for elt in value])):
-                raise QAPISemError(
-                    info,
-                    "pragma returns-whitelist must be a list of strings")
-            info.pragma.returns_whitelist = cast(List[str], value)
-        elif name == 'name-case-whitelist':
-            if (not isinstance(value, list)
-                    or any([not isinstance(elt, str) for elt in value])):
-                raise QAPISemError(
-                    info,
-                    "pragma name-case-whitelist must be a list of strings")
-            info.pragma.name_case_whitelist = cast(List[str], value)
-        else:
-            raise QAPISemError(info, "unknown pragma '%s'" % name)
 
     def accept(self, skip_comment: bool = True) -> None:
         """Read the next lexeme.
