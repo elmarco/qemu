@@ -67,26 +67,23 @@ class QAPISchemaParser:
     """
     Performs parsing of a QAPI schema source file.
 
-    :param fname: Path to the source file
-    :param previously_included: Set of absolute paths of previously included
-                                source files; these will not be parsed again.
-    :param incl_info: QAPISourceInfo for the parent document;
-                      Can be None for the parent document.
+    :param fname:  Path to the source file
+    :param parent: Parent parser, if this is an included file.
     """
-    def __init__(self,
-                 fname: str,
-                 previously_included: Optional[Set[str]] = None,
-                 incl_info: Optional[QAPISourceInfo] = None):
+    def __init__(self, fname: str,
+                 parent: Optional['QAPISchemaParser'] = None):
         self._fname = fname
-        self._included = previously_included or set()
+        self._included: Set[str] = parent._included if parent else set()
         self._included.add(os.path.abspath(self._fname))
+        parent_info = parent.info if parent else None
 
         # Lexer state (see `accept` for details):
         self.tok: Optional[str] = None
         self.pos = 0
         self.cursor = 0
         self.val: Optional[Union[bool, str]] = None
-        self.info = QAPISourceInfo(self._fname, parent=incl_info)
+        self.info: QAPISourceInfo = QAPISourceInfo(self._fname,
+                                                   parent=parent_info)
         self.line_pos = 0
 
         # Parser output:
@@ -99,11 +96,11 @@ class QAPISchemaParser:
                 self.src = fp.read()
         except IOError as e:
             msg = "can't read {kind:s} file '{fname:s}': {errmsg:s}".format(
-                kind='include' if incl_info else 'schema',
+                kind='include' if parent else 'schema',
                 fname=self._fname,
                 errmsg=e.strerror
             )
-            context = incl_info or self.info
+            context = parent_info if parent_info else self.info
             raise QAPIParseError(context, msg) from e
         self._parse()
 
@@ -192,7 +189,7 @@ class QAPISchemaParser:
         if incl_abs_fname in self._included:
             return None
 
-        return QAPISchemaParser(incl_fname, self._included, self.info)
+        return QAPISchemaParser(incl_fname, self)
 
     def accept(self, skip_comment: bool = True) -> None:
         """Read the next lexeme.
