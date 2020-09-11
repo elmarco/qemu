@@ -55,7 +55,7 @@ class QAPISchemaParser:
         self.pos = 0
         self.cursor = 0
         self.val = None
-        self.info = QAPISourceInfo(self._fname, 1, incl_info)
+        self.info = QAPISourceInfo(self._fname, parent=incl_info)
         self.line_pos = 0
 
         # Parser output:
@@ -78,6 +78,7 @@ class QAPISchemaParser:
         cur_doc = None
 
         # Prime the lexer:
+        self.info.line += 1
         if self.src == '' or self.src[-1] != '\n':
             self.src += '\n'
         self.accept()
