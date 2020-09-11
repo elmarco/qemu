@@ -50,12 +50,19 @@ class QAPISchemaParser:
         self._included = previously_included or set()
         self._included.add(os.path.abspath(self._fname))
 
+        # Lexer state (see `accept` for details):
+        self.tok = None
+        self.pos = 0
         self.cursor = 0
+        self.val = None
         self.info = QAPISourceInfo(self._fname, 1, incl_info)
         self.line_pos = 0
+
+        # Parser output:
         self.exprs = []
         self.docs = []
 
+        # Showtime!
         try:
             fp = open(self._fname, 'r', encoding='utf-8')
             self.src = fp.read()
