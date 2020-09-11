@@ -30,8 +30,8 @@ class QAPISchemaPragma:
 class QAPISourceInfo:
     T = TypeVar('T', bound='QAPISourceInfo')
 
-    def __init__(self, fname: str, line: int,
-                 parent: Optional['QAPISourceInfo']):
+    def __init__(self, fname: str, line: int = 0,
+                 parent: Optional['QAPISourceInfo'] = None):
         self.fname = fname
         self.line = line
         self.parent = parent
@@ -54,7 +54,7 @@ class QAPISourceInfo:
         if self.fname is None:
             return sys.argv[0]
         ret = self.fname
-        if self.line is not None:
+        if self.line:
             ret += ':%d' % self.line
         return ret
 
