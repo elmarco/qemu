@@ -707,7 +707,7 @@ class QAPIDoc:
 
     def check(self):
 
-        def check_args_section(args, info, what):
+        def check_args_section(args):
             bogus = [name for name, section in args.items()
                      if not section.member]
             if bogus:
@@ -718,5 +718,5 @@ class QAPIDoc:
                        "', '".join(bogus),
                        "do" if len(bogus) > 1 else "does"))
 
-        check_args_section(self.args, self.info, 'members')
-        check_args_section(self.features, self.info, 'features')
+        check_args_section(self.args)
+        check_args_section(self.features)
