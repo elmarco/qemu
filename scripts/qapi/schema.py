@@ -25,7 +25,13 @@ from .expr import check_exprs
 from .parser import QAPISchemaParser
 
 
-class QAPISchemaEntity:
+class Visitable:
+    """Abstract duck that suggests a class is visitable."""
+    def visit(self, visitor: 'QAPISchemaVisitor') -> None:
+        raise NotImplementedError
+
+
+class QAPISchemaEntity(Visitable):
     meta: Optional[str] = None
 
     def __init__(self, name: str, info, doc, ifcond=None, features=None):
@@ -136,7 +142,7 @@ class QAPISchemaVisitor:
         pass
 
 
-class QAPISchemaModule:
+class QAPISchemaModule(Visitable):
     def __init__(self, name):
         self.name = name
         self._entity_list = []
@@ -815,7 +821,7 @@ class QAPISchemaEvent(QAPISchemaEntity):
             self.arg_type, self.boxed)
 
 
-class QAPISchema:
+class QAPISchema(Visitable):
     def __init__(self, fname):
         self.fname = fname
         parser = QAPISchemaParser(fname)
