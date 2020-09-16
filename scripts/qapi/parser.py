@@ -57,8 +57,8 @@ class QAPIParseError(QAPISourceError):
     @classmethod
     def make(cls: Type[T], parser: 'QAPISchemaParser', msg: str) -> T:
         col = 1
-        for ch in parser.src[parser.line_pos:parser.pos]:
-            if ch == '\t':
+        for char in parser.src[parser.line_pos:parser.pos]:
+            if char == '\t':
                 col = (col + 7) % 8 + 1
             else:
                 col += 1
@@ -100,14 +100,16 @@ class QAPISchemaParser:
         try:
             with open(self._fname, 'r', encoding='utf-8') as fp:
                 self.src = fp.read()
-        except IOError as e:
+        except IOError as err:
             msg = "can't read {kind:s} file '{fname:s}': {errmsg:s}".format(
                 kind='include' if parent else 'schema',
                 fname=self._fname,
-                errmsg=e.strerror
+                errmsg=err.strerror
             )
             context = parent_info if parent_info else self.info
-            raise QAPIParseError(context, msg) from e
+            raise QAPIParseError(context, msg) from err
+
+        # Showtime!
         self._parse()
 
     def _parse(self) -> None:
@@ -255,25 +257,25 @@ class QAPISchemaParser:
                 string = ''
                 esc = False
                 while True:
-                    ch = self.src[self.cursor]
+                    char = self.src[self.cursor]
                     self.cursor += 1
-                    if ch == '\n':
+                    if char == '\n':
                         raise self._parse_error("missing terminating \"'\"")
                     if esc:
                         # Note: we recognize only \\ because we have
                         # no use for funny characters in strings
-                        if ch != '\\':
-                            raise self._parse_error(f"unknown escape \\{ch}")
+                        if char != '\\':
+                            raise self._parse_error(f"unknown escape \\{char}")
                         esc = False
-                    elif ch == '\\':
+                    elif char == '\\':
                         esc = True
                         continue
-                    elif ch == "'":
+                    elif char == "'":
                         self.val = string
                         return
-                    if ord(ch) < 32 or ord(ch) >= 127:
+                    if ord(char) < 32 or ord(char) >= 127:
                         raise self._parse_error("funny character in string")
-                    string += ch
+                    string += char
             elif self.src.startswith('true', self.pos):
                 self.val = True
                 self.cursor += 3
