@@ -143,15 +143,15 @@ def check_if(expr: _JSObject, info: QAPISourceInfo, source: str) -> None:
     ifcond = expr.get('if')
     if ifcond is None:
         return
-    if isinstance(ifcond, list):
-        if ifcond == []:
-            raise QAPISemError(
-                info, "'if' condition [] of %s is useless" % source)
-        for elt in ifcond:
-            check_if_str(elt)
-    else:
-        check_if_str(ifcond)
-        expr['if'] = [ifcond]
+
+    if not isinstance(ifcond, list):
+        ifcond = [ifcond]
+        expr['if'] = ifcond
+    if not ifcond:
+        raise QAPISemError(
+            info, "'if' condition [] of %s is useless" % source)
+    for elt in ifcond:
+        check_if_str(elt)
 
 
 def normalize_members(members: object) -> None:
