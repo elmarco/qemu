@@ -18,6 +18,7 @@ ignore-patterns=schema.py,
 # --disable=W".
 disable=fixme,
         missing-docstring,
+        similarities, # See https://github.com/PyCQA/pylint/issues/3619
         too-many-arguments,
         too-many-branches,
         too-many-statements,
