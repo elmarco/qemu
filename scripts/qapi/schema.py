@@ -86,6 +86,7 @@ class QAPISchemaEntity(Visitable):
         return c_name(self.name)
 
     def check(self, schema: 'QAPISchema') -> None:
+        # pylint: disable=unused-argument
         assert not self._checked
         seen: Dict[str, 'QAPISchemaMember'] = {}
         for feature in self.features:
