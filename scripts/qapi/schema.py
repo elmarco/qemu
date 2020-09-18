@@ -314,7 +314,7 @@ class QAPISchemaType(QAPISchemaEntity):
         return self.name
 
     def check(self, schema: 'QAPISchema') -> None:
-        QAPISchemaEntity.check(self, schema)
+        super().check(schema)
         if 'deprecated' in [f.name for f in self.features]:
             raise QAPISemError(
                 self.info, "feature 'deprecated' is not supported for types")
