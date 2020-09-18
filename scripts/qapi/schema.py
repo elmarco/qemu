@@ -1,7 +1,41 @@
 # -*- coding: utf-8 -*-
-#
-# QAPI schema internal representation
-#
+"""
+QAPI Schema internal representation.
+
+The `QAPISchema` represents the fully realized QAPI schema. It builds a
+listing of `QAPISchemaEntity` objects that are each associated with a
+`QAPISchemaModule`.
+
+`QAPISchemaMember` represents a single member of a collection of
+members, see the subclasses thereof for users. `QAPISchemaVariants` is a
+simple collection of `QAPISchemaVariant`.
+
+The `QAPISchemaVisitor` can be extended and passed to `QAPISchema.visit`
+to iterate over a schema and perform code generation tasks.
+
+The Python class hierarchy at a glance:
+
+- `QAPISchemaEntity`
+
+  - `QAPISchemaInclude`
+  - `QAPISchemaCommand`
+  - `QAPISchemaEvent`
+  - `QAPISchemaType`
+
+    - `QAPISchemaBuiltinType`
+    - `QAPISchemaEnumType`
+    - `QAPISchemaArrayType`
+    - `QAPISchemaObjectType`
+    - `QAPISchemaAlternateType`
+
+- `QAPISchemaMember`
+
+  - `QAPISchemaEnumMember`
+  - `QAPISchemaFeature`
+  - `QAPISchemaObjectTypeMember`
+
+    - `QAPISchemaVariant`
+"""
 # Copyright (c) 2015-2019 Red Hat Inc.
 #
 # Authors:
