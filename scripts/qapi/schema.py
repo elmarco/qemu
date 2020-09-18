@@ -12,6 +12,8 @@
 # This work is licensed under the terms of the GNU GPL, version 2.
 # See the COPYING file in the top-level directory.
 
+# pylint: disable=too-many-lines ¯\_(ツ)_/¯
+
 # TODO catching name collisions in generated code would be nice
 
 from collections import OrderedDict
