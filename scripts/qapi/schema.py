@@ -53,9 +53,11 @@ class QAPISchemaEntity(Visitable):
                  ifcond: Optional[Union[List[str], 'QAPISchemaType']] = None,
                  features: Optional[List['QAPISchemaFeature']] = None):
         assert name is None or isinstance(name, str)
-        for f in features or []:
-            assert isinstance(f, QAPISchemaFeature)
-            f.set_defined_in(name)
+
+        for feature in features or []:
+            assert isinstance(feature, QAPISchemaFeature)
+            feature.set_defined_in(name)
+
         self.name = name
         self._module: Optional[QAPISchemaModule] = None
         # For explicitly defined entities, info points to the (explicit)
@@ -84,15 +86,15 @@ class QAPISchemaEntity(Visitable):
     def check(self, schema: 'QAPISchema') -> None:
         assert not self._checked
         seen: Dict[str, 'QAPISchemaMember'] = {}
-        for f in self.features:
-            f.check_clash(self.info, seen)
+        for feature in self.features:
+            feature.check_clash(self.info, seen)
         self._checked = True
 
     def connect_doc(self, doc: Optional[QAPIDoc] = None) -> None:
         doc = doc or self.doc
         if doc:
-            for f in self.features:
-                doc.connect_feature(f)
+            for feature in self.features:
+                doc.connect_feature(feature)
 
     def check_doc(self) -> None:
         if self.doc:
@@ -327,9 +329,9 @@ class QAPISchemaEnumType(QAPISchemaType):
                  members: List['QAPISchemaEnumMember'],
                  prefix: Optional[str]):
         super().__init__(name, info, doc, ifcond, features)
-        for m in members:
-            assert isinstance(m, QAPISchemaEnumMember)
-            m.set_defined_in(name)
+        for member in members:
+            assert isinstance(member, QAPISchemaEnumMember)
+            member.set_defined_in(name)
         assert prefix is None or isinstance(prefix, str)
         self.members = members
         self.prefix = prefix
@@ -338,14 +340,14 @@ class QAPISchemaEnumType(QAPISchemaType):
     def check(self, schema: 'QAPISchema') -> None:
         super().check(schema)
         seen: Dict[str, 'QAPISchemaMember'] = {}
-        for m in self.members:
-            m.check_clash(self.info, seen)
+        for member in self.members:
+            member.check_clash(self.info, seen)
 
     def connect_doc(self, doc: Optional[QAPIDoc] = None) -> None:
         super().connect_doc(doc)
         doc = doc or self.doc
-        for m in self.members:
-            m.connect_doc(doc)
+        for member in self.members:
+            member.connect_doc(doc)
 
     def is_implicit(self) -> bool:
         # See QAPISchema._make_implicit_enum_type() and ._def_predefineds()
@@ -433,9 +435,9 @@ class QAPISchemaObjectType(QAPISchemaType):
         super().__init__(name, info, doc, ifcond, features)
         self._meta = 'union' if variants else 'struct'
         assert base is None or isinstance(base, str)
-        for m in local_members:
-            assert isinstance(m, QAPISchemaObjectTypeMember)
-            m.set_defined_in(name)
+        for member in local_members:
+            assert isinstance(member, QAPISchemaObjectTypeMember)
+            member.set_defined_in(name)
         if variants is not None:
             assert isinstance(variants, QAPISchemaVariants)
             variants.set_defined_in(name)
@@ -472,9 +474,9 @@ class QAPISchemaObjectType(QAPISchemaType):
             self.base = base
             self.base.check(schema)
             self.base.check_clash(self.info, seen)
-        for m in self.local_members:
-            m.check(schema)
-            m.check_clash(self.info, seen)
+        for member in self.local_members:
+            member.check(schema)
+            member.check_clash(self.info, seen)
 
         # check_clash is abstract, but local_members is asserted to be
         # Sequence[QAPISchemaObjectTypeMember]. Cast to the narrower type.
@@ -494,16 +496,16 @@ class QAPISchemaObjectType(QAPISchemaType):
                     seen: Dict[str, 'QAPISchemaMember']) -> None:
         assert self._checked
         assert not self.variants       # not implemented
-        for m in self.members:
-            m.check_clash(info, seen)
+        for member in self.members:
+            member.check_clash(info, seen)
 
     def connect_doc(self, doc: Optional[QAPIDoc] = None) -> None:
         super().connect_doc(doc)
         doc = doc or self.doc
         if self.base and self.base.is_implicit():
             self.base.connect_doc(doc)
-        for m in self.local_members:
-            m.connect_doc(doc)
+        for member in self.local_members:
+            member.connect_doc(doc)
 
     @property
     def ifcond(self) -> List[str]:
@@ -573,40 +575,43 @@ class QAPISchemaAlternateType(QAPISchemaType):
         # so we have to check for potential name collisions ourselves.
         seen: Dict[str, QAPISchemaMember] = {}
         types_seen: Dict[str, str] = {}
-        for v in self.variants.variants:
-            v.check_clash(self.info, seen)
+
+        for variant in self.variants.variants:
+            variant.check_clash(self.info, seen)
+
             try:
-                qtype = v.type.alternate_qtype()
+                qtype = variant.type.alternate_qtype()
             except KeyError:
-                raise QAPISemError(
-                    self.info,
-                    "%s cannot use %s"
-                    % (v.describe(self.info), v.type.describe()))
+                msg = "{} cannot use {}".format(
+                    variant.describe(self.info), variant.type.describe())
+                raise QAPISemError(self.info, msg) from None
+
             conflicting = set([qtype])
             if qtype == 'QTYPE_QSTRING':
-                if isinstance(v.type, QAPISchemaEnumType):
-                    for m in v.type.members:
-                        if m.name in ['on', 'off']:
+                if isinstance(variant.type, QAPISchemaEnumType):
+                    for member in variant.type.members:
+                        if member.name in ['on', 'off']:
                             conflicting.add('QTYPE_QBOOL')
-                        if re.match(r'[-+0-9.]', m.name):
+                        if re.match(r'[-+0-9.]', member.name):
                             # lazy, could be tightened
                             conflicting.add('QTYPE_QNUM')
                 else:
                     conflicting.add('QTYPE_QNUM')
                     conflicting.add('QTYPE_QBOOL')
-            for qt in conflicting:
-                if qt in types_seen:
-                    raise QAPISemError(
-                        self.info,
-                        "%s can't be distinguished from '%s'"
-                        % (v.describe(self.info), types_seen[qt]))
-                types_seen[qt] = v.name
+
+            for qtype in conflicting:
+                if qtype in types_seen:
+                    msg = "{} can't be distinguished from '{}'".format(
+                        variant.describe(self.info), types_seen[qtype])
+                    raise QAPISemError(self.info, msg)
+
+                types_seen[qtype] = variant.name
 
     def connect_doc(self, doc: Optional[QAPIDoc] = None) -> None:
         super().connect_doc(doc)
         doc = doc or self.doc
-        for v in self.variants.variants:
-            v.connect_doc(doc)
+        for variant in self.variants.variants:
+            variant.connect_doc(doc)
 
     def c_type(self) -> str:
         return c_name(self.name) + POINTER_SUFFIX
@@ -633,16 +638,16 @@ class QAPISchemaVariants:
         assert bool(tag_member) != bool(tag_name)
         assert (isinstance(tag_name, str) or
                 isinstance(tag_member, QAPISchemaObjectTypeMember))
-        for v in variants:
-            assert isinstance(v, QAPISchemaVariant)
+        for variant in variants:
+            assert isinstance(variant, QAPISchemaVariant)
         self._tag_name = tag_name
         self.info = info
         self.tag_member = tag_member
         self.variants = variants
 
     def set_defined_in(self, name: str) -> None:
-        for v in self.variants:
-            v.set_defined_in(name)
+        for variant in self.variants:
+            variant.set_defined_in(name)
 
     def check(self,
               schema: 'QAPISchema',
@@ -687,40 +692,41 @@ class QAPISchemaVariants:
         if self._tag_name:    # flat union
             # branches that are not explicitly covered get an empty type
             cases = {v.name for v in self.variants}
-            for m in self.tag_member.type.members:
-                if m.name not in cases:
-                    v = QAPISchemaVariant(m.name, self.info,
-                                          'q_empty', m.ifcond)
-                    v.set_defined_in(self.tag_member.defined_in)
-                    self.variants.append(v)
+            for member in self.tag_member.type.members:
+                if member.name not in cases:
+                    variant = QAPISchemaVariant(member.name, self.info,
+                                                'q_empty', member.ifcond)
+                    variant.set_defined_in(self.tag_member.defined_in)
+                    self.variants.append(variant)
         if not self.variants:
             raise QAPISemError(self.info, "union has no branches")
-        for v in self.variants:
-            v.check(schema)
+        for variant in self.variants:
+            variant.check(schema)
             # Union names must match enum values; alternate names are
             # checked separately. Use 'seen' to tell the two apart.
             if seen:
-                if v.name not in self.tag_member.type.member_names():
+                if variant.name not in self.tag_member.type.member_names():
                     raise QAPISemError(
                         self.info,
                         "branch '%s' is not a value of %s"
-                        % (v.name, self.tag_member.type.describe()))
-                if (not isinstance(v.type, QAPISchemaObjectType)
-                        or v.type.variants):
+                        % (variant.name, self.tag_member.type.describe()))
+                if (not isinstance(variant.type, QAPISchemaObjectType)
+                        or variant.type.variants):
                     raise QAPISemError(
                         self.info,
-                        "%s cannot use %s"
-                        % (v.describe(self.info), v.type.describe()))
-                v.type.check(schema)
+                        "%s cannot use %s" % (
+                            variant.describe(self.info),
+                            variant.type.describe()))
+                variant.type.check(schema)
 
     def check_clash(self,
                     info: QAPISourceInfo,
                     seen: Dict[str, 'QAPISchemaMember']) -> None:
-        for v in self.variants:
+        for variant in self.variants:
             # Reset seen map for each variant, since qapi names from one
             # branch do not affect another branch
-            assert isinstance(v.type, QAPISchemaObjectType)
-            v.type.check_clash(info, dict(seen))
+            assert isinstance(variant.type, QAPISchemaObjectType)
+            variant.type.check_clash(info, dict(seen))
 
 
 class QAPISchemaMember:
@@ -805,9 +811,9 @@ class QAPISchemaObjectTypeMember(QAPISchemaMember):
         super().__init__(name, info, ifcond)
         assert isinstance(typ, str)
         assert isinstance(optional, bool)
-        for f in features or []:
-            assert isinstance(f, QAPISchemaFeature)
-            f.set_defined_in(name)
+        for feature in features or []:
+            assert isinstance(feature, QAPISchemaFeature)
+            feature.set_defined_in(name)
         self._type_name = typ
         self.type: Optional[QAPISchemaType] = None
         self.optional = optional
@@ -818,14 +824,14 @@ class QAPISchemaObjectTypeMember(QAPISchemaMember):
         self.type = schema.resolve_type(self._type_name, self.info,
                                         self.describe)
         seen: Dict[str, QAPISchemaMember] = {}
-        for f in self.features:
-            f.check_clash(self.info, seen)
+        for feature in self.features:
+            feature.check_clash(self.info, seen)
 
     def connect_doc(self, doc: Optional[QAPIDoc]) -> None:
         super().connect_doc(doc)
         if doc:
-            for f in self.features:
-                doc.connect_feature(f)
+            for feature in self.features:
+                doc.connect_feature(feature)
 
 
 class QAPISchemaVariant(QAPISchemaObjectTypeMember):
@@ -1072,22 +1078,22 @@ class QAPISchema(Visitable):
         self._make_array_type(name, None)
 
     def _def_predefineds(self) -> None:
-        for t in [('str',    'string',  'char' + POINTER_SUFFIX),
-                  ('number', 'number',  'double'),
-                  ('int',    'int',     'int64_t'),
-                  ('int8',   'int',     'int8_t'),
-                  ('int16',  'int',     'int16_t'),
-                  ('int32',  'int',     'int32_t'),
-                  ('int64',  'int',     'int64_t'),
-                  ('uint8',  'int',     'uint8_t'),
-                  ('uint16', 'int',     'uint16_t'),
-                  ('uint32', 'int',     'uint32_t'),
-                  ('uint64', 'int',     'uint64_t'),
-                  ('size',   'int',     'uint64_t'),
-                  ('bool',   'boolean', 'bool'),
-                  ('any',    'value',   'QObject' + POINTER_SUFFIX),
-                  ('null',   'null',    'QNull' + POINTER_SUFFIX)]:
-            self._def_builtin_type(*t)
+        for args in (('str',    'string',  'char' + POINTER_SUFFIX),
+                     ('number', 'number',  'double'),
+                     ('int',    'int',     'int64_t'),
+                     ('int8',   'int',     'int8_t'),
+                     ('int16',  'int',     'int16_t'),
+                     ('int32',  'int',     'int32_t'),
+                     ('int64',  'int',     'int64_t'),
+                     ('uint8',  'int',     'uint8_t'),
+                     ('uint16', 'int',     'uint16_t'),
+                     ('uint32', 'int',     'uint32_t'),
+                     ('uint64', 'int',     'uint64_t'),
+                     ('size',   'int',     'uint64_t'),
+                     ('bool',   'boolean', 'bool'),
+                     ('any',    'value',   'QObject' + POINTER_SUFFIX),
+                     ('null',   'null',    'QNull' + POINTER_SUFFIX)):
+            self._def_builtin_type(*args)
         self.the_empty_object_type = QAPISchemaObjectType(
             'q_empty', None, None, None, None, None, [], None)
         self._def_entity(self.the_empty_object_type)
