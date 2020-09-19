@@ -1100,7 +1100,8 @@ class QAPISchema(Visitable):
         self._def_entity(QAPISchemaEnumType('QType', None, None, None, None,
                                             qtype_values, 'QTYPE'))
 
-    def _make_features(self,
+    @classmethod
+    def _make_features(cls,
                        features: Optional[List[Dict[str, Any]]],
                        info: QAPISourceInfo) -> List[QAPISchemaFeature]:
         if features is None:
@@ -1108,7 +1109,8 @@ class QAPISchema(Visitable):
         return [QAPISchemaFeature(f['name'], info, f.get('if'))
                 for f in features]
 
-    def _make_enum_members(self,
+    @classmethod
+    def _make_enum_members(cls,
                            values: List[Dict[str, Any]],
                            info: Optional[QAPISourceInfo],
                            ) -> List[QAPISchemaEnumMember]:
@@ -1217,7 +1219,8 @@ class QAPISchema(Visitable):
             self._make_members(data, info),
             None))
 
-    def _make_variant(self,
+    @classmethod
+    def _make_variant(cls,
                       case: str,
                       typ: str,
                       ifcond: Optional[List[str]],
