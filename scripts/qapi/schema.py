@@ -88,7 +88,7 @@ class QAPISchemaEntity(Visitable):
 
     @property
     def ifcond(self):
-        assert self._checked
+        assert self._checked and isinstance(self._ifcond, list)
         return self._ifcond
 
     def is_implicit(self):
