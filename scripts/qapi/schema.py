@@ -378,14 +378,14 @@ class QAPISchemaObjectType(QAPISchemaType):
 
         seen = OrderedDict()
         if self._base_name:
-            self.base = schema.resolve_type(self._base_name, self.info,
-                                            "'base'")
-            if (not isinstance(self.base, QAPISchemaObjectType)
-                    or self.base.variants):
+            base = schema.resolve_type(self._base_name, self.info, "'base'")
+            if (not isinstance(base, QAPISchemaObjectType)
+                    or base.variants):
                 raise QAPISemError(
                     self.info,
                     "'base' requires a struct type, %s isn't"
-                    % self.base.describe())
+                    % base.describe())
+            self.base = base
             self.base.check(schema)
             self.base.check_clash(self.info, seen)
         for m in self.local_members:
