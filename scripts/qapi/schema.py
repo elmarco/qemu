@@ -176,8 +176,8 @@ class QAPISchemaInclude(QAPISchemaEntity):
 class QAPISchemaType(QAPISchemaEntity):
     # Return the C type for common use.
     # For the types we commonly box, this is a pointer type.
-    def c_type(self):
-        pass
+    def c_type(self) -> str:
+        raise NotImplementedError()
 
     # Return the C type to be used in a parameter list.
     def c_param_type(self):
@@ -187,8 +187,8 @@ class QAPISchemaType(QAPISchemaEntity):
     def c_unboxed_type(self):
         return self.c_type()
 
-    def json_type(self):
-        pass
+    def json_type(self) -> str:
+        raise NotImplementedError()
 
     def alternate_qtype(self):
         json2qtype = {
