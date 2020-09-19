@@ -39,6 +39,8 @@ from .source import QAPISourceInfo
 
 class Visitable:
     """Abstract duck that suggests a class is visitable."""
+    # pylint: disable=too-few-public-methods
+
     def visit(self, visitor: 'QAPISchemaVisitor') -> None:
         raise NotImplementedError
 
@@ -133,6 +135,7 @@ class QAPISchemaVisitor:
         pass
 
     def visit_needed(self, entity: QAPISchemaEntity) -> bool:
+        # pylint: disable=unused-argument, no-self-use
         # Default to visiting everything
         return True
 
