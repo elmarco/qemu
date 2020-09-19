@@ -546,15 +546,18 @@ class QAPISchemaVariants:
 
     def check(self, schema, seen):
         if not self.tag_member:  # flat union
-            self.tag_member = seen.get(c_name(self._tag_name))
+            tag_member = seen.get(c_name(self._tag_name))
             base = "'base'"
             # Pointing to the base type when not implicit would be
             # nice, but we don't know it here
-            if not self.tag_member or self._tag_name != self.tag_member.name:
+            if not tag_member or self._tag_name != tag_member.name:
                 raise QAPISemError(
                     self.info,
                     "discriminator '%s' is not a member of %s"
                     % (self._tag_name, base))
+
+            assert isinstance(tag_member, QAPISchemaObjectTypeMember)
+            self.tag_member = tag_member
             # Here we do:
             base_type = schema.lookup_type(self.tag_member.defined_in)
             assert base_type
