@@ -199,7 +199,7 @@ class QAPISchemaType(QAPISchemaEntity):
             'boolean': 'QTYPE_QBOOL',
             'object':  'QTYPE_QDICT'
         }
-        return json2qtype.get(self.json_type())
+        return json2qtype[self.json_type()]
 
     def doc_type(self):
         if self.is_implicit():
@@ -480,8 +480,9 @@ class QAPISchemaAlternateType(QAPISchemaType):
         types_seen = {}
         for v in self.variants.variants:
             v.check_clash(self.info, seen)
-            qtype = v.type.alternate_qtype()
-            if not qtype:
+            try:
+                qtype = v.type.alternate_qtype()
+            except KeyError:
                 raise QAPISemError(
                     self.info,
                     "%s cannot use %s"
