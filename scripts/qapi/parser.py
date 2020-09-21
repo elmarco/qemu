@@ -422,6 +422,8 @@ class QAPIDoc:
     """
 
     class Section:
+        # pylint: disable=too-few-public-methods
+
         def __init__(self, name: Optional[str] = None, indent: int = 0):
             # optional section name (argument/member or section name)
             self.name = name
