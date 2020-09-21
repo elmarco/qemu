@@ -139,15 +139,16 @@ class QAPISchemaParser:
     def _parse_error(self, msg: str) -> QAPIParseError:
         return QAPIParseError.make(self, msg)
 
-    @staticmethod
-    def reject_expr_doc(doc):
+    @classmethod
+    def reject_expr_doc(cls, doc):
         if doc and doc.symbol:
             raise QAPISemError(
                 doc.info,
                 "documentation for '%s' is not followed by the definition"
                 % doc.symbol)
 
-    def _include(self, include, info, incl_fname, previously_included):
+    @classmethod
+    def _include(cls, include, info, incl_fname, previously_included):
         incl_abs_fname = os.path.abspath(incl_fname)
         # catch inclusion cycle
         inf = info
@@ -162,7 +163,8 @@ class QAPISchemaParser:
 
         return QAPISchemaParser(incl_fname, previously_included, info)
 
-    def _pragma(self, name, value, info):
+    @classmethod
+    def _pragma(cls, name, value, info):
         if name == 'doc-required':
             if not isinstance(value, bool):
                 raise QAPISemError(info,
