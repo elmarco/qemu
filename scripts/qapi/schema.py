@@ -620,6 +620,7 @@ class QAPISchemaVariants:
         for v in self.variants:
             # Reset seen map for each variant, since qapi names from one
             # branch do not affect another branch
+            assert isinstance(v.type, QAPISchemaObjectType)
             v.type.check_clash(info, dict(seen))
 
 
