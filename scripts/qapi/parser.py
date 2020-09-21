@@ -60,7 +60,15 @@ class QAPIDocError(QAPIError):
 
 
 class QAPISchemaParser:
+    """
+    Performs parsing of a QAPI schema source file.
 
+    :param fname: Path to the source file
+    :param previously_included: Set of absolute paths of previously included
+                                source files; these will not be parsed again.
+    :param incl_info: QAPISourceInfo for the parent document;
+                      Can be None for the parent document.
+    """
     def __init__(self,
                  fname: str,
                  previously_included: Optional[Set[str]] = None,
@@ -96,6 +104,10 @@ class QAPISchemaParser:
         self._parse()
 
     def _parse(self) -> None:
+        """
+        Parse the QAPI Schema Document.
+        Build self.exprs, self.docs
+        """
         cur_doc = None
 
         # Prime the lexer:
@@ -215,6 +227,42 @@ class QAPISchemaParser:
             raise QAPISemError(info, "unknown pragma '%s'" % name)
 
     def accept(self, skip_comment: bool = True) -> None:
+        """Read the next lexeme.
+
+        :State:
+          :tok:    is the current lexeme/token type.
+          :pos:    is the position of the first character in the lexeme.
+          :cursor: is the position of the next character.
+          :val:    is the value of the lexeme (if any).
+
+        Single-character lexemes:
+
+        These include ``LBRACE``, ``RBRACE``, ``COLON``, ``COMMA``, ``LSQB``,
+        and ``RSQB``. ``tok`` holds the single-char representing the lexeme.
+        ``val`` is ``None``.
+
+        Multi-character lexemes:
+
+        ``COMMENT``:
+
+          - ``tok`` is ``'#'``.
+          - ``val`` is a string including all chars until end-of-line.
+
+        ``STRING``:
+
+          - ``tok`` is ``"'"``.
+          - ``value`` is the string, excluding the quotes.
+
+        ``TRUE`` and ``FALSE``:
+
+          - ``tok`` is either ``"t"`` or ``"f"`` accordingly.
+          - ``val`` is either ``True`` or ``False`` accordingly.
+
+        ``NEWLINE`` and ``SPACE``:
+          These are consumed by the lexer directly. ``line_pos`` and ``info``
+          are advanced when ``NEWLINE`` is encountered. ``tok`` is set to
+          ``None`` upon reaching EOF.
+        """
         while True:
             self.tok = self.src[self.cursor]
             self.pos = self.cursor
