@@ -46,28 +46,34 @@ class QAPIDocError(QAPIError):
 class QAPISchemaParser:
 
     def __init__(self, fname, previously_included=None, incl_info=None):
-        previously_included = previously_included or set()
-        previously_included.add(os.path.abspath(fname))
+        self._fname = fname
+        self._included = previously_included or set()
+        self._included.add(os.path.abspath(self._fname))
+
+        self.cursor = 0
+        self.info = QAPISourceInfo(self._fname, 1, incl_info)
+        self.line_pos = 0
+        self.exprs = []
+        self.docs = []
 
         try:
-            fp = open(fname, 'r', encoding='utf-8')
+            fp = open(self._fname, 'r', encoding='utf-8')
             self.src = fp.read()
         except IOError as e:
             raise QAPISemError(incl_info or QAPISourceInfo(None, None, None),
                                "can't read %s file '%s': %s"
                                % ("include" if incl_info else "schema",
-                                  fname,
+                                  self._fname,
                                   e.strerror))
+        self._parse()
 
+    def _parse(self):
+        cur_doc = None
+
+        # Prime the lexer:
         if self.src == '' or self.src[-1] != '\n':
             self.src += '\n'
-        self.cursor = 0
-        self.info = QAPISourceInfo(fname, 1, incl_info)
-        self.line_pos = 0
-        self.exprs = []
-        self.docs = []
         self.accept()
-        cur_doc = None
 
         while self.tok is not None:
             info = self.info
@@ -86,12 +92,12 @@ class QAPISchemaParser:
                 if not isinstance(include, str):
                     raise QAPISemError(info,
                                        "value of 'include' must be a string")
-                incl_fname = os.path.join(os.path.dirname(fname),
+                incl_fname = os.path.join(os.path.dirname(self._fname),
                                           include)
                 self.exprs.append({'expr': {'include': incl_fname},
                                    'info': info})
                 exprs_include = self._include(include, info, incl_fname,
-                                              previously_included)
+                                              self._included)
                 if exprs_include:
                     self.exprs.extend(exprs_include.exprs)
                     self.docs.extend(exprs_include.docs)
