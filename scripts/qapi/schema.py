@@ -766,7 +766,7 @@ class QAPISchemaCommand(QAPISchemaEntity):
                 self._ret_type_name, self.info, "command's 'returns'")
             if self.name not in self.info.pragma.returns_whitelist:
                 typ = self.ret_type
-                if isinstance(typ, QAPISchemaArrayType):
+                if isinstance(self.ret_type, QAPISchemaArrayType):
                     typ = self.ret_type.element_type
                     assert typ
                 if not isinstance(typ, QAPISchemaObjectType):
