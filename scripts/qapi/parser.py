@@ -256,6 +256,8 @@ class QAPISchemaParser:
             raise self._parse_error("expected string or '}'")
         while True:
             key = self.val
+            assert isinstance(key, str), f"expected str, got {type(key)!s}"
+
             self.accept()
             if self.tok != ':':
                 raise self._parse_error("expected ':'")
