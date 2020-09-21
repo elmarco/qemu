@@ -81,7 +81,7 @@ class QAPISchemaEntity(Visitable):
 
     def _set_module(self, schema, info):
         assert self._checked
-        self._module = schema.module_by_fname(info and info.fname)
+        self._module = schema.module_by_fname(info.fname if info else None)
         self._module.add_entity(self)
 
     def set_module(self, schema):
@@ -305,7 +305,7 @@ class QAPISchemaArrayType(QAPISchemaType):
         super().check(schema)
         self.element_type = schema.resolve_type(
             self._element_type_name, self.info,
-            self.info and self.info.defn_meta)
+            self.info.defn_meta if self.info else None)
         assert not isinstance(self.element_type, QAPISchemaArrayType)
 
     def set_module(self, schema):
