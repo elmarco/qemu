@@ -67,11 +67,13 @@ class QAPISchemaParser:
             with open(self._fname, 'r', encoding='utf-8') as fp:
                 self.src = fp.read()
         except IOError as e:
-            raise QAPISemError(incl_info or QAPISourceInfo(None),
-                               "can't read %s file '%s': %s"
-                               % ("include" if incl_info else "schema",
-                                  self._fname,
-                                  e.strerror))
+            msg = "can't read {kind:s} file '{fname:s}': {errmsg:s}".format(
+                kind='include' if incl_info else 'schema',
+                fname=self._fname,
+                errmsg=e.strerror
+            )
+            context = incl_info or self.info
+            raise QAPIParseError(context, msg) from e
         self._parse()
 
     def _parse(self):
