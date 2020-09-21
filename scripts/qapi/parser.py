@@ -94,6 +94,9 @@ class QAPISchemaParser:
                 continue
 
             expr = self.get_expr(False)
+            if not isinstance(expr, dict):
+                raise QAPISemError(info, "Expecting object statement")
+
             if 'include' in expr:
                 self.reject_expr_doc(cur_doc)
                 if len(expr) != 1:
