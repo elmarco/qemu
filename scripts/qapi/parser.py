@@ -487,8 +487,8 @@ class QAPIDoc:
     def end_comment(self):
         self._end_section()
 
-    @staticmethod
-    def _is_section_tag(name):
+    @classmethod
+    def _is_section_tag(cls, name):
         return name in ('Returns:', 'Since:',
                         # those are often singular or plural
                         'Note:', 'Notes:',
