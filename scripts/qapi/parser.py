@@ -312,6 +312,7 @@ class QAPISchemaParser:
         cur_doc = QAPIDoc(info)
         self.accept(False)
         while self.tok == '#':
+            assert isinstance(self.val, str), "Expected str value"
             if self.val.startswith('##'):
                 # End of doc comment
                 if self.val != '##':
