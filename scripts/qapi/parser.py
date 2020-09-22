@@ -17,6 +17,7 @@
 from collections import OrderedDict
 import os
 import re
+from typing import Type, TypeVar
 
 from .error import QAPIError, QAPISemError, QAPISourceError
 from .source import QAPISourceInfo
@@ -24,14 +25,18 @@ from .source import QAPISourceInfo
 
 class QAPIParseError(QAPISourceError):
     """Error class for all QAPI schema parsing errors."""
-    def __init__(self, parser, msg):
+
+    T = TypeVar('T', bound='QAPIParseError')
+
+    @classmethod
+    def make(cls: Type[T], parser: 'QAPISchemaParser', msg: str) -> T:
         col = 1
         for ch in parser.src[parser.line_pos:parser.pos]:
             if ch == '\t':
                 col = (col + 7) % 8 + 1
             else:
                 col += 1
-        super().__init__(parser.info, msg, col)
+        return cls(parser.info, msg, col)
 
 
 class QAPIDocError(QAPIError):
@@ -112,6 +117,9 @@ class QAPISchemaParser:
             cur_doc = None
         self.reject_expr_doc(cur_doc)
 
+    def _parse_error(self, msg: str) -> QAPIParseError:
+        return QAPIParseError.make(self, msg)
+
     @staticmethod
     def reject_expr_doc(doc):
         if doc and doc.symbol:
@@ -183,13 +191,12 @@ class QAPISchemaParser:
                     ch = self.src[self.cursor]
                     self.cursor += 1
                     if ch == '\n':
-                        raise QAPIParseError(self, "missing terminating \"'\"")
+                        raise self._parse_error("missing terminating \"'\"")
                     if esc:
                         # Note: we recognize only \\ because we have
                         # no use for funny characters in strings
                         if ch != '\\':
-                            raise QAPIParseError(self,
-                                                 "unknown escape \\%s" % ch)
+                            raise self._parse_error(f"unknown escape \\{ch}")
                         esc = False
                     elif ch == '\\':
                         esc = True
@@ -198,8 +205,7 @@ class QAPISchemaParser:
                         self.val = string
                         return
                     if ord(ch) < 32 or ord(ch) >= 127:
-                        raise QAPIParseError(
-                            self, "funny character in string")
+                        raise self._parse_error("funny character in string")
                     string += ch
             elif self.src.startswith('true', self.pos):
                 self.val = True
@@ -220,7 +226,7 @@ class QAPISchemaParser:
                 # character
                 match = re.match('[^[\\]{}:,\\s\'"]+',
                                  self.src[self.cursor-1:])
-                raise QAPIParseError(self, "stray '%s'" % match.group(0))
+                raise self._parse_error("stray '%s'" % match.group(0))
 
     def get_members(self):
         expr = OrderedDict()
@@ -228,24 +234,24 @@ class QAPISchemaParser:
             self.accept()
             return expr
         if self.tok != "'":
-            raise QAPIParseError(self, "expected string or '}'")
+            raise self._parse_error("expected string or '}'")
         while True:
             key = self.val
             self.accept()
             if self.tok != ':':
-                raise QAPIParseError(self, "expected ':'")
+                raise self._parse_error("expected ':'")
             self.accept()
             if key in expr:
-                raise QAPIParseError(self, "duplicate key '%s'" % key)
+                raise self._parse_error("duplicate key '%s'" % key)
             expr[key] = self.get_expr(True)
             if self.tok == '}':
                 self.accept()
                 return expr
             if self.tok != ',':
-                raise QAPIParseError(self, "expected ',' or '}'")
+                raise self._parse_error("expected ',' or '}'")
             self.accept()
             if self.tok != "'":
-                raise QAPIParseError(self, "expected string")
+                raise self._parse_error("expected string")
 
     def get_values(self):
         expr = []
@@ -253,20 +259,20 @@ class QAPISchemaParser:
             self.accept()
             return expr
         if self.tok not in "{['tfn":
-            raise QAPIParseError(
-                self, "expected '{', '[', ']', string, boolean or 'null'")
+            raise self._parse_error(
+                "expected '{', '[', ']', string, boolean or 'null'")
         while True:
             expr.append(self.get_expr(True))
             if self.tok == ']':
                 self.accept()
                 return expr
             if self.tok != ',':
-                raise QAPIParseError(self, "expected ',' or ']'")
+                raise self._parse_error("expected ',' or ']'")
             self.accept()
 
     def get_expr(self, nested):
         if self.tok != '{' and not nested:
-            raise QAPIParseError(self, "expected '{'")
+            raise self._parse_error("expected '{'")
         if self.tok == '{':
             self.accept()
             expr = self.get_members()
@@ -277,14 +283,14 @@ class QAPISchemaParser:
             expr = self.val
             self.accept()
         else:
-            raise QAPIParseError(
-                self, "expected '{', '[', string, boolean or 'null'")
+            raise self._parse_error(
+                "expected '{', '[', string, boolean or 'null'")
         return expr
 
     def _get_doc(self, info):
         if self.val != '##':
-            raise QAPIParseError(
-                self, "junk after '##' at start of documentation comment")
+            raise self._parse_error(
+                "junk after '##' at start of documentation comment")
 
         docs = []
         cur_doc = QAPIDoc(info)
@@ -293,8 +299,7 @@ class QAPISchemaParser:
             if self.val.startswith('##'):
                 # End of doc comment
                 if self.val != '##':
-                    raise QAPIParseError(
-                        self,
+                    raise self._parse_error(
                         "junk after '##' at end of documentation comment")
                 cur_doc.end_comment()
                 docs.append(cur_doc)
@@ -302,8 +307,7 @@ class QAPISchemaParser:
                 return docs
             if self.val.startswith('# ='):
                 if cur_doc.symbol:
-                    raise QAPIParseError(
-                        self,
+                    raise self._parse_error(
                         "unexpected '=' markup in definition documentation")
                 if cur_doc.body.text:
                     cur_doc.end_comment()
@@ -312,7 +316,7 @@ class QAPISchemaParser:
             cur_doc.append(self.val)
             self.accept(False)
 
-        raise QAPIParseError(self, "documentation comment must end with '##'")
+        raise self._parse_error("documentation comment must end with '##'")
 
     def get_doc(self, info):
         try:
@@ -322,7 +326,7 @@ class QAPISchemaParser:
             # resulting error position depends on the state of the
             # parser. It happens to be the beginning of the comment.
             # More or less servicable, but action at a distance.
-            raise QAPIParseError(self, str(err)) from err
+            raise self._parse_error(str(err)) from err
 
 
 class QAPIDoc:
