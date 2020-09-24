@@ -6,3 +6,6 @@ mod qemu;
 mod qemu_sys;
 mod qmp;
 mod translate;
+
+#[cfg(feature = "dbus")]
+mod qapi_dbus;
