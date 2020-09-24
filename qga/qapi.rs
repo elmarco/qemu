@@ -2,6 +2,16 @@
 use std::convert::{TryFrom, TryInto};
 use std::{ptr, str};
 
+#[cfg(feature = "dbus")]
+use serde::{Deserialize, Serialize};
+#[cfg(feature = "dbus")]
+use zvariant::OwnedValue;
+#[cfg(feature = "dbus")]
+use zvariant_derive::{
+    DeserializeDict, DeserializeValue, SerializeDict, SerializeValue, Type, TypeDict,
+    TypeValue,
+};
+
 use crate::translate::*;
 
 use crate::qapi_sys;
@@ -33,6 +43,33 @@ impl From<&GuestFileWhence> for qapi_sys::GuestFileWhence {
                 u: qapi_sys::GuestFileWhenceUnion { value },
             },
         }
+    }
+}
+
+#[cfg(feature = "dbus")]
+impl From<GuestFileWhence> for OwnedValue {
+    fn from(_w: GuestFileWhence) -> Self {
+        unimplemented!()
+    }
+}
+
+#[cfg(feature = "dbus")]
+impl TryFrom<OwnedValue> for GuestFileWhence {
+    type Error = &'static str;
+
+    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+        if let Ok(val) = (&value).try_into() {
+            return Ok(Self::Name(match val {
+                "set" => QGASeek::Set,
+                "cur" => QGASeek::Cur,
+                "end" => QGASeek::End,
+                _ => return Err("Invalid seek value"),
+            }));
+        }
+        if let Ok(val) = value.try_into() {
+            return Ok(Self::Value(val));
+        };
+        Err("Invalid whence")
     }
 }
 

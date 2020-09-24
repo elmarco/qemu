@@ -12,6 +12,7 @@ objects_seen = set()
 def gen_rs_variants(name, variants):
     ret = mcgen('''
 
+#[cfg_attr(feature = "dbus", derive(SerializeValue, DeserializeValue, TypeValue))]
 #[derive(Clone,Debug)]
 pub enum %(rs_name)sEnum {
 ''', rs_name=rs_name(name))
@@ -106,10 +107,14 @@ impl<'a> translate::ToQemuPtr<'a, *mut std::ffi::c_void> for %(rs_name)sEnum {
     return ret
 
 
-def gen_struct_members(members):
+def gen_struct_members(members, serde):
     ret = ''
     for memb in members:
         rsname = rs_name(memb.name)
+        if rsname != memb.name:
+            ret += mcgen('''
+   #[cfg_attr(feature = "dbus", %(serde)s(rename = "%(name)s"))]
+''', serde=serde, name=memb.name)
         ret += mcgen('''
     pub %(rs_name)s: %(rs_type)s,
 ''',
@@ -134,12 +139,19 @@ def gen_rs_object(name, ifcond, base, members, variants):
     if variants:
         ret += gen_rs_variants(name, variants)
 
+    derive = 'Serialize, Deserialize, Type'
+    serde = 'serde'
+    if has_options:
+        derive = 'SerializeDict, DeserializeDict, TypeDict'
+        serde = 'zvariant'
+
     ret += mcgen('''
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "dbus", derive(%(derive)s))]
 pub struct %(rs_name)s {
 ''',
-                 rs_name=rs_name(name))
+                 rs_name=rs_name(name), derive=derive)
 
     memb_names = []
     if base:
@@ -148,14 +160,14 @@ pub struct %(rs_name)s {
     // Members inherited:
 ''',
                          c_name=base.c_name())
-        ret += gen_struct_members(base.members)
+        ret += gen_struct_members(base.members, serde)
         memb_names.extend([rs_name(memb.name) for memb in base.members])
         if not base.is_implicit():
             ret += mcgen('''
     // Own members:
 ''')
 
-    ret += gen_struct_members(members)
+    ret += gen_struct_members(members, serde)
     memb_names.extend([rs_name(memb.name) for memb in members])
 
     if variants:
@@ -335,7 +347,16 @@ def gen_rs_variant(name, ifcond, variants):
 
     ret += mcgen('''
 
+// Implement manual Value conversion (other option via some zbus macros?)
+#[cfg(feature = "dbus")]
+impl zvariant::Type for %(rs_name)s {
+    fn signature() -> zvariant::Signature<'static> {
+        zvariant::Value::signature()
+    }
+}
+
 #[derive(Clone,Debug)]
+#[cfg_attr(feature = "dbus", derive(Deserialize, Serialize), serde(into = "zvariant::OwnedValue", try_from = "zvariant::OwnedValue"))]
 pub enum %(rs_name)s {
 ''',
                  rs_name=rs_name(name))
