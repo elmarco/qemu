@@ -3,8 +3,17 @@ name = "qga"
 version = "0.1.0"
 edition = "2018"
 
+[features]
+default = ["dbus"]
+dbus = ["serde", "serde_repr", "zbus", "zvariant", "zvariant_derive"]
+
 [dependencies]
 libc = "^0.2.76"
+serde = { version = "^1.0.115", optional = true }
+serde_repr = { version = "0.1.6", optional = true }
+zbus = { path = "../../zbus/zbus", optional = true }
+zvariant = { path = "../../zbus/zvariant", optional = true }
+zvariant_derive = { path = "../../zbus/zvariant_derive", optional = true }
 
 [lib]
 name = "qga"
