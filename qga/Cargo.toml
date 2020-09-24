@@ -14,6 +14,7 @@ serde_repr = { version = "0.1.6", optional = true }
 zbus = { path = "../../zbus/zbus", optional = true }
 zvariant = { path = "../../zbus/zvariant", optional = true }
 zvariant_derive = { path = "../../zbus/zvariant_derive", optional = true }
+hostname = "0.3.1"
 
 [lib]
 name = "qga"
