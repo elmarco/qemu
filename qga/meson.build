@@ -51,6 +51,7 @@ if cargo.found()
   qga_qapi_rs_outputs = [
     'qga-qapi-types.rs',
     'qga-qapi-sys-types.rs',
+    'qga-qapi-dbus.rs',
   ]
 
   qapi_gen_rs_files = custom_target('QGA QAPI Rust files',
