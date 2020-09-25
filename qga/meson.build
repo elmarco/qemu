@@ -46,9 +46,28 @@ qga_ss.add(when: 'CONFIG_WIN32', if_true: files(
 
 qga_ss = qga_ss.apply(config_host, strict: false)
 
+qga_rs = declare_dependency()
+if cargo.found()
+  cargo_qga = custom_target('cargo-qga',
+                            build_by_default: true,
+                            output: ['libqga.a'],
+                            console: true,
+                            build_always_stale: true,
+                            command: [cargo_wrapper,
+                                      'build',
+                                      meson.current_build_dir(),
+                                      meson.current_source_dir(),
+                                      meson.build_root(),
+                                      rs_target,
+                                      rs_target_triple])
+
+  link_args = [meson.current_build_dir() / 'libqga.a']
+  qga_rs = declare_dependency(link_args: link_args, sources: cargo_qga)
+endif
+
 qga = executable('qemu-ga', qga_ss.sources(),
                  link_args: config_host['LIBS_QGA'].split(),
-                 dependencies: [qemuutil, libudev],
+                 dependencies: [qemuutil, libudev, qga_rs],
                  install: true)
 all_qga = [qga]
 

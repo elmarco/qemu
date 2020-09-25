@@ -45,6 +45,20 @@ configure_file(input: files('scripts/ninjatool.py'),
                output: 'ninjatool',
                configuration: config_host)
 
+cargo = find_program('cargo', required: get_option('with-rust'))
+cargo_wrapper = find_program('scripts/cargo_wrapper.py', required: true)
+
+if get_option('debug')
+  rs_target = 'debug'
+else
+  rs_target = 'release'
+endif
+
+rs_target_triple = ''
+if targetos == 'windows'
+  rs_target_triple = target_machine.cpu() + '-pc-windows-gnu'
+endif
+
 ##################
 # Compiler flags #
 ##################
