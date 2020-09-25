@@ -49,6 +49,7 @@ qga_ss = qga_ss.apply(config_host, strict: false)
 qga_rs = declare_dependency()
 if cargo.found()
   qga_qapi_rs_outputs = [
+    'qga-qapi-types.rs',
     'qga-qapi-sys-types.rs',
   ]
 

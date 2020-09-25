@@ -18,6 +18,7 @@ from qapi.types import gen_types
 from qapi.visit import gen_visit
 
 from qapi.rs_sys import gen_rs_systypes
+from qapi.rs_types import gen_rs_types
 
 def main(argv):
     parser = argparse.ArgumentParser(
@@ -51,6 +52,7 @@ def main(argv):
 
     if args.rust:
         gen_rs_systypes(schema, args.output_dir, args.prefix, args.builtins)
+        gen_rs_types(schema, args.output_dir, args.prefix, args.builtins)
     else:
         gen_types(schema, args.output_dir, args.prefix, args.builtins)
         gen_visit(schema, args.output_dir, args.prefix, args.builtins)
