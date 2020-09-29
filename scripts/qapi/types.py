@@ -48,6 +48,13 @@ const QEnumLookup %(c_name)s_lookup = {
     return ret
 
 
+def gen_enum_member(c_enum, prefix=''):
+    return mcgen('''
+    %(prefix)s%(c_enum)s,
+''',
+                 c_enum=c_enum, prefix=prefix)
+
+
 def gen_enum(name, members, prefix=None):
     # append automatically generated _MAX value
     enum_members = members + [QAPISchemaEnumMember('_MAX', None)]
@@ -59,11 +66,12 @@ typedef enum %(c_name)s {
                 c_name=c_name(name))
 
     for m in enum_members:
+        c_enum = c_enum_const(name, m.name, prefix)
         ret += gen_if(m.ifcond)
-        ret += mcgen('''
-    %(c_enum)s,
-''',
-                     c_enum=c_enum_const(name, m.name, prefix))
+        ret += gen_enum_member(c_enum)
+        if m.ifcond:
+            ret += gen_else()
+            ret += gen_enum_member(c_enum, '__')
         ret += gen_endif(m.ifcond)
 
     ret += mcgen('''

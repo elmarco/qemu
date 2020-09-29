@@ -162,6 +162,12 @@ def gen_if(ifcond):
     return ret
 
 
+def gen_else():
+    return mcgen('''
+#else
+''')
+
+
 def gen_endif(ifcond):
     ret = ''
     for ifc in reversed(ifcond):
