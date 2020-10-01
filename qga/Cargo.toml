@@ -3,6 +3,10 @@ name = "qga"
 version = "0.1.0"
 edition = "2018"
 
+[dependencies]
+common = { path = "../rust/common" }
+libc = "^0.2.76"
+
 [lib]
 path = "lib.rs"
 crate-type = ["staticlib"]
