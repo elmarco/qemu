@@ -99,6 +99,7 @@ if with_rust
       error('cross-compiling, but no Rust target-triple defined.')
     endif
   endif
+  subdir('.cargo')
 endif
 
 if get_option('optimization') in ['0', '1', 'g']
