@@ -882,6 +882,7 @@ static void test_qga_guest_get_host_name(gconstpointer fix)
 
 static void test_qga_guest_get_timezone(gconstpointer fix)
 {
+#if CONFIG_WITH_RUST
     const TestFixture *fixture = fix;
     QDict *ret, *val;
 
@@ -894,6 +895,7 @@ static void test_qga_guest_get_timezone(gconstpointer fix)
     g_assert(qdict_haskey(val, "offset"));
 
     qobject_unref(ret);
+#endif
 }
 
 static void test_qga_guest_get_users(gconstpointer fix)

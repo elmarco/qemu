@@ -75,3 +75,10 @@ extern "C" fn qmp_guest_set_vcpus(
     let vcpus = unsafe { from_qemu_none(qapi::NewPtr(vcpus)) };
     qmp!(vcpus::set(vcpus), errp, -1)
 }
+
+mod datetime;
+
+#[no_mangle]
+extern "C" fn qmp_guest_get_timezone(errp: *mut *mut sys::Error) -> *mut qapi_sys::GuestTimezone {
+    qmp!(datetime::get_timezone(), errp)
+}

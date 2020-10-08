@@ -520,40 +520,13 @@ GuestHostName *qmp_guest_get_host_name(Error **errp)
     error_setg(errp, QERR_UNSUPPORTED);
     return NULL;
 }
-#endif
 
 GuestTimezone *qmp_guest_get_timezone(Error **errp)
 {
-    GuestTimezone *info = NULL;
-    GTimeZone *tz = NULL;
-    gint64 now = 0;
-    gint32 intv = 0;
-    gchar const *name = NULL;
-
-    info = g_new0(GuestTimezone, 1);
-    tz = g_time_zone_new_local();
-    if (tz == NULL) {
-        error_setg(errp, QERR_QGA_COMMAND_FAILED,
-                   "Couldn't retrieve local timezone");
-        goto error;
-    }
-
-    now = g_get_real_time() / G_USEC_PER_SEC;
-    intv = g_time_zone_find_interval(tz, G_TIME_TYPE_UNIVERSAL, now);
-    info->offset = g_time_zone_get_offset(tz, intv);
-    name = g_time_zone_get_abbreviation(tz, intv);
-    if (name != NULL) {
-        info->has_zone = true;
-        info->zone = g_strdup(name);
-    }
-    g_time_zone_unref(tz);
-
-    return info;
-
-error:
-    g_free(info);
+    error_setg(errp, QERR_UNSUPPORTED);
     return NULL;
 }
+#endif
 
 GuestFileRead *qmp_guest_file_read(int64_t handle, bool has_count,
                                    int64_t count, Error **errp)
