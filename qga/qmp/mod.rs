@@ -1,4 +1,4 @@
-use common::*;
+use common::{sys, *};
 
 use crate::*;
 
@@ -33,4 +33,20 @@ macro_rules! qmp {
             },
         }
     }};
+}
+
+#[no_mangle]
+extern "C" fn qmp_guest_sync_delimited(id: i64, _errp: *mut *mut sys::Error) -> i64 {
+    set_response_delimited();
+    id
+}
+
+#[no_mangle]
+extern "C" fn qmp_guest_sync(id: i64, _errp: *mut *mut sys::Error) -> i64 {
+    id
+}
+
+#[no_mangle]
+extern "C" fn qmp_guest_ping(_errp: *mut *mut sys::Error) {
+    slog("guest-ping called");
 }

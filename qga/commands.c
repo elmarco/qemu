@@ -46,6 +46,7 @@ void slog(const gchar *fmt, ...)
     va_end(ap);
 }
 
+#ifndef CONFIG_WITH_RUST
 int64_t qmp_guest_sync_delimited(int64_t id, Error **errp)
 {
     ga_set_response_delimited(ga_state);
@@ -61,6 +62,7 @@ void qmp_guest_ping(Error **errp)
 {
     slog("guest-ping called");
 }
+#endif
 
 static void qmp_command_info(const QmpCommand *cmd, void *opaque)
 {

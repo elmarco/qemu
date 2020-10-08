@@ -12,8 +12,19 @@ pub(crate) fn slog(msg: &str) {
     }
 }
 
+pub(crate) fn set_response_delimited() {
+    unsafe { sys::ga_set_response_delimited(sys::ga_state) }
+}
+
 mod sys {
+    #[repr(C)]
+    pub struct GAState(libc::c_void);
+
     extern "C" {
+        pub static ga_state: *mut GAState;
+
+        pub fn ga_set_response_delimited(s: *mut GAState);
+
         pub fn slog(format: *const libc::c_char, ...);
     }
 }
