@@ -62,6 +62,12 @@ void qmp_guest_ping(Error **errp)
 {
     slog("guest-ping called");
 }
+
+int64_t qmp_guest_get_time(Error **errp)
+{
+    error_setg(errp, QERR_UNSUPPORTED);
+    return -1;
+}
 #endif
 
 static void qmp_command_info(const QmpCommand *cmd, void *opaque)

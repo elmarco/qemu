@@ -79,6 +79,11 @@ extern "C" fn qmp_guest_set_vcpus(
 mod datetime;
 
 #[no_mangle]
+extern "C" fn qmp_guest_get_time(errp: *mut *mut sys::Error) -> i64 {
+    qmp!(datetime::get_time(), errp, -1)
+}
+
+#[no_mangle]
 extern "C" fn qmp_guest_get_timezone(errp: *mut *mut sys::Error) -> *mut qapi_sys::GuestTimezone {
     qmp!(datetime::get_timezone(), errp)
 }
