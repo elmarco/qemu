@@ -13,7 +13,7 @@ chrono = "0.4.19"
 nix = "^0.18.0"
 
 [target."cfg(windows)".dependencies]
-winapi = { version = "^0.3.9", features = ["sysinfoapi", "winnt"] }
+winapi = { version = "^0.3.9", features = ["handleapi", "processthreadsapi", "securitybaseapi", "sysinfoapi", "winbase", "winnt"] }
 
 [lib]
 path = "lib.rs"

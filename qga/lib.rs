@@ -6,6 +6,9 @@ mod qapi;
 mod qapi_sys;
 mod qmp;
 
+#[cfg(windows)]
+pub mod win32;
+
 pub(crate) fn slog(msg: &str) {
     if let Ok(cs) = CString::new(msg) {
         unsafe {
