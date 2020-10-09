@@ -12,8 +12,18 @@ chrono = "0.4.19"
 [target."cfg(unix)".dependencies]
 nix = "^0.18.0"
 
-[target."cfg(windows)".dependencies]
-winapi = { version = "^0.3.9", features = ["handleapi", "processthreadsapi", "securitybaseapi", "sysinfoapi", "winbase", "winnt"] }
+[target."cfg(windows)".dependencies.winapi]
+version = "^0.3.9"
+features = [
+    "handleapi",
+    "processthreadsapi",
+    "securitybaseapi",
+    "sysinfoapi",
+    "timezoneapi",
+    "winbase",
+    "wininet",
+    "winnt",
+  ]
 
 [lib]
 path = "lib.rs"

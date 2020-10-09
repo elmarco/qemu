@@ -84,6 +84,12 @@ extern "C" fn qmp_guest_get_time(errp: *mut *mut sys::Error) -> i64 {
 }
 
 #[no_mangle]
+extern "C" fn qmp_guest_set_time(has_time: bool, time_ns: i64, errp: *mut *mut sys::Error) {
+    let time_ns = if has_time { Some(time_ns) } else { None };
+    qmp!(datetime::set_time(time_ns), errp, ())
+}
+
+#[no_mangle]
 extern "C" fn qmp_guest_get_timezone(errp: *mut *mut sys::Error) -> *mut qapi_sys::GuestTimezone {
     qmp!(datetime::get_timezone(), errp)
 }

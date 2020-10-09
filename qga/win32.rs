@@ -1,11 +1,17 @@
 use std::os::windows::ffi::OsStrExt;
+use winapi::shared::minwindef::*;
 use winapi::um::handleapi::CloseHandle;
+use winapi::um::minwinbase::*;
 use winapi::um::processthreadsapi::{GetCurrentProcess, OpenProcessToken};
 use winapi::um::securitybaseapi::AdjustTokenPrivileges;
 use winapi::um::winbase::LookupPrivilegeValueW;
 use winapi::um::winnt;
 
 use crate::*;
+
+const NANOS_PER_SEC: u64 = 1_000_000_000;
+const INTERVALS_PER_SEC: u64 = NANOS_PER_SEC / 100;
+const INTERVALS_TO_UNIX_EPOCH: u64 = 11_644_473_600 * INTERVALS_PER_SEC;
 
 pub(crate) fn acquire_privilege(name: &str) -> Result<()> {
     let mut token = std::ptr::null_mut();
@@ -55,4 +61,26 @@ pub(crate) fn acquire_privilege(name: &str) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub(crate) fn unix_time_to_file_time(time_ns: u64) -> Result<FILETIME> {
+    if let Some(inter) = INTERVALS_TO_UNIX_EPOCH.checked_add(time_ns / 100) {
+        Ok(FILETIME {
+            dwLowDateTime: inter as u32,
+            dwHighDateTime: (inter >> 32) as u32,
+        })
+    } else {
+        err!("Failed to convert UNIX time to FILETIME")
+    }
+}
+
+pub(crate) fn unix_time_to_system_time(time_ns: u64) -> Result<SYSTEMTIME> {
+    let ft = unix_time_to_file_time(time_ns)?;
+
+    let mut st: SYSTEMTIME = unsafe { std::mem::zeroed() };
+    if unsafe { winapi::um::timezoneapi::FileTimeToSystemTime(&ft, &mut st) } == 0 {
+        return err!("Failed to convert UNIX time to SYSTEMTIME");
+    };
+
+    Ok(st)
 }

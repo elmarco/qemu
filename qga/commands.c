@@ -68,6 +68,11 @@ int64_t qmp_guest_get_time(Error **errp)
     error_setg(errp, QERR_UNSUPPORTED);
     return -1;
 }
+
+void qmp_guest_set_time(bool has_time, int64_t time_ns, Error **errp)
+{
+    error_setg(errp, QERR_UNSUPPORTED);
+}
 #endif
 
 static void qmp_command_info(const QmpCommand *cmd, void *opaque)
