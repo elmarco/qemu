@@ -14,7 +14,7 @@ See the COPYING file in the top-level directory.
 
 from typing import List
 
-from .common import c_enum_const, c_name, mcgen
+from .common import IfCond, c_enum_const, c_name, mcgen
 from .gen import QAPISchemaModularCVisitor, build_params, ifcontext
 from .schema import (
     QAPISchema,
@@ -212,7 +212,7 @@ void %(event_emit)s(%(event_enum)s event, QDict *qdict);
     def visit_event(self,
                     name: str,
                     info: QAPISourceInfo,
-                    ifcond: List[str],
+                    ifcond: IfCond,
                     features: List[QAPISchemaFeature],
                     arg_type: QAPISchemaObjectType,
                     boxed: bool) -> None:

@@ -20,7 +20,7 @@ from typing import (
     Set,
 )
 
-from .common import c_name, mcgen
+from .common import IfCond, c_name, mcgen
 from .gen import (
     QAPIGenC,
     QAPIGenCCode,
@@ -301,7 +301,7 @@ void %(c_prefix)sqmp_init_marshal(QmpCommandList *cmds);
     def visit_command(self,
                       name: str,
                       info: QAPISourceInfo,
-                      ifcond: List[str],
+                      ifcond: IfCond,
                       features: List[QAPISchemaFeature],
                       arg_type: Optional[QAPISchemaObjectType],
                       ret_type: Optional[QAPISchemaType],

@@ -12,7 +12,7 @@
 # See the COPYING file in the top-level directory.
 
 import re
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 
 #: Magic string that gets removed along with all space to its right.
@@ -194,18 +194,34 @@ def guardend(name: str) -> str:
                  name=c_fname(name).upper())
 
 
-def gen_if(ifcond: Sequence[str]) -> str:
+class IfCond:
+    def __init__(self, ifcond: Optional[Sequence[str]] = None):
+        self.ifcond = ifcond or []
+
+    def __bool__(self) -> bool:
+        return bool(self.ifcond)
+
+    def __repr__(self) -> str:
+        return repr(self.ifcond)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, IfCond):
+            return NotImplemented
+        return self.ifcond == other.ifcond
+
+
+def gen_if(c: IfCond) -> str:
     ret = ''
-    for ifc in ifcond:
+    for ifc in c.ifcond:
         ret += mcgen('''
 #if %(cond)s
 ''', cond=ifc)
     return ret
 
 
-def gen_endif(ifcond: Sequence[str]) -> str:
+def gen_endif(c: IfCond) -> str:
     ret = ''
-    for ifc in reversed(ifcond):
+    for ifc in reversed(c.ifcond):
         ret += mcgen('''
 #endif /* %(cond)s */
 ''', cond=ifc)

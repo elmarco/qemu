@@ -24,6 +24,7 @@ from typing import (
 )
 
 from .common import (
+    IfCond,
     c_name,
     gen_endif,
     gen_if,
@@ -81,11 +82,11 @@ class Annotated(Generic[_AnnoType]):
     """
     # Remove after 3.7 adds @dataclass:
     # pylint: disable=too-few-public-methods
-    def __init__(self, value: _AnnoType, ifcond: Iterable[str],
+    def __init__(self, value: _AnnoType, ifcond: IfCond,
                  comment: Optional[str] = None):
         self.value = value
         self.comment: Optional[str] = comment
-        self.ifcond: Sequence[str] = tuple(ifcond)
+        self.ifcond = ifcond
 
 
 def _tree_to_qlit(obj: TreeValue, level: int = 0,
@@ -220,7 +221,7 @@ const QLitObject %(c_name)s = %(c_string)s;
         return [Annotated(f.name, f.ifcond) for f in features]
 
     def _gen_tree(self, name: str, mtype: str, obj: _DObject,
-                  ifcond: List[str],
+                  ifcond: IfCond,
                   features: Optional[List[QAPISchemaFeature]]) -> None:
         comment: Optional[str] = None
         if mtype not in ('command', 'event', 'builtin', 'array'):
@@ -261,10 +262,10 @@ const QLitObject %(c_name)s = %(c_string)s;
 
     def visit_builtin_type(self, name: str, info: Optional[QAPISourceInfo],
                            json_type: str) -> None:
-        self._gen_tree(name, 'builtin', {'json-type': json_type}, [], None)
+        self._gen_tree(name, 'builtin', {'json-type': json_type}, IfCond(), None)
 
     def visit_enum_type(self, name: str, info: QAPISourceInfo,
-                        ifcond: List[str], features: List[QAPISchemaFeature],
+                        ifcond: IfCond, features: List[QAPISchemaFeature],
                         members: List[QAPISchemaEnumMember],
                         prefix: Optional[str]) -> None:
         self._gen_tree(
@@ -274,14 +275,14 @@ const QLitObject %(c_name)s = %(c_string)s;
         )
 
     def visit_array_type(self, name: str, info: Optional[QAPISourceInfo],
-                         ifcond: List[str],
+                         ifcond: IfCond,
                          element_type: QAPISchemaType) -> None:
         element = self._use_type(element_type)
         self._gen_tree('[' + element + ']', 'array', {'element-type': element},
                        ifcond, None)
 
     def visit_object_type_flat(self, name: str, info: Optional[QAPISourceInfo],
-                               ifcond: List[str],
+                               ifcond: IfCond,
                                features: List[QAPISchemaFeature],
                                members: Sequence[QAPISchemaObjectTypeMember],
                                variants: Optional[QAPISchemaVariants]) -> None:
@@ -293,7 +294,7 @@ const QLitObject %(c_name)s = %(c_string)s;
         self._gen_tree(name, 'object', obj, ifcond, features)
 
     def visit_alternate_type(self, name: str, info: QAPISourceInfo,
-                             ifcond: List[str],
+                             ifcond: IfCond,
                              features: List[QAPISchemaFeature],
                              variants: QAPISchemaVariants) -> None:
         self._gen_tree(
@@ -303,7 +304,7 @@ const QLitObject %(c_name)s = %(c_string)s;
             ifcond, features
         )
 
-    def visit_command(self, name: str, info: QAPISourceInfo, ifcond: List[str],
+    def visit_command(self, name: str, info: QAPISourceInfo, ifcond: IfCond,
                       features: List[QAPISchemaFeature],
                       arg_type: QAPISchemaObjectType,
                       ret_type: Optional[QAPISchemaType], gen: bool,
@@ -320,7 +321,7 @@ const QLitObject %(c_name)s = %(c_string)s;
         self._gen_tree(name, 'command', obj, ifcond, features)
 
     def visit_event(self, name: str, info: QAPISourceInfo,
-                    ifcond: List[str], features: List[QAPISchemaFeature],
+                    ifcond: IfCond, features: List[QAPISchemaFeature],
                     arg_type: QAPISchemaObjectType, boxed: bool) -> None:
         arg_type = arg_type or self._schema.the_empty_object_type
         self._gen_tree(name, 'event', {'arg-type': self._use_type(arg_type)},
