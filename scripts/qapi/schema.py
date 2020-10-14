@@ -62,7 +62,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    Sequence,
     Type,
     TypeVar,
     Union,
@@ -72,8 +71,7 @@ from typing import (
 
 from .common import (
     POINTER_SUFFIX,
-    IfAll,
-    IfOption,
+    IfPredicate,
     c_name,
     mcgen,
 )
@@ -92,9 +90,8 @@ class Visitable:
 
 
 class QAPISchemaIf:
-    def __init__(self, ifcond: Optional[Sequence[str]] = None):
-        pred_list = [IfOption(opt) for opt in ifcond or []]
-        self.pred = IfAll(pred_list)
+    def __init__(self, pred: Optional[IfPredicate] = None):
+        self.pred = pred
 
     def __bool__(self) -> bool:
         return bool(self.pred)
