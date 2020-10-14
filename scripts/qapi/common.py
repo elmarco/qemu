@@ -246,6 +246,25 @@ class IfAny(IfPredicateList):
     C_OP = "||"
 
 
+class IfNot(IfPredicate):
+    def __init__(self, pred: IfPredicate):
+        self.pred = pred
+
+    def cgen(self) -> str:
+        return "!" + self.pred.cgen()
+
+    def __bool__(self) -> bool:
+        return bool(self.pred)
+
+    def __repr__(self) -> str:
+        return f"IfNot({self.pred!r})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.pred == other.pred
+
+
 class IfCond:
     def __init__(self, ifcond: Optional[Sequence[str]] = None):
         pred_list = [IfOption(opt) for opt in ifcond or []]
