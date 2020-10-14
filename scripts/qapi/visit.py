@@ -29,6 +29,7 @@ from .schema import (
     QAPISchemaEnumMember,
     QAPISchemaEnumType,
     QAPISchemaFeature,
+    QAPISchemaIf,
     QAPISchemaObjectType,
     QAPISchemaObjectTypeMember,
     QAPISchemaType,
@@ -77,7 +78,7 @@ bool visit_type_%(c_name)s_members(Visitor *v, %(c_name)s *obj, Error **errp)
                      c_type=base.c_name())
 
     for memb in members:
-        ret += gen_if(memb.ifcond)
+        ret += gen_if(memb.ifcond.ifcond)
         if memb.optional:
             ret += mcgen('''
     if (visit_optional(v, "%(name)s", &obj->has_%(c_name)s)) {
@@ -96,7 +97,7 @@ bool visit_type_%(c_name)s_members(Visitor *v, %(c_name)s *obj, Error **errp)
             ret += mcgen('''
     }
 ''')
-        ret += gen_endif(memb.ifcond)
+        ret += gen_endif(memb.ifcond.ifcond)
 
     if variants:
         tag_member = variants.tag_member
@@ -110,7 +111,7 @@ bool visit_type_%(c_name)s_members(Visitor *v, %(c_name)s *obj, Error **errp)
         for var in variants.variants:
             case_str = c_enum_const(tag_member.type.name, var.name,
                                     tag_member.type.prefix)
-            ret += gen_if(var.ifcond)
+            ret += gen_if(var.ifcond.ifcond)
             if var.type.name == 'q_empty':
                 # valid variant and nothing to do
                 ret += mcgen('''
@@ -126,7 +127,7 @@ bool visit_type_%(c_name)s_members(Visitor *v, %(c_name)s *obj, Error **errp)
                              case=case_str,
                              c_type=var.type.c_name(), c_name=c_name(var.name))
 
-            ret += gen_endif(var.ifcond)
+            ret += gen_endif(var.ifcond.ifcond)
         ret += mcgen('''
     default:
         abort();
@@ -212,7 +213,7 @@ bool visit_type_%(c_name)s(Visitor *v, const char *name,
                 c_name=c_name(name))
 
     for var in variants.variants:
-        ret += gen_if(var.ifcond)
+        ret += gen_if(var.ifcond.ifcond)
         ret += mcgen('''
     case %(case)s:
 ''',
@@ -238,7 +239,7 @@ bool visit_type_%(c_name)s(Visitor *v, const char *name,
         ret += mcgen('''
         break;
 ''')
-        ret += gen_endif(var.ifcond)
+        ret += gen_endif(var.ifcond.ifcond)
 
     ret += mcgen('''
     case QTYPE_NONE:
@@ -337,7 +338,7 @@ class QAPISchemaGenVisitVisitor(QAPISchemaModularCVisitor):
     def visit_enum_type(self,
                         name: str,
                         info: QAPISourceInfo,
-                        ifcond: List[str],
+                        ifcond: QAPISchemaIf,
                         features: List[QAPISchemaFeature],
                         members: List[QAPISchemaEnumMember],
                         prefix: Optional[str]) -> None:
@@ -348,7 +349,7 @@ class QAPISchemaGenVisitVisitor(QAPISchemaModularCVisitor):
     def visit_array_type(self,
                          name: str,
                          info: Optional[QAPISourceInfo],
-                         ifcond: List[str],
+                         ifcond: QAPISchemaIf,
                          element_type: QAPISchemaType) -> None:
         with ifcontext(ifcond, self._genh, self._genc):
             self._genh.add(gen_visit_decl(name))
@@ -357,7 +358,7 @@ class QAPISchemaGenVisitVisitor(QAPISchemaModularCVisitor):
     def visit_object_type(self,
                           name: str,
                           info: Optional[QAPISourceInfo],
-                          ifcond: List[str],
+                          ifcond: QAPISchemaIf,
                           features: List[QAPISchemaFeature],
                           base: Optional[QAPISchemaObjectType],
                           members: List[QAPISchemaObjectTypeMember],
@@ -379,7 +380,7 @@ class QAPISchemaGenVisitVisitor(QAPISchemaModularCVisitor):
     def visit_alternate_type(self,
                              name: str,
                              info: QAPISourceInfo,
-                             ifcond: List[str],
+                             ifcond: QAPISchemaIf,
                              features: List[QAPISchemaFeature],
                              variants: QAPISchemaVariants) -> None:
         with ifcontext(ifcond, self._genh, self._genc):

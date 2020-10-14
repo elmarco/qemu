@@ -31,6 +31,7 @@ from .gen import (
 from .schema import (
     QAPISchema,
     QAPISchemaFeature,
+    QAPISchemaIf,
     QAPISchemaObjectType,
     QAPISchemaType,
 )
@@ -301,7 +302,7 @@ void %(c_prefix)sqmp_init_marshal(QmpCommandList *cmds);
     def visit_command(self,
                       name: str,
                       info: QAPISourceInfo,
-                      ifcond: List[str],
+                      ifcond: QAPISchemaIf,
                       features: List[QAPISchemaFeature],
                       arg_type: Optional[QAPISchemaObjectType],
                       ret_type: Optional[QAPISchemaType],

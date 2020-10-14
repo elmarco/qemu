@@ -20,6 +20,7 @@ from .schema import (
     QAPISchema,
     QAPISchemaEnumMember,
     QAPISchemaFeature,
+    QAPISchemaIf,
     QAPISchemaObjectType,
 )
 from .source import QAPISourceInfo
@@ -212,7 +213,7 @@ void %(event_emit)s(%(event_enum)s event, QDict *qdict);
     def visit_event(self,
                     name: str,
                     info: QAPISourceInfo,
-                    ifcond: List[str],
+                    ifcond: QAPISchemaIf,
                     features: List[QAPISchemaFeature],
                     arg_type: QAPISchemaObjectType,
                     boxed: bool) -> None:

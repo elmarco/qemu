@@ -35,6 +35,9 @@ The Python class hierarchy at a glance:
   - `QAPISchemaObjectTypeMember`
 
     - `QAPISchemaVariant`
+
+- `QAPISchemaIf`
+
 """
 # Copyright (c) 2015-2019 Red Hat Inc.
 #
@@ -59,6 +62,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Sequence,
     Type,
     TypeVar,
     Union,
@@ -81,12 +85,29 @@ class Visitable:
         raise NotImplementedError
 
 
+class QAPISchemaIf:
+    def __init__(self, ifcond: Optional[Sequence[str]] = None):
+        self.ifcond = ifcond or []
+
+    def __bool__(self) -> bool:
+        return bool(self.ifcond)
+
+    def __repr__(self) -> str:
+        return repr(self.ifcond)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, QAPISchemaIf):
+            return NotImplemented
+        return self.ifcond == other.ifcond
+
+
 class QAPISchemaEntity(Visitable):
     def __init__(self,
                  name: str,
                  info: Optional[QAPISourceInfo],
                  doc: Optional[QAPIDoc],
-                 ifcond: Optional[Union[List[str], 'QAPISchemaType']] = None,
+                 ifcond: Optional[Union[QAPISchemaIf,
+                                        'QAPISchemaType']] = None,
                  features: Optional[List['QAPISchemaFeature']] = None):
         assert name is None or isinstance(name, str)
 
@@ -103,7 +124,7 @@ class QAPISchemaEntity(Visitable):
         # such place).
         self.info = info
         self.doc = doc
-        self._ifcond = ifcond or []
+        self._ifcond = ifcond or QAPISchemaIf()
         self.features = features or []
         self._checked = False
         self._meta = ''
@@ -148,8 +169,8 @@ class QAPISchemaEntity(Visitable):
         self._set_module(schema, self.info)
 
     @property
-    def ifcond(self) -> List[str]:
-        assert self._checked and isinstance(self._ifcond, list)
+    def ifcond(self) -> QAPISchemaIf:
+        assert self._checked and isinstance(self._ifcond, QAPISchemaIf)
         return self._ifcond
 
     def is_implicit(self) -> bool:
@@ -189,7 +210,7 @@ class QAPISchemaVisitor:
     def visit_enum_type(self,
                         name: str,
                         info: Optional[QAPISourceInfo],
-                        ifcond: List[str],
+                        ifcond: QAPISchemaIf,
                         features: List['QAPISchemaFeature'],
                         members: List['QAPISchemaEnumMember'],
                         prefix: Optional[str]) -> None:
@@ -198,14 +219,14 @@ class QAPISchemaVisitor:
     def visit_array_type(self,
                          name: str,
                          info: Optional[QAPISourceInfo],
-                         ifcond: List[str],
+                         ifcond: QAPISchemaIf,
                          element_type: 'QAPISchemaType') -> None:
         pass
 
     def visit_object_type(self,
                           name: str,
                           info: Optional[QAPISourceInfo],
-                          ifcond: List[str],
+                          ifcond: QAPISchemaIf,
                           features: List['QAPISchemaFeature'],
                           base: Optional['QAPISchemaObjectType'],
                           members: List['QAPISchemaObjectTypeMember'],
@@ -215,7 +236,7 @@ class QAPISchemaVisitor:
     def visit_object_type_flat(self,
                                name: str,
                                info: Optional[QAPISourceInfo],
-                               ifcond: List[str],
+                               ifcond: QAPISchemaIf,
                                features: List['QAPISchemaFeature'],
                                members: List['QAPISchemaObjectTypeMember'],
                                variants: Optional['QAPISchemaVariants'],
@@ -225,7 +246,7 @@ class QAPISchemaVisitor:
     def visit_alternate_type(self,
                              name: str,
                              info: QAPISourceInfo,
-                             ifcond: List[str],
+                             ifcond: QAPISchemaIf,
                              features: List['QAPISchemaFeature'],
                              variants: 'QAPISchemaVariants') -> None:
         pass
@@ -233,7 +254,7 @@ class QAPISchemaVisitor:
     def visit_command(self,
                       name: str,
                       info: QAPISourceInfo,
-                      ifcond: List[str],
+                      ifcond: QAPISchemaIf,
                       features: List['QAPISchemaFeature'],
                       arg_type: 'QAPISchemaObjectType',
                       ret_type: Optional['QAPISchemaType'],
@@ -248,7 +269,7 @@ class QAPISchemaVisitor:
     def visit_event(self,
                     name: str,
                     info: QAPISourceInfo,
-                    ifcond: List[str],
+                    ifcond: QAPISchemaIf,
                     features: List['QAPISchemaFeature'],
                     arg_type: 'QAPISchemaObjectType',
                     boxed: bool) -> None:
@@ -361,7 +382,7 @@ class QAPISchemaEnumType(QAPISchemaType):
                  name: str,
                  info: Optional[QAPISourceInfo],
                  doc: Optional[QAPIDoc],
-                 ifcond: Optional[List[str]],
+                 ifcond: Optional[QAPISchemaIf],
                  features: Optional[List['QAPISchemaFeature']],
                  members: List['QAPISchemaEnumMember'],
                  prefix: Optional[str]):
@@ -427,7 +448,7 @@ class QAPISchemaArrayType(QAPISchemaType):
         self._set_module(schema, self.element_type.info)
 
     @property
-    def ifcond(self) -> List[str]:
+    def ifcond(self) -> QAPISchemaIf:
         assert self._checked
         return self.element_type.ifcond
 
@@ -461,7 +482,7 @@ class QAPISchemaObjectType(QAPISchemaType):
                  name: str,
                  info: Optional[QAPISourceInfo],
                  doc: Optional[QAPIDoc],
-                 ifcond: Optional['QAPISchemaType'],
+                 ifcond: Optional[Union[QAPISchemaIf, 'QAPISchemaType']],
                  features: Optional[List['QAPISchemaFeature']],
                  base: Optional[str],
                  local_members: List['QAPISchemaObjectTypeMember'],
@@ -545,7 +566,7 @@ class QAPISchemaObjectType(QAPISchemaType):
             member.connect_doc(doc)
 
     @property
-    def ifcond(self) -> List[str]:
+    def ifcond(self) -> QAPISchemaIf:
         assert self._checked
         if isinstance(self._ifcond, QAPISchemaType):
             # Simple union wrapper type inherits from wrapped type;
@@ -591,7 +612,7 @@ class QAPISchemaAlternateType(QAPISchemaType):
                  name: str,
                  info: QAPISourceInfo,
                  doc: QAPIDoc,
-                 ifcond: Optional[List[str]],
+                 ifcond: Optional[QAPISchemaIf],
                  features: List['QAPISchemaFeature'],
                  variants: 'QAPISchemaVariants'):
         super().__init__(name, info, doc, ifcond, features)
@@ -725,7 +746,7 @@ class QAPISchemaVariants:
         else:                   # simple union
             assert isinstance(self.tag_member.type, QAPISchemaEnumType)
             assert not self.tag_member.optional
-            assert self.tag_member.ifcond == []
+            assert not self.tag_member.ifcond
         if self._tag_name:    # flat union
             # branches that are not explicitly covered get an empty type
             cases = {v.name for v in self.variants}
@@ -772,11 +793,11 @@ class QAPISchemaMember:
 
     def __init__(self, name: str,
                  info: Optional[QAPISourceInfo],
-                 ifcond: Optional[List[str]] = None):
+                 ifcond: Optional[QAPISchemaIf] = None):
         assert isinstance(name, str)
         self.name = name
         self.info = info
-        self.ifcond = ifcond or []
+        self.ifcond = ifcond or QAPISchemaIf()
         self.defined_in: Optional[str] = None
 
     def set_defined_in(self, name: str) -> None:
@@ -843,7 +864,7 @@ class QAPISchemaObjectTypeMember(QAPISchemaMember):
                  info: QAPISourceInfo,
                  typ: str,
                  optional: bool,
-                 ifcond: Optional[List[str]] = None,
+                 ifcond: Optional[QAPISchemaIf] = None,
                  features: Optional[List[QAPISchemaFeature]] = None):
         super().__init__(name, info, ifcond)
         assert isinstance(typ, str)
@@ -878,7 +899,7 @@ class QAPISchemaVariant(QAPISchemaObjectTypeMember):
                  name: str,
                  info: QAPISourceInfo,
                  typ: str,
-                 ifcond: Optional[List[str]] = None):
+                 ifcond: Optional[QAPISchemaIf] = None):
         super().__init__(name, info, typ, False, ifcond)
 
 
@@ -887,7 +908,7 @@ class QAPISchemaCommand(QAPISchemaEntity):
                  name: str,
                  info: QAPISourceInfo,
                  doc: QAPIDoc,
-                 ifcond: Optional[List[str]],
+                 ifcond: Optional[QAPISchemaIf],
                  features: List[QAPISchemaFeature],
                  arg_type: str,
                  ret_type: Optional[str],
@@ -963,7 +984,7 @@ class QAPISchemaEvent(QAPISchemaEntity):
                  name: str,
                  info: QAPISourceInfo,
                  doc: QAPIDoc,
-                 ifcond: Optional[List[str]],
+                 ifcond: Optional[QAPISchemaIf],
                  features: List[QAPISchemaFeature],
                  arg_type: str,
                  boxed: bool):
@@ -1144,12 +1165,19 @@ class QAPISchema(Visitable):
                                             qtype_values, 'QTYPE'))
 
     @classmethod
+    def _get_if(cls, d: Dict[str, Any]) -> QAPISchemaIf:
+        ifcond = d.get('if')
+        if isinstance(ifcond, QAPISchemaIf):
+            return ifcond
+        return QAPISchemaIf(ifcond)
+
+    @classmethod
     def _make_features(cls,
                        features: Optional[List[Dict[str, Any]]],
                        info: QAPISourceInfo) -> List[QAPISchemaFeature]:
         if features is None:
             return []
-        return [QAPISchemaFeature(f['name'], info, f.get('if'))
+        return [QAPISchemaFeature(f['name'], info, cls._get_if(f))
                 for f in features]
 
     @classmethod
@@ -1157,13 +1185,13 @@ class QAPISchema(Visitable):
                            values: List[Dict[str, Any]],
                            info: Optional[QAPISourceInfo],
                            ) -> List[QAPISchemaEnumMember]:
-        return [QAPISchemaEnumMember(v['name'], info, v.get('if'))
+        return [QAPISchemaEnumMember(v['name'], info, cls._get_if(v))
                 for v in values]
 
     def _make_implicit_enum_type(self,
                                  name: str,
                                  info: QAPISourceInfo,
-                                 ifcond: Optional[List[str]],
+                                 ifcond: Optional[QAPISchemaIf],
                                  values: List[Dict[str, Any]]) -> str:
         # See also QAPISchemaObjectTypeMember.describe()
         name = name + 'Kind'    # reserved by check_defn_name_str()
@@ -1184,7 +1212,8 @@ class QAPISchema(Visitable):
     def _make_implicit_object_type(self,
                                    name: str,
                                    info: QAPISourceInfo,
-                                   ifcond: Optional[QAPISchemaType],
+                                   ifcond: Union[QAPISchemaIf,
+                                                 Optional[QAPISchemaType]],
                                    role: str,
                                    members: List[QAPISchemaObjectTypeMember],
                                    ) -> Optional[str]:
@@ -1205,7 +1234,7 @@ class QAPISchema(Visitable):
             # TODO kill simple unions or implement the disjunction
 
             # pylint: disable=protected-access
-            assert (ifcond or []) == typ._ifcond
+            assert ifcond == typ._ifcond
         else:
             self._def_entity(QAPISchemaObjectType(
                 name, info, None, ifcond, None, None, members, None))
@@ -1218,7 +1247,7 @@ class QAPISchema(Visitable):
         name = expr['enum']
         data = expr['data']
         prefix = expr.get('prefix')
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
         self._def_entity(QAPISchemaEnumType(
             name, info, doc, ifcond, features,
@@ -1227,7 +1256,7 @@ class QAPISchema(Visitable):
     def _make_member(self,
                      name: str,
                      typ: str,
-                     ifcond: Optional[List[str]],
+                     ifcond: Optional[QAPISchemaIf],
                      features: Optional[List[Dict[str, Any]]],
                      info: QAPISourceInfo) -> QAPISchemaObjectTypeMember:
         optional = False
@@ -1244,7 +1273,8 @@ class QAPISchema(Visitable):
                       data: Dict[str, Dict[str, Any]],
                       info: QAPISourceInfo,
                       ) -> List[QAPISchemaObjectTypeMember]:
-        return [self._make_member(key, value['type'], value.get('if'),
+        return [self._make_member(key, value['type'],
+                                  QAPISchemaIf(value.get('if')),
                                   value.get('features'), info)
                 for (key, value) in data.items()]
 
@@ -1255,7 +1285,7 @@ class QAPISchema(Visitable):
         name = expr['struct']
         base = expr.get('base')
         data = expr['data']
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
         self._def_entity(QAPISchemaObjectType(
             name, info, doc, ifcond, features, base,
@@ -1266,14 +1296,14 @@ class QAPISchema(Visitable):
     def _make_variant(cls,
                       case: str,
                       typ: str,
-                      ifcond: Optional[List[str]],
+                      ifcond: Optional[QAPISchemaIf],
                       info: QAPISourceInfo) -> QAPISchemaVariant:
         return QAPISchemaVariant(case, info, typ, ifcond)
 
     def _make_simple_variant(self,
                              case: str,
                              typ: str,
-                             ifcond: Optional[List[str]],
+                             ifcond: Optional[QAPISchemaIf],
                              info: QAPISourceInfo) -> QAPISchemaVariant:
         if isinstance(typ, list):
             assert len(typ) == 1
@@ -1290,7 +1320,7 @@ class QAPISchema(Visitable):
         name = expr['union']
         data = expr['data']
         base = expr.get('base')
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
         tag_name = expr.get('discriminator')
         tag_member = None
@@ -1300,13 +1330,14 @@ class QAPISchema(Visitable):
                 'base', self._make_members(base, info))
         if tag_name:
             variants = [self._make_variant(key, value['type'],
-                                           value.get('if'), info)
+                                           QAPISchemaIf(value.get('if')), info)
                         for (key, value) in data.items()]
             members = []
         else:
-            variants = [self._make_simple_variant(key, value['type'],
-                                                  value.get('if'), info)
-                        for (key, value) in data.items()]
+            variants = [self._make_simple_variant(key, val['type'],
+                                                  QAPISchemaIf(val.get('if')),
+                                                  info)
+                        for (key, val) in data.items()]
             enum = [{'name': v.name, 'if': v.ifcond} for v in variants]
             typ = self._make_implicit_enum_type(name, info, ifcond, enum)
             tag_member = QAPISchemaObjectTypeMember('type', info, typ, False)
@@ -1323,9 +1354,10 @@ class QAPISchema(Visitable):
                             doc: QAPIDoc) -> None:
         name = expr['alternate']
         data = expr['data']
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
-        variants = [self._make_variant(key, value['type'], value.get('if'),
+        variants = [self._make_variant(key, value['type'],
+                                       QAPISchemaIf(value.get('if')),
                                        info)
                     for (key, value) in data.items()]
         tag_member = QAPISchemaObjectTypeMember('type', info, 'QType', False)
@@ -1347,7 +1379,7 @@ class QAPISchema(Visitable):
         allow_oob = expr.get('allow-oob', False)
         allow_preconfig = expr.get('allow-preconfig', False)
         coroutine = expr.get('coroutine', False)
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
         if isinstance(data, OrderedDict):
             data = self._make_implicit_object_type(
@@ -1369,7 +1401,7 @@ class QAPISchema(Visitable):
         name = expr['event']
         data = expr.get('data')
         boxed = expr.get('boxed', False)
-        ifcond = expr.get('if')
+        ifcond = QAPISchemaIf(expr.get('if'))
         features = self._make_features(expr.get('features'), info)
         if isinstance(data, OrderedDict):
             data = self._make_implicit_object_type(
