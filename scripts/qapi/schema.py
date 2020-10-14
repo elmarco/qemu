@@ -70,7 +70,13 @@ from typing import (
     overload,
 )
 
-from .common import POINTER_SUFFIX, c_name, mcgen
+from .common import (
+    POINTER_SUFFIX,
+    IfAll,
+    IfOption,
+    c_name,
+    mcgen,
+)
 from .error import QAPISemError, QAPISourceError
 from .expr import check_exprs
 from .parser import ParsedExpression, QAPIDoc, QAPISchemaParser
@@ -87,34 +93,33 @@ class Visitable:
 
 class QAPISchemaIf:
     def __init__(self, ifcond: Optional[Sequence[str]] = None):
-        self.ifcond = ifcond or []
-
-    def gen_if(self) -> str:
-        ret = ''
-        for ifc in self.ifcond:
-            ret += mcgen('''
-#if %(cond)s
-''', cond=ifc)
-        return ret
-
-    def gen_endif(self) -> str:
-        ret = ''
-        for ifc in reversed(self.ifcond):
-            ret += mcgen('''
-#endif /* %(cond)s */
-''', cond=ifc)
-        return ret
+        pred_list = [IfOption(opt) for opt in ifcond or []]
+        self.pred = IfAll(pred_list)
 
     def __bool__(self) -> bool:
-        return bool(self.ifcond)
+        return bool(self.pred)
 
     def __repr__(self) -> str:
-        return repr(self.ifcond)
+        return repr(self.pred)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, QAPISchemaIf):
             return NotImplemented
-        return self.ifcond == other.ifcond
+        return self.pred == other.pred
+
+    def gen_if(self) -> str:
+        if self.pred:
+            return mcgen('''
+#if %(cond)s
+''', cond=self.pred.cgen())
+        return ""
+
+    def gen_endif(self) -> str:
+        if self.pred:
+            return mcgen('''
+#endif // %(cond)s
+''', cond=self.pred.cgen())
+        return ""
 
 
 class QAPISchemaEntity(Visitable):
