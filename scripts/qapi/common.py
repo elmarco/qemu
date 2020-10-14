@@ -266,9 +266,8 @@ class IfNot(IfPredicate):
 
 
 class IfCond:
-    def __init__(self, ifcond: Optional[Sequence[str]] = None):
-        pred_list = [IfOption(opt) for opt in ifcond or []]
-        self.pred = IfAll(pred_list)
+    def __init__(self, pred: Optional[IfPredicate] = None):
+        self.pred = pred
 
     def __bool__(self) -> bool:
         return bool(self.pred)
