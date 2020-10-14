@@ -26,8 +26,6 @@ from typing import (
 from .common import (
     IfCond,
     c_name,
-    gen_endif,
-    gen_if,
     mcgen,
 )
 from .gen import QAPISchemaMonolithicCVisitor
@@ -100,10 +98,10 @@ def _tree_to_qlit(obj: TreeValue, level: int = 0,
         if obj.comment:
             ret += indent(level) + '/* %s */\n' % obj.comment
         if obj.ifcond:
-            ret += gen_if(obj.ifcond)
+            ret += obj.ifcond.gen_if()
         ret += _tree_to_qlit(obj.value, level)
         if obj.ifcond:
-            ret += '\n' + gen_endif(obj.ifcond)
+            ret += '\n' + obj.ifcond.gen_endif()
         return ret
 
     ret = ''

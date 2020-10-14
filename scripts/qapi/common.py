@@ -209,20 +209,18 @@ class IfCond:
             return NotImplemented
         return self.ifcond == other.ifcond
 
-
-def gen_if(c: IfCond) -> str:
-    ret = ''
-    for ifc in c.ifcond:
-        ret += mcgen('''
+    def gen_if(self) -> str:
+        ret = ''
+        for ifc in self.ifcond:
+            ret += mcgen('''
 #if %(cond)s
 ''', cond=ifc)
-    return ret
+        return ret
 
-
-def gen_endif(c: IfCond) -> str:
-    ret = ''
-    for ifc in reversed(c.ifcond):
-        ret += mcgen('''
+    def gen_endif(self) -> str:
+        ret = ''
+        for ifc in reversed(self.ifcond):
+            ret += mcgen('''
 #endif /* %(cond)s */
 ''', cond=ifc)
-    return ret
+        return ret
