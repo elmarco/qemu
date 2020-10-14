@@ -215,23 +215,35 @@ class IfOption(IfPredicate):
         return self.option == other.option
 
 
-class IfAll(IfPredicate):
+class IfPredicateList(IfPredicate):
+    C_OP = ""
+
     def __init__(self, pred_list: Sequence[IfPredicate]):
         self.pred_list = pred_list
 
     def cgen(self) -> str:
-        return " && ".join([p.cgen() for p in self.pred_list])
+        op = " " + self.C_OP + " "
+        return "(%s)" % op.join([p.cgen() for p in self.pred_list])
 
     def __bool__(self) -> bool:
         return bool(self.pred_list)
 
     def __repr__(self) -> str:
-        return f"IfAll({self.pred_list})"
+        ty = type(self)
+        return f"{ty.__qualname__}({self.pred_list})"
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, IfAll):
+        if not isinstance(other, type(self)):
             return False
         return self.pred_list == other.pred_list
+
+
+class IfAll(IfPredicateList):
+    C_OP = "&&"
+
+
+class IfAny(IfPredicateList):
+    C_OP = "||"
 
 
 class IfCond:
