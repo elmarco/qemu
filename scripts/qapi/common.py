@@ -194,33 +194,72 @@ def guardend(name: str) -> str:
                  name=c_fname(name).upper())
 
 
-class IfCond:
-    def __init__(self, ifcond: Optional[Sequence[str]] = None):
-        self.ifcond = ifcond or []
+class IfPredicate:
+    def cgen(self) -> str:
+        raise NotImplementedError()
 
-    def __bool__(self) -> bool:
-        return bool(self.ifcond)
+
+class IfOption(IfPredicate):
+    def __init__(self, option: str):
+        self.option = option
+
+    def cgen(self) -> str:
+        return self.option
 
     def __repr__(self) -> str:
-        return repr(self.ifcond)
+        return repr(self.option)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, IfOption):
+            return False
+        return self.option == other.option
+
+
+class IfAll(IfPredicate):
+    def __init__(self, pred_list: Sequence[IfPredicate]):
+        self.pred_list = pred_list
+
+    def cgen(self) -> str:
+        return " && ".join([p.cgen() for p in self.pred_list])
+
+    def __bool__(self) -> bool:
+        return bool(self.pred_list)
+
+    def __repr__(self) -> str:
+        return f"IfAll({self.pred_list})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, IfAll):
+            return False
+        return self.pred_list == other.pred_list
+
+
+class IfCond:
+    def __init__(self, ifcond: Optional[Sequence[str]] = None):
+        pred_list = [IfOption(opt) for opt in ifcond or []]
+        self.pred = IfAll(pred_list)
+
+    def __bool__(self) -> bool:
+        return bool(self.pred)
+
+    def __repr__(self) -> str:
+        return repr(self.pred)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, IfCond):
             return NotImplemented
-        return self.ifcond == other.ifcond
+        return self.pred == other.pred
 
     def gen_if(self) -> str:
-        ret = ''
-        for ifc in self.ifcond:
-            ret += mcgen('''
+        if self.pred:
+            return mcgen('''
 #if %(cond)s
-''', cond=ifc)
-        return ret
+''', cond=self.pred.cgen())
+        return ""
 
     def gen_endif(self) -> str:
-        ret = ''
-        for ifc in reversed(self.ifcond):
-            ret += mcgen('''
-#endif /* %(cond)s */
-''', cond=ifc)
-        return ret
+        if self.pred:
+            return mcgen('''
+#endif // %(cond)s
+''', cond=self.pred.cgen())
+        return ""
