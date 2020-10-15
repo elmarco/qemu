@@ -204,7 +204,7 @@ class IfOption(IfPredicate):
         self.option = option
 
     def cgen(self) -> str:
-        return self.option
+        return f"defined({self.option})"
 
     def __repr__(self) -> str:
         return repr(self.option)

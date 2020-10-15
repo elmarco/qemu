@@ -217,10 +217,10 @@ def check_if(expr: _JSObject, info: QAPISourceInfo, source: str) -> None:
 
     def normalize(cond: Union[str, List[str], object]) -> IfPredicate:
         if isinstance(cond, str):
-            if not cond.strip():
+            if not cond.isidentifier():
                 raise QAPISemError(
                     info,
-                    "'if' condition '%s' of %s makes no sense"
+                    "'if' option string '%s' of %s is not a valid identifier"
                     % (cond, source))
             return IfOption(cond)
         if isinstance(cond, list):
