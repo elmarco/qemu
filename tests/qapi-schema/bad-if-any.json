@@ -1,0 +1,3 @@
+# check 'if' 'any' not being a list
+{ 'struct': 'TestIfStruct', 'data': { 'foo': 'int' },
+  'if': { 'any': 'CONFIG_FOO' } }

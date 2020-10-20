@@ -40,6 +40,7 @@ schemas = [
   'bad-if-empty.json',
   'bad-if-empty-list.json',
   'bad-if-list.json',
+  'bad-if-any.json',
   'bad-type-bool.json',
   'bad-type-dict.json',
   'bad-type-int.json',

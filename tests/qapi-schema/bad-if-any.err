@@ -1,0 +1,2 @@
+bad-if-any.json: In struct 'TestIfStruct':
+bad-if-any.json:2: 'any' condition of struct must be a list

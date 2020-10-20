@@ -254,6 +254,13 @@
     'bar': { 'type': ['TestIfEnum'], 'if': 'TEST_IF_EVT_BAR' } },
   'if': ['TEST_IF_EVT', 'TEST_IF_STRUCT'] }
 
+{ 'event': 'TestComplexIf',
+  'if': {
+    'not': {
+      'any': [
+        'TEST_ANY1',
+        { 'all': [ 'TEST_ANY_AND1', 'TEST_ANY_AND2' ] } ] } } }
+
 # test 'features'
 
 { 'struct': 'FeatureStruct0',

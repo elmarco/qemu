@@ -357,6 +357,9 @@ object q_obj_TestIfEvent-arg
 event TestIfEvent q_obj_TestIfEvent-arg
     boxed=False
     if IfAll(['TEST_IF_EVT', 'TEST_IF_STRUCT'])
+event TestComplexIf None
+    boxed=False
+    if IfNot(IfAny(['TEST_ANY1', IfAll(['TEST_ANY_AND1', 'TEST_ANY_AND2'])]))
 object FeatureStruct0
     member foo: int optional=False
 object FeatureStruct1
