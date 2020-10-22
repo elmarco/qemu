@@ -198,6 +198,8 @@ class IfPredicate:
     def cgen(self) -> str:
         raise NotImplementedError()
 
+    def rsgen(self) -> str:
+        raise NotImplementedError()
 
 class IfOption(IfPredicate):
     def __init__(self, option: str):
@@ -205,6 +207,9 @@ class IfOption(IfPredicate):
 
     def cgen(self) -> str:
         return f"defined({self.option})"
+
+    def rsgen(self) -> str:
+        return self.option
 
     def __repr__(self) -> str:
         return repr(self.option)
@@ -217,6 +222,7 @@ class IfOption(IfPredicate):
 
 class IfPredicateList(IfPredicate):
     C_OP = ""
+    RS_OP = ""
 
     def __init__(self, pred_list: Sequence[IfPredicate]):
         self.pred_list = pred_list
@@ -224,6 +230,10 @@ class IfPredicateList(IfPredicate):
     def cgen(self) -> str:
         op = " " + self.C_OP + " "
         return "(%s)" % op.join([p.cgen() for p in self.pred_list])
+
+    def rsgen(self) -> str:
+        preds = ", ".join([p.rsgen() for p in self.pred_list])
+        return f"{self.RS_OP}({preds})"
 
     def __bool__(self) -> bool:
         return bool(self.pred_list)
@@ -240,10 +250,12 @@ class IfPredicateList(IfPredicate):
 
 class IfAll(IfPredicateList):
     C_OP = "&&"
+    RS_OP = "all"
 
 
 class IfAny(IfPredicateList):
     C_OP = "||"
+    RS_OP = "any"
 
 
 class IfNot(IfPredicate):
@@ -252,6 +264,9 @@ class IfNot(IfPredicate):
 
     def cgen(self) -> str:
         return "!" + self.pred.cgen()
+
+    def rsgen(self) -> str:
+        return f"not({self.pred.rsgen()})"
 
     def __bool__(self) -> bool:
         return bool(self.pred)
@@ -293,3 +308,8 @@ class IfCond:
 #endif // %(cond)s
 ''', cond=self.pred.cgen())
         return ""
+
+    def gen_rs_cfg(self) -> str:
+        if not self.pred:
+            return ""
+        return f"#[cfg({self.pred.rsgen()})]"
