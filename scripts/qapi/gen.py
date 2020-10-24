@@ -240,6 +240,7 @@ class QAPISchemaModularCVisitor(QAPISchemaVisitor):
                  user_blurb: str,
                  builtin_blurb: Optional[str],
                  pydoc: str):
+        super().__init__()
         self._prefix = prefix
         self._what = what
         self._user_blurb = user_blurb
@@ -248,19 +249,6 @@ class QAPISchemaModularCVisitor(QAPISchemaVisitor):
         self._genc: Optional[QAPIGenC] = None
         self._genh: Optional[QAPIGenH] = None
         self._module: Dict[Optional[str], Tuple[QAPIGenC, QAPIGenH]] = {}
-        self._main_module: Optional[str] = None
-
-    @staticmethod
-    def _is_user_module(name: Optional[str]) -> bool:
-        return bool(name and not name.startswith('./'))
-
-    @staticmethod
-    def is_builtin_module(name: Optional[str]) -> bool:
-        return not name
-
-    def is_main_module(self, name: str) -> bool:
-        assert self._main_module
-        return self._main_module == name
 
     def _module_dirname(self, name: Optional[str]) -> str:
         if self._is_user_module(name):

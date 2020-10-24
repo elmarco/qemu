@@ -164,6 +164,21 @@ class QAPISchemaEntity(Visitable):
 
 
 class QAPISchemaVisitor:
+    def __init__(self) -> None:
+        self._main_module: Optional[str] = None
+
+    @staticmethod
+    def _is_user_module(name: Optional[str]) -> bool:
+        return bool(name and not name.startswith('./'))
+
+    @staticmethod
+    def is_builtin_module(name: Optional[str]) -> bool:
+        return not name
+
+    def is_main_module(self, name: str) -> bool:
+        assert self._main_module
+        return self._main_module == name
+
     def visit_begin(self, schema: 'QAPISchema') -> None:
         pass
 
