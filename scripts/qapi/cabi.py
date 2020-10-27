@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 from .common import c_name, c_enum_const, IfCond, mcgen
+from .rs import rs_name
 from .schema import (
     QAPISchemaEnumMember,
     QAPISchemaObjectType,
@@ -16,6 +17,9 @@ class CABI:
         self.ifcond = ifcond
 
     def gen_c(self) -> str:
+        raise NotImplementedError()
+
+    def gen_rs(self) -> str:
         raise NotImplementedError()
 
 
@@ -44,6 +48,19 @@ class CABIEnum(CABI):
         )
         ret += self.ifcond.gen_endif()
         return ret
+
+    def gen_rs(self) -> str:
+        return mcgen("""
+    %(cfg)s
+    {
+        println!("%(name)s enum: sizeof={}", ::std::mem::size_of::<%(name)s>());
+        println!(" max={}", %(name)s::_MAX as u32);
+        println!();
+    }
+""",
+            name=self.name,
+            cfg=self.ifcond.gen_rs_cfg(),
+        )
 
 
 class CABIStruct(CABI):
@@ -83,6 +100,24 @@ class CABIStruct(CABI):
         ret += self.ifcond.gen_endif()
         return ret
 
+    def gen_rs(self) -> str:
+        ret = mcgen("""
+    %(cfg)s
+    {
+        println!("%(name)s struct: sizeof={}", ::std::mem::size_of::<%(name)s>());
+""",
+            name=self.name,
+            cfg=self.ifcond.gen_rs_cfg(),
+        )
+        for m in self.members:
+            ret += m.gen_rs()
+        ret += mcgen("""
+        println!();
+    }
+"""
+        )
+        return ret
+
 
 class CABIStructMember:
     def __init__(self, struct: CABIStruct, name: str, ifcond: IfCond):
@@ -101,6 +136,26 @@ class CABIStructMember:
             sname=self.struct.name,
         )
         ret += self.ifcond.gen_endif() if self.ifcond else ""
+        return ret
+
+    def gen_rs(self) -> str:
+        ret = self.ifcond.gen_rs_cfg() if self.ifcond else ""
+        if self.name.startswith("u."):
+            name = f"u.{rs_name(self.name[2:])}"
+        else:
+            name = rs_name(self.name)
+        ret += mcgen("""
+    unsafe {
+        println!(" %(member)s member: sizeof={} offset={}",
+            ::std::mem::size_of_val(&(*::std::ptr::null::<%(sname)s>()).%(name)s),
+            &(*(::std::ptr::null::<%(sname)s>())).%(name)s as *const _ as usize,
+        );
+    }
+""",
+            member=self.name,
+            name=name,
+            sname=self.struct.name,
+        )
         return ret
 
 
