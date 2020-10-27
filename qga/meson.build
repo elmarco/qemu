@@ -97,6 +97,11 @@ if with_rust
                                            'qapi-cabi-rs',
                                            '--', '--cfg', 'QAPI_CABI'])
 
+  test('QGA CABI',
+       diff_commands,
+       args: [qga_qapi_cabi, cargo_qga_cabi],
+       suite: ['qga'],
+      )
 endif
 
 qga = executable('qemu-ga', qga_ss.sources(),
