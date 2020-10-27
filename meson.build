@@ -189,7 +189,9 @@ iokit = []
 emulator_link_args = []
 cocoa = not_found
 hvf = not_found
+exe_suffix = ''
 if targetos == 'windows'
+  exe_suffix = '.exe'
   socket = cc.find_library('ws2_32')
   winmm = cc.find_library('winmm')
 

@@ -82,6 +82,21 @@ if with_rust
                                       rs_target_triple,
                                       'build-lib'])
   qga_rs = declare_dependency(link_args: '@' + cargo_qga.full_path(), sources: cargo_qga)
+
+  cargo_qga_cabi = custom_target('cargo-qga-qapi-cabi',
+                                 output: ['qapi-cabi-rs' + exe_suffix],
+                                 build_always_stale: true,
+                                 depends: [qapi_gen_rs_files],
+                                 command: [cargo_wrapper,
+                                           meson.current_build_dir(),
+                                           meson.current_source_dir(),
+                                           meson.build_root(),
+                                           rs_build_type,
+                                           rs_target_triple,
+                                           'build-bin',
+                                           'qapi-cabi-rs',
+                                           '--', '--cfg', 'QAPI_CABI'])
+
 endif
 
 qga = executable('qemu-ga', qga_ss.sources(),

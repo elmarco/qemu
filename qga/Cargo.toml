@@ -11,3 +11,7 @@ libc = "^0.2.76"
 [lib]
 path = "lib.rs"
 crate-type = ["staticlib"]
+
+[[bin]]
+name = "qapi-cabi-rs"
+path = "qapi-cabi.rs"
