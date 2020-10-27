@@ -74,4 +74,11 @@ gint g_poll_fixed(GPollFD *fds, guint nfds, gint timeout);
 
 #pragma GCC diagnostic pop
 
+/* introduced in 2.64 */
+#ifdef G_SIZEOF_MEMBER
+#undef G_SIZEOF_MEMBER
+#endif
+
+#define G_SIZEOF_MEMBER(type, member) sizeof(((type *)0)->member)
+
 #endif
