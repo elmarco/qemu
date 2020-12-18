@@ -196,7 +196,9 @@ static void net_slirp_timer_mod(void *timer, int64_t expire_timer,
 
 static void net_slirp_register_poll_fd(int fd, void *opaque)
 {
+#ifdef WIN32
     qemu_fd_register(fd);
+#endif
 }
 
 static void net_slirp_unregister_poll_fd(int fd, void *opaque)

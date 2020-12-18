@@ -117,6 +117,8 @@ static inline void qemu_funlockfile(FILE *f)
 {
 }
 
+void qemu_fd_register(int fd);
+
 /* We wrap all the sockets functions so that we can
  * set errno based on WSAGetLastError()
  */
